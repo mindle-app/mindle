@@ -1,5 +1,6 @@
 {
-  "name": "mindle-c799",
+  "$schema": "https://json.schemastore.org/package",
+  "name": "mindle",
   "private": true,
   "sideEffects": false,
   "type": "module",

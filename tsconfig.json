@@ -1,6 +1,6 @@
 {
-  "include": ["**/*.ts", "**/*.tsx"],
-  "extends": ["@epic-web/config/typescript"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   "compilerOptions": {
     "paths": {
       "#app/*": ["./app/*"],
@@ -9,6 +9,16 @@
         "./app/components/ui/icons/name.d.ts",
         "./types/icon-name.d.ts"
       ]
-    }
+    },
+    "types": ["./reset.d.ts"],
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "module": "preserve",
+    "target": "ES2022",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true
   }
 }
