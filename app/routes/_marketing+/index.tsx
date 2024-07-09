@@ -1,10 +1,46 @@
 import { type MetaFunction } from '@remix-run/node'
+import { Link } from '@remix-run/react'
+import { Button } from '#app/components/ui/button'
+import { Icon } from '#app/components/ui/icon.js'
 
 export const meta: MetaFunction = () => [{ title: 'Mindle' }]
 
+function Hero() {
+  return (
+    <div className="flex flex-col justify-center py-8 md:flex-row md:justify-between md:py-12">
+      <div className="flex flex-col gap-4 text-center md:justify-center md:text-start">
+        <h2 className="font-poppinsLight text-lg">
+          Platforma de învățat la bac
+        </h2>
+        <h1 className="font-coHeadlineBold text-5xl">
+          Eu sunt Mindle, study buddy-ul tau pentru bac!
+        </h1>
+        <Icon
+          className="h-[288px] w-[382px] lg:hidden lg:h-[394px] lg:w-[521px]"
+          name={'heya-mindle-big'}
+        />
+        <div className="mt-12 w-full flex-col gap-3 md:flex md:flex-row xl:pr-64">
+          <Button variant={'secondary'} size={'wide'} asChild>
+            <Link to="/login">Intră in cont</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Index() {
   return (
-    <main className="font-poppins grid h-full">
+    <main className="grid h-full font-poppins">
+      <section className="flex w-full items-center justify-center bg-primary text-primary-foreground lg:px-12">
+        <div className="container flex flex-col items-center justify-center lg:flex-row">
+          <Hero />
+          <Icon
+            className="hidden h-[288px] w-[382px] lg:flex lg:h-[394px] lg:w-[521px]"
+            name={'heya-mindle-big'}
+          />
+        </div>
+      </section>
       <div className="grid place-items-center px-4 py-16 xl:grid-cols-2 xl:gap-24">
         <div className="flex max-w-md flex-col items-center text-center xl:order-2 xl:items-start xl:text-left">
           <a

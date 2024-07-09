@@ -1,6 +1,6 @@
 {
-  "name": "Epic Notes",
-  "short_name": "Epic Notes",
+  "name": "Mindle",
+  "short_name": "Mindle",
   "start_url": "/",
   "icons": [
     {
@@ -14,7 +14,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#A9ADC1",
-  "background_color": "#1f2028",
+  "theme_color": "#F15B10",
+  "background_color": "#FFFAF0",
   "display": "standalone"
 }

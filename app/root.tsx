@@ -18,7 +18,7 @@ import {
   useSubmit,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
-import { SVGProps, useRef } from 'react'
+import { type SVGProps, useRef } from 'react'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
@@ -199,7 +199,8 @@ function App() {
   const theme = useTheme()
   const matches = useMatches()
   const isOnSearchPage = matches.find((m) => m.id === 'routes/users+/index')
-  const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
+  const isOnLanding = !!matches.find((m) => m.id === 'routes/_marketing+/index')
+  const searchBar = isOnSearchPage ? <SearchBar status="idle" /> : null
   const allowIndexing = data.ENV.ALLOW_INDEXING !== 'false'
   useToast(data.toast)
 
@@ -211,10 +212,22 @@ function App() {
       env={data.ENV}
     >
       <div className="flex h-screen flex-col justify-between">
-        <header className="container py-6">
-          <nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
-            <Logo />
-            <div className="ml-auto hidden max-w-sm flex-1 sm:block"></div>
+        <header
+          className={cn('container py-6', {
+            'bg-primary text-primary-foreground': isOnLanding,
+          })}
+        >
+          <nav
+            className={cn(
+              'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
+            )}
+          >
+            <Logo
+              className={isOnLanding ? 'fill-primary-foreground' : undefined}
+            />
+            <div className="ml-auto hidden max-w-sm flex-1 sm:block">
+              {searchBar}
+            </div>
             <div className="flex items-center gap-10">
               {user ? (
                 <UserDropdown />
@@ -233,7 +246,7 @@ function App() {
         </div>
 
         <div className="container flex justify-between pb-5">
-          <Logo />
+          <div />
           <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
         </div>
       </div>

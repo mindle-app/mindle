@@ -1,4 +1,5 @@
 import { type Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 export const extendedTheme = {
   colors: {
@@ -98,5 +99,14 @@ export const extendedTheme = {
   },
   animation: {
     'caret-blink': 'caret-blink 1.25s ease-out infinite',
+  },
+  fontFamily: {
+    poppins: ['var(--font-poppins)', ...defaultTheme.fontFamily.sans],
+    poppinsBold: ['Poppins-Bold', ...defaultTheme.fontFamily.sans],
+    poppinsLight: ['Poppins-Light', ...defaultTheme.fontFamily.sans],
+    poppinsBlack: ['Poppins-Black', ...defaultTheme.fontFamily.sans],
+    coHeadlineBold: ['Co Headline Bold', ...defaultTheme.fontFamily.sans],
+    coHeadline: ['Co Headline Regular', ...defaultTheme.fontFamily.sans],
+    coHeadlineLight: ['Co Headline Light', ...defaultTheme.fontFamily.sans],
   },
 } satisfies Config['theme']
