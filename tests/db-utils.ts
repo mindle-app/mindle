@@ -3,6 +3,8 @@ import { faker } from '@faker-js/faker'
 import { type PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
+import bio from './fixtures/data/biology.json'
+import { z } from 'zod'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 
@@ -138,6 +140,25 @@ export async function cleanupDb(prisma: PrismaClient) {
   ])
 }
 
-export function getBiologyChapters() {
-  const chapters = []
+// TODO: Finish this schema so I can easily work with the data afterwards
+const bioSubject = z.object({
+  chapters: z.array(
+    z.object({
+      id: z.number(),
+      subchapters: z.array(
+        z.object({
+          id: z.number(),
+          displayId: z.string().nullable(),
+          width: z.number().nullable(),
+          height: z.number().nullable(),
+          spacing: z.number().nullable(),
+          lessons: z.array(z.object({ id: z.number() })),
+        }),
+      ),
+    }),
+  ),
+})
+
+export function getBio() {
+  const { chapters } = bio
 }
