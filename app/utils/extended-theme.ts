@@ -59,7 +59,13 @@ export const extendedTheme = {
     /** 80px size / 84px high / bold */
     mega: ['5rem', { lineHeight: '5.25rem', fontWeight: '700' }],
     /** 56px size / 62px high / bold */
-    h1: ['3.5rem', { lineHeight: '3.875rem', fontWeight: '700' }],
+    h1: [
+      '3.5rem',
+      {
+        lineHeight: '3.875rem',
+        fontWeight: '700',
+      },
+    ],
     /** 40px size / 48px high / bold */
     h2: ['2.5rem', { lineHeight: '3rem', fontWeight: '700' }],
     /** 32px size / 36px high / bold */

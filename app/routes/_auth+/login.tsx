@@ -22,6 +22,7 @@ import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { PasswordSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { handleNewSession } from './login.server.ts'
+import { Icon } from '#app/components/ui/icon.js'
 
 const LoginFormSchema = z.object({
   username: UsernameSchema,
@@ -93,12 +94,13 @@ export default function LoginPage() {
   })
 
   return (
-    <div className="flex min-h-full flex-col justify-center pb-32 pt-20">
+    <div className="flex min-h-full flex-col justify-center pb-32 pt-12">
       <div className="mx-auto w-full max-w-md">
         <div className="flex flex-col gap-3 text-center">
-          <h1 className="text-h1">Welcome back!</h1>
+          <Icon name={'mindle-head'} className="h-20 w-20" />
+          <h1 className="font-coHeadlineBold text-h1">Bine ai revenit!</h1>
           <p className="text-body-md text-muted-foreground">
-            Please enter your details.
+            Loghează-te pentru a continua
           </p>
         </div>
         <Spacer size="xs" />
@@ -119,7 +121,7 @@ export default function LoginPage() {
               />
 
               <Field
-                labelProps={{ children: 'Password' }}
+                labelProps={{ children: 'Parola' }}
                 inputProps={{
                   ...getInputProps(fields.password, {
                     type: 'password',
@@ -133,7 +135,7 @@ export default function LoginPage() {
                 <CheckboxField
                   labelProps={{
                     htmlFor: fields.remember.id,
-                    children: 'Remember me',
+                    children: 'Tine-mă minte',
                   }}
                   buttonProps={getInputProps(fields.remember, {
                     type: 'checkbox',
@@ -145,7 +147,7 @@ export default function LoginPage() {
                     to="/forgot-password"
                     className="text-body-xs font-semibold"
                   >
-                    Forgot password?
+                    Ai uitat parola?
                   </Link>
                 </div>
               </div>
@@ -178,7 +180,7 @@ export default function LoginPage() {
               ))}
             </ul>
             <div className="flex items-center justify-center gap-2 pt-6">
-              <span className="text-muted-foreground">New here?</span>
+              <span className="text-muted-foreground">Nu ai cont?</span>
               <Link
                 to={
                   redirectTo
@@ -186,7 +188,7 @@ export default function LoginPage() {
                     : '/signup'
                 }
               >
-                Create an account
+                Înregistrează-te
               </Link>
             </div>
           </div>

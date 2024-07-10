@@ -232,7 +232,11 @@ function App() {
               {user ? (
                 <UserDropdown />
               ) : (
-                <Button asChild variant="secondary" size="lg">
+                <Button
+                  asChild
+                  variant={isOnLanding ? 'secondary' : 'default'}
+                  size="lg"
+                >
                   <Link to="/login">Log In</Link>
                 </Button>
               )}

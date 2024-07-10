@@ -149,11 +149,13 @@ export default function OnboardingRoute() {
 
   return (
     <div className="container flex min-h-full flex-col justify-center pb-32 pt-20">
-      <div className="mx-auto w-full max-w-lg">
-        <div className="flex flex-col gap-3 text-center">
-          <h1 className="text-h1">Welcome aboard {data.email}!</h1>
+      <div className="mx-auto w-full max-w-2xl lg:max-w-3xl">
+        <div className="flex w-full flex-col gap-3 text-center">
+          <h1 className="text-center font-coHeadlineBold text-h3 md:text-h2">
+            Bine ai venit, {data.email}!
+          </h1>
           <p className="text-body-md text-muted-foreground">
-            Please enter your details.
+            Te rugăm să îți completezi datele.
           </p>
         </div>
         <Spacer size="xs" />
@@ -173,7 +175,7 @@ export default function OnboardingRoute() {
             errors={fields.username.errors}
           />
           <Field
-            labelProps={{ htmlFor: fields.name.id, children: 'Name' }}
+            labelProps={{ htmlFor: fields.name.id, children: 'Nume' }}
             inputProps={{
               ...getInputProps(fields.name, { type: 'text' }),
               autoComplete: 'name',
@@ -181,7 +183,7 @@ export default function OnboardingRoute() {
             errors={fields.name.errors}
           />
           <Field
-            labelProps={{ htmlFor: fields.password.id, children: 'Password' }}
+            labelProps={{ htmlFor: fields.password.id, children: 'Parolă' }}
             inputProps={{
               ...getInputProps(fields.password, { type: 'password' }),
               autoComplete: 'new-password',
@@ -192,7 +194,7 @@ export default function OnboardingRoute() {
           <Field
             labelProps={{
               htmlFor: fields.confirmPassword.id,
-              children: 'Confirm Password',
+              children: 'Confirmă Parola',
             }}
             inputProps={{
               ...getInputProps(fields.confirmPassword, { type: 'password' }),
@@ -205,7 +207,7 @@ export default function OnboardingRoute() {
             labelProps={{
               htmlFor: fields.agreeToTermsOfServiceAndPrivacyPolicy.id,
               children:
-                'Do you agree to our Terms of Service and Privacy Policy?',
+                'Ești de acord cu Termenii de Serviciu și Politica de Confidențialitate?',
             }}
             buttonProps={getInputProps(
               fields.agreeToTermsOfServiceAndPrivacyPolicy,
@@ -216,7 +218,7 @@ export default function OnboardingRoute() {
           <CheckboxField
             labelProps={{
               htmlFor: fields.remember.id,
-              children: 'Remember me',
+              children: 'Ține-mă minte pe acest dispozitiv',
             }}
             buttonProps={getInputProps(fields.remember, { type: 'checkbox' })}
             errors={fields.remember.errors}

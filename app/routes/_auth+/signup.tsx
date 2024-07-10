@@ -135,9 +135,11 @@ export default function SignupRoute() {
   return (
     <div className="container flex flex-col justify-center pb-32 pt-20">
       <div className="text-center">
-        <h1 className="text-h1">Let's start your journey!</h1>
+        <h1 className="font-coHeadlineBold text-h1">
+          Hai să îți pornim călătoria!
+        </h1>
         <p className="mt-3 text-body-md text-muted-foreground">
-          Please enter your email.
+          Introdu adresa ta de email pentru a începe.
         </p>
       </div>
       <div className="mx-auto mt-16 min-w-full max-w-sm sm:min-w-[368px]">
