@@ -2,6 +2,8 @@ import { type MetaFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { Button } from '#app/components/ui/button'
 import { Icon } from '#app/components/ui/icon.js'
+import { Card } from '#app/components/ui/card.js'
+import { IconName } from '@/icon-name'
 
 export const meta: MetaFunction = () => [{ title: 'Mindle' }]
 
@@ -29,6 +31,26 @@ function Hero() {
   )
 }
 
+function LandingSection({
+  icon,
+  title,
+  body,
+}: {
+  icon: IconName
+  title: string
+  body: React.ReactNode
+}) {
+  return (
+    <section className="flex w-full flex-col items-center justify-center gap-3 pt-16">
+      <Icon name={icon} className="h-16 w-16" />
+      <p className="text-center font-coHeadlineBold text-3xl lg:text-4xl">
+        {title}
+      </p>
+      {body}
+    </section>
+  )
+}
+
 export default function Index() {
   return (
     <main className="grid h-full font-poppins">
@@ -41,6 +63,43 @@ export default function Index() {
           />
         </div>
       </section>
+      <LandingSection
+        icon="mindle-head"
+        title="Sunt aici sa te ajut:"
+        body={
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-6 px-8 lg:flex-row">
+            {[
+              {
+                text: 'Sa te asiguri ca obții rezultate maxime prin quizzes',
+                icon: 'seal-question',
+              },
+              {
+                text: 'Sa reții informația mai ușor folosind mindmaps',
+                icon: 'git-branch',
+              },
+              {
+                text: 'Să iti împarți materie in parți mici, ușor de învățat',
+                icon: 'book-open-text',
+              },
+            ].map((item) => (
+              <Card
+                className="flex w-full flex-col items-center justify-center gap-6 rounded-xl px-6 py-6"
+                key={`Card${item.text}`}
+              >
+                <Icon name={item.icon as IconName} className="h-12 w-12" />
+                <p className="text-center font-coHeadline text-2xl">
+                  {item.text}
+                </p>
+              </Card>
+            ))}
+          </div>
+        }
+      />
+      <LandingSection
+        icon={'mindle-ok-hand'}
+        title="Cum functioneaza?"
+        body={<p>*Insert section here </p>}
+      />
       <div className="grid place-items-center px-4 py-16 xl:grid-cols-2 xl:gap-24">
         <div className="flex max-w-md flex-col items-center text-center xl:order-2 xl:items-start xl:text-left">
           <a

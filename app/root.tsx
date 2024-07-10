@@ -213,13 +213,13 @@ function App() {
     >
       <div className="flex h-screen flex-col justify-between">
         <header
-          className={cn('container py-6', {
+          className={cn('w-full py-6', {
             'bg-primary text-primary-foreground': isOnLanding,
           })}
         >
           <nav
             className={cn(
-              'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
+              'container flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
             )}
           >
             <Logo
@@ -232,7 +232,7 @@ function App() {
               {user ? (
                 <UserDropdown />
               ) : (
-                <Button asChild variant="default" size="lg">
+                <Button asChild variant="secondary" size="lg">
                   <Link to="/login">Log In</Link>
                 </Button>
               )}
