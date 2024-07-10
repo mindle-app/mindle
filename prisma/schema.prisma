@@ -188,7 +188,7 @@ model Connection {
 }
 
 model Subject {
-  id   String @id @default(cuid())
+  id   Int    @id @default(autoincrement())
   name String
 
   createdAt DateTime @default(now())
@@ -211,7 +211,7 @@ model SubjectImage {
   updatedAt DateTime @updatedAt
 
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subjectId String  @unique
+  subjectId Int     @unique
 
   // non-unique foreign key
   @@index([subjectId])
@@ -219,13 +219,13 @@ model SubjectImage {
 }
 
 model Chapter {
-  id              String  @id @default(cuid())
+  id              Int     @id @default(autoincrement())
   name            String
   nextChapterId   Int?    @unique()
   imageDone       String?
   imageLocked     String?
   imageInProgress String?
-  subjectId       String
+  subjectId       Int
   chapterOrder    Int?
 
   createdAt DateTime @default(now())
@@ -249,7 +249,7 @@ model ChapterImage {
   updatedAt DateTime @updatedAt
 
   chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  chapterId String  @unique
+  chapterId Int     @unique
 
   // non-unique foreign key
   @@index([chapterId])
@@ -257,10 +257,10 @@ model ChapterImage {
 }
 
 model SubChapter {
-  id               String  @id @default(cuid())
+  id               Int     @id @default(autoincrement())
   name             String
   nextSubchapterId String? @unique()
-  chapterId        String?
+  chapterId        Int?
   width            Int     @default(200)
   height           Int     @default(200)
   spacing          Float   @default(1.5)
@@ -292,7 +292,7 @@ model SubChapterImage {
   updatedAt DateTime @updatedAt
 
   subChapter   SubChapter @relation(fields: [subChapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subChapterId String     @unique
+  subChapterId Int        @unique
 
   // non-unique foreign key
   @@index([subChapterId])
@@ -300,10 +300,10 @@ model SubChapterImage {
 }
 
 model Lesson {
-  id             String  @id @default(cuid())
+  id             Int     @id @default(autoincrement())
   name           String
-  subchapterId   String
-  parentLessonId String?
+  subchapterId   Int
+  parentLessonId Int?
   isParent       Boolean @default(false)
   studySessionId Int?
   description    String?
@@ -339,7 +339,7 @@ model LessonImage {
   updatedAt DateTime @updatedAt
 
   lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  lessonId String  @unique
+  lessonId Int     @unique
 
   // non-unique foreign key
   @@index([lessonId])
@@ -349,7 +349,7 @@ model LessonImage {
 model Quiz {
   id           String         @id @default(cuid())
   name         String
-  subchapterId String
+  subchapterId Int
   order        Int?
   questions    QuizQuestion[]
   subchapter   SubChapter     @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -390,7 +390,7 @@ model QuizAnswer {
 
 model UserSubject {
   userId    String
-  subjectId String
+  subjectId Int
   status    String @default("LOCKED")
 
   createdAt DateTime @default(now())
@@ -407,15 +407,14 @@ model UserSubject {
 
 model UserChapter {
   userId    String
-  chapterId String
+  chapterId Int
   state     String @default("LOCKED")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chapter         Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  userSubchapters UserSubChapter[]
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([chapterId, userId])
   @@index([userId])
@@ -425,16 +424,13 @@ model UserChapter {
 
 model UserSubChapter {
   userId       String
-  subchapterId String
+  subchapterId Int
   state        String @default("LOCKED")
-  chapterId    String
+  chapterId    Int?
   score        Float?
 
-  subchapter           SubChapter   @relation(fields: [subchapterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  UserChapter          UserChapter? @relation(fields: [userChapterChapterId, userChapterUserId], references: [chapterId, userId])
-  userChapterChapterId String?
-  userChapterUserId    String?
+  subchapter SubChapter @relation(fields: [subchapterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([userId, subchapterId])
   @@unique([subchapterId, userId])
@@ -442,7 +438,7 @@ model UserSubChapter {
 }
 
 model UserLesson {
-  lessonId String
+  lessonId Int
   userId   String
   state    String @default("LOCKED")
 

@@ -137,3 +137,7 @@ export async function cleanupDb(prisma: PrismaClient) {
     prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`),
   ])
 }
+
+export function getBiologyChapters() {
+  const chapters = []
+}
