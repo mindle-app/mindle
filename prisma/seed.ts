@@ -6,6 +6,7 @@ import {
   cleanupDb,
   createPassword,
   createUser,
+  getBiologyImage,
   getNoteImages,
   getUserImages,
   img,
@@ -60,6 +61,14 @@ async function seed() {
     },
   })
   console.timeEnd('👑 Created roles...')
+
+  console.time('📚 Created subjects...')
+  await prisma.subject.create({
+    data: { name: 'Biologie', image: { create: await getBiologyImage() } },
+  })
+  console.timeEnd('📚 Created subjects...')
+
+  await prisma.chapter.createMany({ data: [{}] })
 
   const totalUsers = 5
   console.time(`👤 Created ${totalUsers} users...`)
@@ -272,5 +281,5 @@ seed()
 // we're ok to import from the test directory in this file
 /*
 eslint
-	no-restricted-imports: "off",
+        no-restricted-imports: "off",
 */

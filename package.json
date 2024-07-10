@@ -17,6 +17,8 @@
     "dev": "node ./server/dev-server.js",
     "prisma:studio": "prisma studio",
     "format": "prettier --write .",
+    "prisma:format": "prisma format",
+    "prisma:generate": "prisma generate",
     "lint": "eslint .",
     "setup": "npm run build && prisma generate && prisma migrate deploy && prisma db seed && playwright install",
     "start": "cross-env NODE_ENV=production node .",

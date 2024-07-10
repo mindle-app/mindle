@@ -101,6 +101,13 @@ export async function getUserImages() {
   return userImages
 }
 
+export async function getBiologyImage() {
+  return img({
+    altText: 'a biology atom',
+    filepath: './tests/fixtures/images/subject',
+  })
+}
+
 export async function img({
   altText,
   filepath,

@@ -31,6 +31,8 @@ model User {
   UserAnswer     UserQuizAnswer[]
   UserSubject    UserSubject[]
   UserChapter    UserChapter[]
+
+  @@map("user")
 }
 
 model Note {
@@ -50,6 +52,7 @@ model Note {
   @@index([ownerId])
   // This helps our order by in the user search a LOT
   @@index([ownerId, updatedAt])
+  @@map("note")
 }
 
 model NoteImage {
@@ -79,6 +82,8 @@ model UserImage {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
+
+  @@map("user_image")
 }
 
 model Password {
@@ -86,6 +91,8 @@ model Password {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
+
+  @@map("password")
 }
 
 model Session {
@@ -100,6 +107,7 @@ model Session {
 
   // non-unique foreign key
   @@index([userId])
+  @@map("session")
 }
 
 model Permission {
@@ -115,6 +123,7 @@ model Permission {
   roles Role[]
 
   @@unique([action, entity, access])
+  @@map("permission")
 }
 
 model Role {
@@ -127,6 +136,8 @@ model Role {
 
   users       User[]
   permissions Permission[]
+
+  @@map("role")
 }
 
 model Verification {
@@ -158,6 +169,7 @@ model Verification {
   expiresAt DateTime?
 
   @@unique([target, type])
+  @@map("verification")
 }
 
 model Connection {
@@ -172,12 +184,12 @@ model Connection {
   userId String
 
   @@unique([providerName, providerId])
+  @@map("connection")
 }
 
 model Subject {
-  id             String @id @default(cuid())
-  name           String
-  subjectImageId String
+  id   String @id @default(cuid())
+  name String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -203,6 +215,7 @@ model SubjectImage {
 
   // non-unique foreign key
   @@index([subjectId])
+  @@map("subject_image")
 }
 
 model Chapter {
@@ -240,6 +253,7 @@ model ChapterImage {
 
   // non-unique foreign key
   @@index([chapterId])
+  @@map("chapter_image")
 }
 
 model SubChapter {
@@ -282,6 +296,7 @@ model SubChapterImage {
 
   // non-unique foreign key
   @@index([subChapterId])
+  @@map("subchapter_image")
 }
 
 model Lesson {
@@ -292,7 +307,6 @@ model Lesson {
   isParent       Boolean @default(false)
   studySessionId Int?
   description    String?
-  image          String?
   noPopup        Boolean @default(false)
   width          Int?    @default(200)
   height         Int?    @default(200)
@@ -310,9 +324,26 @@ model Lesson {
   childLessons Lesson[]     @relation("lessonTolesson")
   subChapter   SubChapter   @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userLessons  UserLesson[]
-  lessonId     String?
+  image        LessonImage?
 
   @@map("lesson")
+}
+
+model LessonImage {
+  id          String  @id @default(cuid())
+  altText     String?
+  contentType String
+  blob        Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  lessonId String  @unique
+
+  // non-unique foreign key
+  @@index([lessonId])
+  @@map("lesson_image")
 }
 
 model Quiz {
@@ -322,7 +353,7 @@ model Quiz {
   order        Int?
   questions    QuizQuestion[]
   subchapter   SubChapter     @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userQuiz    UserQuiz[]
+  userQuiz     UserQuiz[]
 
   @@map("quiz")
 }
@@ -343,13 +374,15 @@ model QuizQuestion {
 }
 
 model QuizAnswer {
-  id          String       @id @default(cuid())
-  title       String
-  isCorrect   Boolean?     @default(false)
-  questionId  String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id         String   @id @default(cuid())
+  title      String
+  isCorrect  Boolean? @default(false)
+  questionId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  question    QuizQuestion     @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   userAnswers UserQuizAnswer[]
 
   @@map("quiz_answer")
