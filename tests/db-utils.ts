@@ -111,11 +111,57 @@ export async function getBiologyImage() {
   })
 }
 
+// Array of chapter-id: image
 export async function getChapterImages() {
   return await promiseHash({
     1: img({
       filepath: `./tests/fixtures/images/chapters/1.svg`,
       altText: 'Representation of the human body',
+    }),
+    2: img({
+      filepath: `./tests/fixtures/images/chapters/2.svg`,
+      altText: 'The human brain',
+    }),
+
+    4: img({
+      filepath: `./tests/fixtures/images/chapters/4.svg`,
+      altText: 'Hipofiza',
+    }),
+    5: img({
+      filepath: `./tests/fixtures/images/chapters/5.svg`,
+      altText: 'Flexing biceps',
+    }),
+    7: img({
+      filepath: `./tests/fixtures/images/chapters/7.svg`,
+      altText: 'Stomach',
+    }),
+    8: img({
+      filepath: `./tests/fixtures/images/chapters/8.svg`,
+      altText: 'Human heart',
+    }),
+    9: img({
+      filepath: `./tests/fixtures/images/chapters/9.svg`,
+      altText: 'Human lungs',
+    }),
+    10: img({
+      filepath: `./tests/fixtures/images/chapters/10.svg`,
+      altText: 'Kidneys',
+    }),
+    11: img({
+      filepath: `./tests/fixtures/images/chapters/11.svg`,
+      altText: 'Male and female symbols',
+    }),
+    12: img({
+      filepath: `./tests/fixtures/images/chapters/12.svg`,
+      altText: 'Chemical components',
+    }),
+    13: img({
+      filepath: `./tests/fixtures/images/chapters/13.svg`,
+      altText: 'Genetic sequence',
+    }),
+    14: img({
+      filepath: `./tests/fixtures/images/chapters/14.svg`,
+      altText: 'Hands holding Earth',
     }),
   })
 }
