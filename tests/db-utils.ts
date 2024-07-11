@@ -140,11 +140,14 @@ export async function cleanupDb(prisma: PrismaClient) {
   ])
 }
 
-// TODO: Finish this schema so I can easily work with the data afterwards
-const bioSubject = z.object({
+const bioSubjectSchema = z.object({
   chapters: z.array(
     z.object({
       id: z.number(),
+      name: z.string(),
+      subjectId: z.number(),
+      chapterOrder: z.number(),
+      nextChapterId: z.number().nullable(),
       subchapters: z.array(
         z.object({
           id: z.number(),
@@ -152,13 +155,37 @@ const bioSubject = z.object({
           width: z.number().nullable(),
           height: z.number().nullable(),
           spacing: z.number().nullable(),
-          lessons: z.array(z.object({ id: z.number() })),
+          nonSiblings: z.number().nullable(),
+          chapterId: z.number(),
+          name: z.string(),
+          order: z.number().nullable(),
+          depth: z.number(),
+          image: z.string().nullable(),
+          nextSubchapterId: z.number().nullable(),
+          lessons: z.array(
+            z.object({
+              id: z.number(),
+              displayId: z.string().nullable(),
+              width: z.number().nullable(),
+              height: z.number().nullable(),
+              spacing: z.number().nullable(),
+              nonSiblings: z.number().nullable(),
+              subchapterId: z.number(),
+              name: z.string(),
+              order: z.number().nullable(),
+              depth: z.number(),
+              image: z.string().nullable(),
+              noPopup: z.boolean(),
+              description: z.string().nullable(),
+            }),
+          ),
         }),
       ),
     }),
   ),
 })
 
-export function getBio() {
-  const { chapters } = bio
+export function getBiologyChapters() {
+  const { chapters } = bioSubjectSchema.parse(bio)
+  return chapters
 }

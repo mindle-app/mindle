@@ -6,6 +6,7 @@ import {
   cleanupDb,
   createPassword,
   createUser,
+  getBiologyChapters,
   getBiologyImage,
   getNoteImages,
   getUserImages,

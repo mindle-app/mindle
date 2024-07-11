@@ -259,7 +259,7 @@ model ChapterImage {
 model SubChapter {
   id               Int     @id @default(autoincrement())
   name             String
-  nextSubchapterId String? @unique()
+  nextSubchapterId Int?    @unique()
   chapterId        Int?
   width            Int     @default(200)
   height           Int     @default(200)
