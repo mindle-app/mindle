@@ -19,18 +19,18 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  image          UserImage?
-  password       Password?
-  notes          Note[]
-  roles          Role[]
-  sessions       Session[]
-  connections    Connection[]
-  UserSubChapter UserSubChapter[]
-  UserLesson     UserLesson[]
-  UserQuiz       UserQuiz[]
-  UserAnswer     UserQuizAnswer[]
-  UserSubject    UserSubject[]
-  UserChapter    UserChapter[]
+  image           UserImage?
+  password        Password?
+  notes           Note[]
+  roles           Role[]
+  sessions        Session[]
+  connections     Connection[]
+  userSubchapters UserSubChapter[]
+  userLessons     UserLesson[]
+  userQuizzes     UserQuiz[]
+  userAnswers     UserQuizAnswer[]
+  userSubjects    UserSubject[]
+  userChapters    UserChapter[]
 
   @@map("user")
 }

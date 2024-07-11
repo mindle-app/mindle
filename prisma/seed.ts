@@ -116,6 +116,20 @@ async function seed() {
   console.timeEnd('🖼️ Created lesson images...')
 
   const totalUsers = 5
+  const { id: firstChapterId } = await prisma.chapter.findFirstOrThrow({
+    select: { id: true },
+    orderBy: { chapterOrder: 'asc' },
+  })
+  const { id: firstSubchapterId } = await prisma.subChapter.findFirstOrThrow({
+    select: { id: true },
+    where: { chapterId: firstChapterId },
+    orderBy: { order: 'asc' },
+  })
+  const { id: firstLessonId } = await prisma.lesson.findFirstOrThrow({
+    select: { id: true },
+    where: { subchapterId: firstSubchapterId },
+    orderBy: { order: 'asc' },
+  })
   console.time(`👤 Created ${totalUsers} users...`)
   const noteImages = await getNoteImages()
   const userImages = await getUserImages()
@@ -130,6 +144,15 @@ async function seed() {
           password: { create: createPassword(userData.username) },
           image: { create: userImages[index % userImages.length] },
           roles: { connect: { name: 'user' } },
+          userChapters: {
+            create: [{ chapterId: firstChapterId, state: 'IN_PROGRESS' }],
+          },
+          userSubchapters: {
+            create: [{ subchapterId: firstSubchapterId, state: 'IN_PROGRESS' }],
+          },
+          userLessons: {
+            create: [{ lessonId: firstLessonId, state: 'IN_PROGRESS' }],
+          },
           notes: {
             create: Array.from({
               length: faker.number.int({ min: 1, max: 3 }),
@@ -208,6 +231,15 @@ async function seed() {
         create: { providerName: 'github', providerId: githubUser.profile.id },
       },
       roles: { connect: [{ name: 'admin' }, { name: 'user' }] },
+      userChapters: {
+        create: [{ chapterId: firstChapterId, state: 'IN_PROGRESS' }],
+      },
+      userSubchapters: {
+        create: [{ subchapterId: firstSubchapterId, state: 'IN_PROGRESS' }],
+      },
+      userLessons: {
+        create: [{ lessonId: firstLessonId, state: 'IN_PROGRESS' }],
+      },
       notes: {
         create: [
           {
