@@ -1,6 +1,7 @@
 import { type SerializeFrom } from '@remix-run/node'
 import { useRouteLoaderData } from '@remix-run/react'
 import { type loader as rootLoader } from '#app/root.tsx'
+import { z } from 'zod'
 
 function isUser(user: any): user is SerializeFrom<typeof rootLoader>['user'] {
   return user && typeof user === 'object' && typeof user.id === 'string'
@@ -66,4 +67,12 @@ export function userHasRole(
 ) {
   if (!user) return false
   return user.roles.some((r) => r.name === role)
+}
+
+// Refers to user progress through content like chapters, subchapters & onboarding
+export const UserStateSchema = z.enum(['LOCKED', 'IN_PROGRESS', 'DONE'])
+export enum UserState {
+  LOCKED = 'LOCKED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
 }

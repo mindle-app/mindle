@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { promiseHash } from 'remix-utils/promise'
+import { getFirstUserContent } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server.ts'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
 import {
@@ -13,8 +14,8 @@ import {
   getNoteImages,
   getUserImages,
   img,
-} from '#tests/db-utils.ts'
-import { insertGitHubUser } from '#tests/mocks/github.ts'
+} from '#tests/db-utils'
+import { insertGitHubUser } from '#tests/mocks/github'
 
 async function seed() {
   console.log('🌱 Seeding...')
@@ -116,20 +117,9 @@ async function seed() {
   console.timeEnd('🖼️ Created lesson images...')
 
   const totalUsers = 5
-  const { id: firstChapterId } = await prisma.chapter.findFirstOrThrow({
-    select: { id: true },
-    orderBy: { chapterOrder: 'asc' },
-  })
-  const { id: firstSubchapterId } = await prisma.subChapter.findFirstOrThrow({
-    select: { id: true },
-    where: { chapterId: firstChapterId },
-    orderBy: { order: 'asc' },
-  })
-  const { id: firstLessonId } = await prisma.lesson.findFirstOrThrow({
-    select: { id: true },
-    where: { subchapterId: firstSubchapterId },
-    orderBy: { order: 'asc' },
-  })
+  const { firstChapterId, firstSubchapterId, firstLessonId } =
+    await getFirstUserContent()
+
   console.time(`👤 Created ${totalUsers} users...`)
   const noteImages = await getNoteImages()
   const userImages = await getUserImages()

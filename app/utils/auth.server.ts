@@ -8,6 +8,7 @@ import { prisma } from './db.server.ts'
 import { combineHeaders, downloadFile } from './misc.tsx'
 import { type ProviderUser } from './providers/provider.ts'
 import { authSessionStorage } from './session.server.ts'
+import { UserState } from './user.ts'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
 export const getSessionExpirationDate = () =>
@@ -109,6 +110,28 @@ export async function resetUserPassword({
   })
 }
 
+// Get all the initial user content we'll mark as in progress when a
+// user signs up. By default the chosen subject is bilogy (id = 1)
+export async function getFirstUserContent(subjectId = 1) {
+  const { id: firstChapterId } = await prisma.chapter.findFirstOrThrow({
+    where: { subjectId },
+    select: { id: true },
+    orderBy: { chapterOrder: 'asc' },
+  })
+  const { id: firstSubchapterId } = await prisma.subChapter.findFirstOrThrow({
+    select: { id: true },
+    where: { chapterId: firstChapterId },
+    orderBy: { order: 'asc' },
+  })
+  const { id: firstLessonId } = await prisma.lesson.findFirstOrThrow({
+    select: { id: true },
+    where: { subchapterId: firstSubchapterId },
+    orderBy: { order: 'asc' },
+  })
+
+  return { firstChapterId, firstSubchapterId, firstLessonId }
+}
+
 export async function signup({
   email,
   username,
@@ -122,6 +145,8 @@ export async function signup({
 }) {
   const hashedPassword = await getPasswordHash(password)
 
+  const { firstChapterId, firstSubchapterId, firstLessonId } =
+    await getFirstUserContent()
   const session = await prisma.session.create({
     data: {
       expirationDate: getSessionExpirationDate(),
@@ -131,6 +156,19 @@ export async function signup({
           username: username.toLowerCase(),
           name,
           roles: { connect: { name: 'user' } },
+          userChapters: {
+            create: [
+              { chapterId: firstChapterId, state: UserState.IN_PROGRESS },
+            ],
+          },
+          userSubchapters: {
+            create: [
+              { subchapterId: firstSubchapterId, state: UserState.IN_PROGRESS },
+            ],
+          },
+          userLessons: {
+            create: [{ lessonId: firstLessonId, state: UserState.IN_PROGRESS }],
+          },
           password: {
             create: {
               hash: hashedPassword,
@@ -160,6 +198,9 @@ export async function signupWithConnection({
   providerName: Connection['providerName']
   imageUrl?: string
 }) {
+  const { firstChapterId, firstSubchapterId, firstLessonId } =
+    await getFirstUserContent()
+
   const session = await prisma.session.create({
     data: {
       expirationDate: getSessionExpirationDate(),
@@ -170,6 +211,19 @@ export async function signupWithConnection({
           name,
           roles: { connect: { name: 'user' } },
           connections: { create: { providerId, providerName } },
+          userChapters: {
+            create: [
+              { chapterId: firstChapterId, state: UserState.IN_PROGRESS },
+            ],
+          },
+          userSubchapters: {
+            create: [
+              { subchapterId: firstSubchapterId, state: UserState.IN_PROGRESS },
+            ],
+          },
+          userLessons: {
+            create: [{ lessonId: firstLessonId, state: UserState.IN_PROGRESS }],
+          },
           image: imageUrl
             ? { create: await downloadFile(imageUrl) }
             : undefined,
