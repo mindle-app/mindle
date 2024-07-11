@@ -6,6 +6,7 @@ import { UniqueEnforcer } from 'enforce-unique'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
 import bio from './fixtures/data/biology.json'
+import { downloadFile } from '#app/utils/misc.js'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 
@@ -182,6 +183,30 @@ export async function img({
         : 'image/jpeg',
     blob: await fs.promises.readFile(filepath),
   }
+}
+
+export function mindleCMSUrl(imageId: string) {
+  return `https://cms.mindle.ro/assets/${imageId}`
+}
+
+export async function downloadLessonImages(
+  lessons: { id: number; image: string | undefined }[],
+) {
+  const promises = lessons
+    .map(async (l) => {
+      if (!l.image) {
+        return null
+      }
+      try {
+        const file = await downloadFile(mindleCMSUrl(l.image))
+        return { lessonId: l.id, ...file }
+      } catch (e) {
+        return null
+      }
+    })
+    .filter((l) => !!l)
+
+  return await Promise.all(promises)
 }
 
 export async function cleanupDb(prisma: PrismaClient) {
