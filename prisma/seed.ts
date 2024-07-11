@@ -63,13 +63,25 @@ async function seed() {
   })
   console.timeEnd('👑 Created roles...')
 
-  console.time('📚 Created subjects...')
+  console.time('📚 Created biology subject...')
   await prisma.subject.create({
-    data: { name: 'Biologie', image: { create: await getBiologyImage() } },
+    data: {
+      name: 'Biologie',
+      id: 1,
+      image: { create: await getBiologyImage() },
+    },
   })
-  console.timeEnd('📚 Created subjects...')
+  console.timeEnd('📚 Created biology subject...')
 
-  await prisma.chapter.createMany({ data: [{}] })
+  let bioChapters = getBiologyChapters()
+  let subChapters = bioChapters.flatMap((chapter) => chapter.subchapters)
+  let lessons = subChapters.flatMap((subChapter) => subChapter.lessons)
+
+  console.time('📚 Created biology chapters, subchapters, and lessons...')
+  await prisma.chapter.createMany({ data: bioChapters })
+  await prisma.subChapter.createMany({ data: subChapters })
+  await prisma.lesson.createMany({ data: lessons })
+  console.timeEnd('📚 Created biology chapters, subchapters, and lessons...')
 
   const totalUsers = 5
   console.time(`👤 Created ${totalUsers} users...`)

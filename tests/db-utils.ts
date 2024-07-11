@@ -3,8 +3,8 @@ import { faker } from '@faker-js/faker'
 import { type PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
-import bio from './fixtures/data/biology.json'
 import { z } from 'zod'
+import bio from './fixtures/data/biology.json'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 
@@ -140,6 +140,10 @@ export async function cleanupDb(prisma: PrismaClient) {
   ])
 }
 
+function nullToUndefined<T>(value: T) {
+  return value === null ? undefined : value
+}
+
 const bioSubjectSchema = z.object({
   chapters: z.array(
     z.object({
@@ -152,16 +156,16 @@ const bioSubjectSchema = z.object({
         z.object({
           id: z.number(),
           displayId: z.string().nullable(),
-          width: z.number().nullable(),
-          height: z.number().nullable(),
-          spacing: z.number().nullable(),
-          nonSiblings: z.number().nullable(),
+          width: z.number().nullable().transform(nullToUndefined),
+          height: z.number().nullable().transform(nullToUndefined),
+          spacing: z.number().nullable().transform(nullToUndefined),
+          nonSiblings: z.number().nullable().transform(nullToUndefined),
           chapterId: z.number(),
           name: z.string(),
           order: z.number().nullable(),
           depth: z.number(),
           image: z.string().nullable(),
-          nextSubchapterId: z.number().nullable(),
+          nextSubchapterId: z.number().nullable().transform(nullToUndefined),
           lessons: z.array(
             z.object({
               id: z.number(),
