@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker'
 import { type PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
+import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
 import bio from './fixtures/data/biology.json'
 
@@ -106,7 +107,16 @@ export async function getUserImages() {
 export async function getBiologyImage() {
   return img({
     altText: 'a biology atom',
-    filepath: './tests/fixtures/images/subject',
+    filepath: './tests/fixtures/images/subject/biology.png',
+  })
+}
+
+export async function getChapterImages() {
+  return await promiseHash({
+    1: img({
+      filepath: `./tests/fixtures/images/chapters/1.svg`,
+      altText: 'Representation of the human body',
+    }),
   })
 }
 
@@ -119,7 +129,11 @@ export async function img({
 }) {
   return {
     altText,
-    contentType: filepath.endsWith('.png') ? 'image/png' : 'image/jpeg',
+    contentType: filepath.endsWith('.svg')
+      ? 'image/svg+xml'
+      : filepath.endsWith('.png')
+        ? 'image/png'
+        : 'image/jpeg',
     blob: await fs.promises.readFile(filepath),
   }
 }
@@ -128,16 +142,14 @@ export async function cleanupDb(prisma: PrismaClient) {
   const tables = await prisma.$queryRaw<
     { name: string }[]
   >`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_prisma_migrations';`
-
+  // Disable FK constraints to avoid relation conflicts during deletion
+  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`)
   await prisma.$transaction([
-    // Disable FK constraints to avoid relation conflicts during deletion
-    prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`),
-    // Delete all rows from each table, preserving table structures
     ...tables.map(({ name }) =>
       prisma.$executeRawUnsafe(`DELETE from "${name}"`),
     ),
-    prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`),
   ])
+  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`)
 }
 
 function nullToUndefined<T>(value: T) {

@@ -8,6 +8,7 @@ import {
   createUser,
   getBiologyChapters,
   getBiologyImage,
+  getChapterImages,
   getNoteImages,
   getUserImages,
   img,
@@ -74,14 +75,40 @@ async function seed() {
   console.timeEnd('📚 Created biology subject...')
 
   let bioChapters = getBiologyChapters()
+  // strip subhapters and lessons from chapters
+  const dbChapters = bioChapters.map((chapter) => {
+    const { subchapters, ...rest } = chapter
+    return rest
+  })
   let subChapters = bioChapters.flatMap((chapter) => chapter.subchapters)
-  let lessons = subChapters.flatMap((subChapter) => subChapter.lessons)
+  const dbSubChapters = subChapters.map((subChapter) => {
+    const { lessons, image, ...rest } = subChapter
+    return rest
+  })
+  let lessons = subChapters
+    .flatMap((subChapter) => subChapter.lessons)
+    .map((lesson) => {
+      const { image, ...rest } = lesson
+      return rest
+    })
 
   console.time('📚 Created biology chapters, subchapters, and lessons...')
-  await prisma.chapter.createMany({ data: bioChapters })
-  await prisma.subChapter.createMany({ data: subChapters })
+  await prisma.chapter.createMany({ data: dbChapters })
+  await prisma.subChapter.createMany({ data: dbSubChapters })
   await prisma.lesson.createMany({ data: lessons })
   console.timeEnd('📚 Created biology chapters, subchapters, and lessons...')
+
+  console.time('🖼️ Created chapter images...')
+  const chapterImages = await getChapterImages()
+
+  await prisma.chapterImage.createMany({
+    data: Object.entries(chapterImages).map(([id, image]) => {
+      const chapterId = parseInt(id, 10)
+      return { ...image, chapterId }
+    }),
+  })
+
+  console.timeEnd('🖼️ Created chapter images...')
 
   const totalUsers = 5
   console.time(`👤 Created ${totalUsers} users...`)
