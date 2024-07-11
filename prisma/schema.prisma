@@ -347,7 +347,7 @@ model LessonImage {
 }
 
 model Quiz {
-  id           String         @id @default(cuid())
+  id           Int            @id @default(autoincrement())
   name         String
   subchapterId Int
   order        Int?
@@ -359,9 +359,9 @@ model Quiz {
 }
 
 model QuizQuestion {
-  id     String @id @default(cuid())
+  id     Int    @id @default(autoincrement())
   name   String
-  testId String
+  testId Int
   order  Int?
 
   createdAt DateTime @default(now())
@@ -374,10 +374,10 @@ model QuizQuestion {
 }
 
 model QuizAnswer {
-  id         String   @id @default(cuid())
+  id         Int      @id @default(autoincrement())
   title      String
   isCorrect  Boolean? @default(false)
-  questionId String
+  questionId Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -453,7 +453,7 @@ model UserLesson {
 
 model UserQuiz {
   userId String
-  quizId String
+  quizId Int
   score  Float?
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -467,7 +467,7 @@ model UserQuiz {
 
 model UserQuizAnswer {
   userId   String
-  answerId String
+  answerId Int
 
   answer QuizAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
   user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)

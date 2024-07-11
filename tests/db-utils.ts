@@ -7,6 +7,7 @@ import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
 import { downloadFile } from '#app/utils/misc.js'
 import bio from './fixtures/data/biology.json'
+import quizzes from './fixtures/data/quiz.json'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 
@@ -275,4 +276,35 @@ const bioSubjectSchema = z.object({
 export function getBiologyChapters() {
   const { chapters } = bioSubjectSchema.parse(bio)
   return chapters
+}
+
+const QuizSchema = z.object({
+  tests: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      subchapterId: z.number(),
+      order: z.number().nullable(),
+    }),
+  ),
+  questions: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      testId: z.number(),
+    }),
+  ),
+  answers: z.array(
+    z.object({
+      id: z.number(),
+      title: z.string(),
+      isCorrect: z.boolean(),
+      quizId: z.number(),
+    }),
+  ),
+})
+
+export function getQuizzes() {
+  const { tests, questions, answers } = QuizSchema.parse(quizzes)
+  return { tests, questions, answers }
 }

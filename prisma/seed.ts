@@ -12,6 +12,7 @@ import {
   getBiologyImage,
   getChapterImages,
   getNoteImages,
+  getQuizzes,
   getUserImages,
   img,
 } from '#tests/db-utils'
@@ -333,7 +334,19 @@ async function seed() {
   })
   console.timeEnd(`🐨 Created admin user "kody"`)
 
-  console.timeEnd(`🌱 Database has been seeded`)
+  const { answers, tests, questions } = getQuizzes()
+  console.time(`📝 Created quizzes...`)
+  await prisma.quiz.createMany({ data: tests })
+  await prisma.quizQuestion.createMany({ data: questions })
+  await prisma.quizAnswer.createMany({
+    data: answers.map(({ quizId, ...answer }) => ({
+      ...answer,
+      questionId: quizId,
+    })),
+  })
+  console.timeEnd(`📝 Created quizzes...`)
+  console.timeEnd(`🌱 Database has been seeded
+`)
 }
 
 seed()
