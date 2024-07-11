@@ -5,8 +5,8 @@ import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import bio from './fixtures/data/biology.json'
 import { downloadFile } from '#app/utils/misc.js'
+import bio from './fixtures/data/biology.json'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 
@@ -190,7 +190,7 @@ export function mindleCMSUrl(imageId: string) {
 }
 
 export async function downloadLessonImages(
-  lessons: { id: number; image: string | undefined }[],
+  lessons: { id: number; image: string | null; name: string }[],
 ) {
   const promises = lessons
     .map(async (l) => {
@@ -199,7 +199,7 @@ export async function downloadLessonImages(
       }
       try {
         const file = await downloadFile(mindleCMSUrl(l.image))
-        return { lessonId: l.id, ...file }
+        return { lessonId: l.id, ...file, altText: l.name }
       } catch (e) {
         return null
       }

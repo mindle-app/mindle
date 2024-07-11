@@ -6,6 +6,7 @@ import {
   cleanupDb,
   createPassword,
   createUser,
+  downloadLessonImages,
   getBiologyChapters,
   getBiologyImage,
   getChapterImages,
@@ -85,17 +86,16 @@ async function seed() {
     const { lessons, image, ...rest } = subChapter
     return rest
   })
-  let lessons = subChapters
-    .flatMap((subChapter) => subChapter.lessons)
-    .map((lesson) => {
-      const { image, ...rest } = lesson
-      return rest
-    })
+  let lessons = subChapters.flatMap((subChapter) => subChapter.lessons)
+  const dbLessons = lessons.map((lesson) => {
+    const { image, ...rest } = lesson
+    return rest
+  })
 
   console.time('📚 Created biology chapters, subchapters, and lessons...')
   await prisma.chapter.createMany({ data: dbChapters })
   await prisma.subChapter.createMany({ data: dbSubChapters })
-  await prisma.lesson.createMany({ data: lessons })
+  await prisma.lesson.createMany({ data: dbLessons })
   console.timeEnd('📚 Created biology chapters, subchapters, and lessons...')
 
   console.time('🖼️ Created chapter images...')
@@ -109,6 +109,11 @@ async function seed() {
   })
 
   console.timeEnd('🖼️ Created chapter images...')
+
+  console.time('🖼️ Created lesson images...')
+  const images = (await downloadLessonImages(lessons)).filter(Boolean)
+  await prisma.lessonImage.createMany({ data: images })
+  console.timeEnd('🖼️ Created lesson images...')
 
   const totalUsers = 5
   console.time(`👤 Created ${totalUsers} users...`)
