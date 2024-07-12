@@ -1,13 +1,15 @@
 import { type MetaFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { Button } from '#app/components/ui/button'
-import { Icon } from '#app/components/ui/icon.js'
-import { Card } from '#app/components/ui/card.js'
-import { IconName } from '@/icon-name'
+import { Card } from '#app/components/ui/card'
+import { Icon } from '#app/components/ui/icon'
+import { useOptionalUser } from '#app/utils/user'
+import { type IconName } from '@/icon-name'
 
 export const meta: MetaFunction = () => [{ title: 'Mindle' }]
 
 function Hero() {
+  const user = useOptionalUser()
   return (
     <div className="flex flex-col justify-center py-8 md:flex-row md:justify-between md:py-12">
       <div className="flex flex-col gap-4 text-center md:justify-center md:text-start">
@@ -23,7 +25,9 @@ function Hero() {
         />
         <div className="mt-12 w-full flex-col gap-3 md:flex md:flex-row xl:pr-64">
           <Button variant={'secondary'} size={'wide'} asChild>
-            <Link to="/login">Intră in cont</Link>
+            <Link to={user ? '/dashboard' : '/login'}>
+              {user ? 'Continua lectiile' : 'Intră in cont'}
+            </Link>
           </Button>
         </div>
       </div>
@@ -54,8 +58,9 @@ function LandingSection({
 export default function Index() {
   return (
     <main className="grid h-full font-poppins">
-      <section className="flex w-full items-center justify-center bg-primary text-primary-foreground lg:px-12">
-        <div className="container flex flex-col items-center justify-center lg:flex-row">
+      <section className="relative flex w-full items-center justify-center text-primary-foreground">
+        <div className="absolute -z-30 h-full w-screen bg-primary" />
+        <div className="flex flex-col items-center justify-center lg:flex-row">
           <Hero />
           <Icon
             className="hidden h-[288px] w-[382px] lg:flex lg:h-[394px] lg:w-[521px]"
