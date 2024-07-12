@@ -113,6 +113,10 @@ export async function resetUserPassword({
 // Get all the initial user content we'll mark as in progress when a
 // user signs up. By default the chosen subject is bilogy (id = 1)
 export async function getFirstUserContent(subjectId = 1) {
+  const { id: firstSubjectId } = await prisma.subject.findFirstOrThrow({
+    where: { id: subjectId },
+    select: { id: true },
+  })
   const { id: firstChapterId } = await prisma.chapter.findFirstOrThrow({
     where: { subjectId },
     select: { id: true },
@@ -129,7 +133,12 @@ export async function getFirstUserContent(subjectId = 1) {
     orderBy: { order: 'asc' },
   })
 
-  return { firstChapterId, firstSubchapterId, firstLessonId }
+  return {
+    firstChapterId,
+    firstSubchapterId,
+    firstLessonId,
+    firstSubjectId,
+  }
 }
 
 export async function signup({
@@ -145,7 +154,7 @@ export async function signup({
 }) {
   const hashedPassword = await getPasswordHash(password)
 
-  const { firstChapterId, firstSubchapterId, firstLessonId } =
+  const { firstChapterId, firstSubchapterId, firstLessonId, firstSubjectId } =
     await getFirstUserContent()
   const session = await prisma.session.create({
     data: {
@@ -156,6 +165,11 @@ export async function signup({
           username: username.toLowerCase(),
           name,
           roles: { connect: { name: 'user' } },
+          userSubjects: {
+            create: [
+              { subjectId: firstSubjectId, state: UserState.IN_PROGRESS },
+            ],
+          },
           userChapters: {
             create: [
               { chapterId: firstChapterId, state: UserState.IN_PROGRESS },
@@ -198,7 +212,7 @@ export async function signupWithConnection({
   providerName: Connection['providerName']
   imageUrl?: string
 }) {
-  const { firstChapterId, firstSubchapterId, firstLessonId } =
+  const { firstChapterId, firstSubchapterId, firstLessonId, firstSubjectId } =
     await getFirstUserContent()
 
   const session = await prisma.session.create({
@@ -211,6 +225,11 @@ export async function signupWithConnection({
           name,
           roles: { connect: { name: 'user' } },
           connections: { create: { providerId, providerName } },
+          userSubjects: {
+            create: [
+              { subjectId: firstSubjectId, state: UserState.IN_PROGRESS },
+            ],
+          },
           userChapters: {
             create: [
               { chapterId: firstChapterId, state: UserState.IN_PROGRESS },

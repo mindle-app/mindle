@@ -17,6 +17,7 @@ import {
   img,
 } from '#tests/db-utils'
 import { insertGitHubUser } from '#tests/mocks/github '
+import { UserState } from '#app/utils/user.js'
 
 async function seed() {
   console.log('🌱 Seeding...')
@@ -118,7 +119,7 @@ async function seed() {
   console.timeEnd('🖼️ Created lesson images...')
 
   const totalUsers = 5
-  const { firstChapterId, firstSubchapterId, firstLessonId } =
+  const { firstChapterId, firstSubchapterId, firstLessonId, firstSubjectId } =
     await getFirstUserContent()
 
   console.time(`👤 Created ${totalUsers} users...`)
@@ -135,6 +136,11 @@ async function seed() {
           password: { create: createPassword(userData.username) },
           image: { create: userImages[index % userImages.length] },
           roles: { connect: { name: 'user' } },
+          userSubjects: {
+            create: [
+              { subjectId: firstSubjectId, state: UserState.IN_PROGRESS },
+            ],
+          },
           userChapters: {
             create: [{ chapterId: firstChapterId, state: 'IN_PROGRESS' }],
           },
@@ -222,6 +228,9 @@ async function seed() {
         create: { providerName: 'github', providerId: githubUser.profile.id },
       },
       roles: { connect: [{ name: 'admin' }, { name: 'user' }] },
+      userSubjects: {
+        create: [{ subjectId: firstSubjectId, state: UserState.IN_PROGRESS }],
+      },
       userChapters: {
         create: [{ chapterId: firstChapterId, state: 'IN_PROGRESS' }],
       },
