@@ -4,6 +4,7 @@ import defaultTheme from 'tailwindcss/defaultTheme'
 export const extendedTheme = {
   container: {
     center: true,
+    padding: '0rem',
     screens: {
       '2xl': '2400px',
     },
@@ -39,6 +40,21 @@ export const extendedTheme = {
       DEFAULT: 'hsl(var(--muted))',
       foreground: 'hsl(var(--muted-foreground))',
     },
+    active: {
+      DEFAULT: 'hsl(var(--primary-active))',
+      border: 'hsl(var(--active-border))',
+      foreground: 'hsl(var(--primary-active-foreground))',
+    },
+    completed: {
+      DEFAULT: 'hsl(var(--primary-complete))',
+      border: 'hsl(var(--complete-border))',
+      foreground: 'hsl(var(--primary-complete-foreground))',
+    },
+    disabled: {
+      DEFAULT: 'hsl(var(--primary-disabled))',
+      border: 'hsl(var(--disabled-border))',
+      foreground: 'hsl(var(--primary-disabled-foreground))',
+    },
     accent: {
       DEFAULT: 'hsl(var(--accent))',
       foreground: 'hsl(var(--accent-foreground))',
@@ -59,6 +75,10 @@ export const extendedTheme = {
     lg: 'var(--radius)',
     md: 'calc(var(--radius) - 2px)',
     sm: 'calc(var(--radius) - 4px)',
+  },
+
+  spacing: {
+    'base-padding': `var(--base-padding)`,
   },
   fontSize: {
     // 1rem = 16px
@@ -121,5 +141,15 @@ export const extendedTheme = {
     coHeadlineBold: ['Co Headline Bold', ...defaultTheme.fontFamily.sans],
     coHeadline: ['Co Headline Regular', ...defaultTheme.fontFamily.sans],
     coHeadlineLight: ['Co Headline Light', ...defaultTheme.fontFamily.sans],
+  },
+
+  screens: {
+    xs: '372px',
+    tn: '428px',
+    sm: '576px',
+    xl: '1320px',
+    '2xl': '1900px',
+    '3xl': '2133px',
+    '4k': '3840px',
   },
 } satisfies Config['theme']

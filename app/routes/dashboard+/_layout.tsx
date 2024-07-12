@@ -5,7 +5,7 @@ import { Logo } from '#app/components/logo'
 import { Card, CardContent, CardFooter } from '#app/components/ui/card'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
-import { getChapterImgSrc } from '#app/utils/misc'
+import { cn, getChapterImgSrc } from '#app/utils/misc'
 import { UserState } from '#app/utils/user'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -44,12 +44,21 @@ function ChapterCard({ name, state, image }: Chapter) {
     <Link to={'/dahsboard'}>
       <Card>
         <CardContent
-          className={`flex items-center justify-center border-b-2 p-2 2xl:p-4`}
+          className={cn(
+            `flex items-center justify-center border-b-2 bg-active-foreground p-2 2xl:p-4`,
+            {
+              'border-active-foreground': state === UserState.LOCKED,
+              'border-active-foreground': state === UserState.IN_PROGRESS,
+              'border-active-foreground': state === UserState.DONE,
+            },
+          )}
         >
           <img
             src={getChapterImgSrc(image?.id ?? name)}
+            width={100}
+            height={100}
+            className="h-24 w-24 rounded-t-lg border p-6"
             alt={image?.altText ?? name}
-            className="h-10 w-10"
           />
         </CardContent>
         <CardFooter className="p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
@@ -76,7 +85,7 @@ export default function DashboardLayout() {
         {/* Sidebar */}
         <aside className="col-span-1 row-span-1 border-r-2 border-border">
           <div
-            className={`p-base-padding flex max-h-[1300px] flex-col gap-4 overflow-y-scroll transition-all duration-300 ease-in-out md:h-[calc(100vh-88px)] lg:h-[calc(100vh-100px)] xl:h-[calc(100vh-110px)] 2xl:h-[calc(100vh-125px)] 2xl:gap-7`}
+            className={`flex max-h-[1300px] flex-col gap-4 overflow-y-scroll p-base-padding transition-all duration-300 ease-in-out md:h-[calc(100vh-88px)] lg:h-[calc(100vh-100px)] xl:h-[calc(100vh-110px)] 2xl:h-[calc(100vh-125px)] 2xl:gap-7`}
           >
             {chapters.map((c) => (
               <ChapterCard key={c.name} {...c} />
@@ -85,7 +94,7 @@ export default function DashboardLayout() {
         </aside>
 
         {/* Main content */}
-        <main className="p-base-padding col-span-1 row-span-1">
+        <main className="col-span-1 row-span-1 p-base-padding">
           <Outlet />
         </main>
       </div>
