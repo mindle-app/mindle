@@ -219,14 +219,11 @@ model SubjectImage {
 }
 
 model Chapter {
-  id              Int     @id @default(autoincrement())
-  name            String
-  nextChapterId   Int?    @unique()
-  imageDone       String?
-  imageLocked     String?
-  imageInProgress String?
-  subjectId       Int
-  chapterOrder    Int?
+  id            Int    @id @default(autoincrement())
+  name          String
+  nextChapterId Int?   @unique()
+  subjectId     Int
+  chapterOrder  Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
