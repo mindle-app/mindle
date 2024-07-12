@@ -1,0 +1,8 @@
+#+title: Mindle TO DO
+#+author: Ovi Stoica
+
+* Big Picture
+
+** TODO Add google login back
+
+** TODO

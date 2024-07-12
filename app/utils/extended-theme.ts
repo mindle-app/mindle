@@ -2,6 +2,12 @@ import { type Config } from 'tailwindcss'
 import defaultTheme from 'tailwindcss/defaultTheme'
 
 export const extendedTheme = {
+  container: {
+    center: true,
+    screens: {
+      '2xl': '2400px',
+    },
+  },
   colors: {
     border: 'hsl(var(--border))',
     input: {
@@ -63,6 +69,7 @@ export const extendedTheme = {
       '3.5rem',
       {
         lineHeight: '3.875rem',
+
         fontWeight: '700',
       },
     ],
