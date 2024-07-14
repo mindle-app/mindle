@@ -83,7 +83,10 @@ export function StepRow({
           },
         )}
       >
-        <Icon name={'caret-right'} className="md:h-4 md:w-4 2xl:h-8 2xl:w-8" />
+        <Icon
+          name={'caret-right'}
+          className="fill-foreground md:h-4 md:w-4 2xl:h-8 2xl:w-8"
+        />
       </div>
     </Link>
   )
