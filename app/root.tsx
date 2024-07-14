@@ -45,6 +45,7 @@ import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useUser } from './utils/user.ts'
+import { TailwindIndicator } from './components/ui/tailwind-indicator.tsx'
 
 export const links: LinksFunction = () => {
   return [
@@ -206,6 +207,7 @@ function App() {
         </div>
       </div>
       <EpicToaster closeButton position="top-center" theme={theme} />
+      <TailwindIndicator />
       <EpicProgress />
     </Document>
   )

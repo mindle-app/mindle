@@ -40,13 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 type Chapter = ReturnType<typeof useLoaderData<typeof loader>>['chapters'][0]
 
-function ChapterCard({ name, state, image }: Chapter) {
+function ChapterCard({ name, id, state, image }: Chapter) {
   const isInProgress = state === UserState.IN_PROGRESS
   const isCompleted = state === UserState.DONE
   const isLocked = state === UserState.LOCKED
 
   return (
-    <Link to={'/dahsboard'} aria-disabled={isLocked}>
+    <Link to={`/dashboard/${id}`} aria-disabled={isLocked}>
       <Card
         className={cn(
           'group overflow-hidden border-2 shadow-none transition-all duration-300 ease-in-out hover:border-foreground',
