@@ -49,23 +49,24 @@ function ChapterCard({ name, state, image }: Chapter) {
     <Link to={'/dahsboard'} aria-disabled={isLocked}>
       <Card
         className={cn(
-          'group overflow-hidden border-2 transition-all duration-300 ease-in-out hover:border-foreground',
+          'group overflow-hidden border-2 shadow-none transition-all duration-300 ease-in-out hover:border-foreground',
           {
             'border-active-border': isInProgress,
             'cursor-not-allowed border-disabled-border': isLocked,
-            'border-completed-border': isCompleted,
+            'border-complete-border': isCompleted,
           },
         )}
       >
         <CardContent
           className={cn(
-            `group flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out`,
+            `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out group-hover:border-foreground`,
             {
-              'border-disabled-border bg-disabled group-hover:border-foreground group-hover:bg-disabled-foreground':
+              'border-disabled-border bg-disabled group-hover:bg-disabled-foreground':
                 isLocked,
               'border-active-border bg-active hover:bg-active-foreground':
                 isInProgress,
-              'bg-complete hover:bg-complete-foreground': isCompleted,
+              'border-complete-border bg-complete hover:bg-complete-foreground':
+                isCompleted,
             },
           )}
         >
@@ -73,19 +74,16 @@ function ChapterCard({ name, state, image }: Chapter) {
             className={cn(
               'flex h-[72px] w-[72px] items-center justify-center',
               {
-                'fill-active-svg border-active-border':
-                  state === UserState.IN_PROGRESS,
-                'fill-disabled-svg border-disabled-border':
-                  state === UserState.LOCKED,
-                'fill-completed-svg border-completed-border':
-                  state === UserState.DONE,
+                'fill-active-svg border-active-border': isInProgress,
+                'fill-disabled-svg border-disabled-border': isLocked,
+                'fill-complete-svg border-complete-border': isCompleted,
               },
             )}
             src={getChapterImgSrc(image?.id ?? name)}
           />
         </CardContent>
-        <CardFooter className="p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
-          <span className="text-xs 2xl:text-base">{name}</span>
+        <CardFooter className="w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
+          <span className="w-full text-xs 2xl:text-base">{name}</span>
         </CardFooter>
       </Card>
     </Link>

@@ -45,7 +45,7 @@ export const extendedTheme = {
       border: 'hsl(var(--active-border))',
       foreground: 'hsl(var(--primary-active-foreground))',
     },
-    completed: {
+    complete: {
       DEFAULT: 'hsl(var(--primary-complete))',
       border: 'hsl(var(--complete-border))',
       foreground: 'hsl(var(--primary-complete-foreground))',
