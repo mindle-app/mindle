@@ -31,6 +31,14 @@ export function getErrorMessage(error: unknown) {
   return 'Unknown Error'
 }
 
+export async function fetchChapterSVG(imageId: string): Promise<string> {
+  const response = await fetch(getChapterImgSrc(imageId))
+  if (!response.ok) {
+    return ''
+  }
+  return response.text()
+}
+
 function formatColors() {
   const colors = []
   for (const [key, color] of Object.entries(extendedTheme.colors)) {

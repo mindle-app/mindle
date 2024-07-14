@@ -20,12 +20,12 @@
         --accent-foreground: 24 9.8% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 60 9.1% 97.8%;
-        --primary-active: 20, 89%, 50%, 1;
+        --primary-active: 20, 88%, 90%, 1;
         --primary-complete: 140, 64%, 45%, 1;
-        --primary-disabled: 0, 0%, 0%, 0.3;
-        --primary-active-foreground: 20, 88%, 90%, 1;
+        --primary-disabled: 0, 0%, 91%, 1;
+        --primary-active-foreground: 20, 89%, 50%, 1;
         --primary-complete-foreground: 140, 54%, 89%, 1;
-        --primary-disabled-foreground: 0, 0%, 91%, 1;
+        --primary-disabled-foreground: 0, 0%, 0%, 0.3;
         --complete-border: 140, 63%, 36%, 0.1;
         --active-border: 20, 87%, 40%, 0.2;
         --disabled-border: 0, 0%, 0%, 0.1;
@@ -106,4 +106,25 @@
     src:
         local('Co Headline Bold'),
         url('/fonts/Co Headline/Co Headline Bold.woff') format('woff');
+}
+
+.fill-active-svg {
+    svg,
+    path {
+        @apply fill-active-foreground transition-all duration-300 ease-in-out group-hover:fill-active;
+    }
+}
+
+.fill-complete-svg {
+    svg,
+    path {
+        @apply fill-completed-foreground transition-all duration-300 ease-in-out group-hover:fill-completed;
+    }
+}
+
+.fill-disabled-svg {
+    svg,
+    path {
+        @apply fill-disabled-foreground transition-all duration-300 ease-in-out group-hover:fill-disabled;
+    }
 }
