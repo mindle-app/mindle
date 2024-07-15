@@ -350,7 +350,7 @@ model Quiz {
   order        Int?
   questions    QuizQuestion[]
   subchapter   SubChapter     @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userQuiz     UserQuiz[]
+  userQuizzes  UserQuiz[]
 
   @@map("quiz")
 }
@@ -452,6 +452,7 @@ model UserQuiz {
   userId String
   quizId Int
   score  Float?
+  state  String @default("LOCKED")
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
