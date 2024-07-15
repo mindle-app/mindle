@@ -141,7 +141,7 @@ export async function generateSubchapterMindmap(
   return root
 }
 
-export async function generateChapterMindMap(
+export async function generateChapterMindmap(
   chapterId: number,
   userId: string,
 ): Promise<MindmapTree> {
@@ -452,7 +452,7 @@ async function markNextChapterInProgress(chapterId: number, userId: string) {
     })
 
     // Mark the first lesson from the next chapter as in progress
-    const chapterMindmap = await generateChapterMindMap(
+    const chapterMindmap = await generateChapterMindmap(
       res.nextChapterId,
       userId,
     )
@@ -517,7 +517,7 @@ export async function updateChapterMindmap({
   subChapterId: number
   userId: string
 }) {
-  const chapterMindmap = await generateChapterMindMap(chapterId, userId)
+  const chapterMindmap = await generateChapterMindmap(chapterId, userId)
 
   const entitiesToComplete = getEntitiesToComplete(
     chapterMindmap,

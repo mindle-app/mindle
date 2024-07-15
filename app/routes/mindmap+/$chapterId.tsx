@@ -1,14 +1,15 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
+import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import { z } from 'zod'
-import { requireUserId } from '#app/utils/auth.server.js'
-import { prisma } from '#app/utils/db.server.js'
-import { Link, useLoaderData } from '@remix-run/react'
 import { Logo } from '#app/components/logo.js'
 import { Card, CardContent, CardFooter } from '#app/components/ui/card.js'
+import { requireUserId } from '#app/utils/auth.server.js'
+import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
-import { SvgImage } from '#app/components/svg-image.js'
 import { UserState } from '#app/utils/user.js'
+import { generateChapterMindmap, MindmapTree } from '#app/utils/mindmap.js'
+import Mindmap from '#app/components/mindmap/mindmap.js'
 
 const ParamsSchema = z.object({
   chapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -33,12 +34,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     orderBy: { subchapter: { order: 'asc' } },
   })
 
+  const chapterMindmap = await generateChapterMindmap(chapterId, userId)
+
   return json({
     quizzes: quizzes.map(({ userQuizzes, ...q }) => ({
       score: userQuizzes[0]?.score ?? null,
       state: userQuizzes[0]?.state ?? UserState.LOCKED,
       ...q,
     })),
+    chapterMindmap,
   })
 }
 
@@ -111,7 +115,8 @@ function QuizCard({ name, id, score, state }: Quiz) {
 }
 
 export default function ChapterMindmap() {
-  const { quizzes } = useLoaderData<typeof loader>()
+  const { quizzes, chapterMindmap } = useLoaderData<typeof loader>()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -145,7 +150,16 @@ export default function ChapterMindmap() {
         </aside>
 
         {/* Main content */}
-        <main className="col-span-1 row-span-1 p-base-padding"></main>
+        <main className="col-span-1 row-span-1 p-base-padding">
+          <Mindmap
+            isSubchapter={false}
+            mindmap={chapterMindmap}
+            studyProgramActive={false}
+            handleNodeClick={(node) =>
+              navigate(`mindmap/subchapter/${node.id}`)
+            }
+          />
+        </main>
       </div>
     </>
   )
