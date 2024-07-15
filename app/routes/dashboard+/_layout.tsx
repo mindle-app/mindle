@@ -49,23 +49,24 @@ function ChapterCard({ name, id, state, image }: Chapter) {
     <Link to={`/dashboard/${id}`} aria-disabled={isLocked}>
       <Card
         className={cn(
-          'group overflow-hidden border-2 shadow-none transition-all duration-300 ease-in-out hover:border-foreground',
+          'group overflow-hidden border-2 border-disabled-border shadow-none transition-all duration-300 ease-in-out',
           {
+            'hover:border-foreground': !isLocked,
             'border-active-border': isInProgress,
-            'cursor-not-allowed border-disabled-border': isLocked,
+            'cursor-not-allowed': isLocked,
             'border-complete-border': isCompleted,
           },
         )}
       >
         <CardContent
           className={cn(
-            `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out group-hover:border-foreground`,
+            `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out`,
             {
-              'border-disabled-border bg-disabled group-hover:bg-disabled-foreground':
-                isLocked,
-              'border-active-border bg-active hover:bg-active-foreground':
+              'group-hover:border-foreground': !isLocked,
+              'border-disabled-border bg-disabled': isLocked,
+              'border-active-border bg-active group-hover:bg-active-foreground':
                 isInProgress,
-              'border-complete-border bg-complete hover:bg-complete-foreground':
+              'border-complete-border bg-complete group-hover:bg-complete-foreground':
                 isCompleted,
             },
           )}

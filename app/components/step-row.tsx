@@ -26,12 +26,12 @@ export function StepRow({
     <Link
       to={href}
       className={cn(
-        `group flex h-16 w-full cursor-pointer justify-between overflow-hidden border-2 border-solid bg-card transition-all duration-300 ease-in-out md:rounded-lg 2xl:h-24`,
+        `group flex h-16 w-full cursor-pointer justify-between overflow-hidden border-2 border-solid border-disabled bg-card transition-all duration-300 ease-in-out md:rounded-lg 2xl:h-24`,
         {
           'cursor-not-allowed': isLocked,
           'hover:border-foreground': !isLocked,
           'border-active-border': isInProgress,
-          'border-complete': isCompleted,
+          'border-complete-border': isCompleted,
         },
       )}
     >
@@ -51,16 +51,21 @@ export function StepRow({
           className={cn(
             `flex h-8 w-8 flex-1 items-center justify-center rounded-full border-2 border-disabled-border border-opacity-20 bg-disabled-foreground transition-all duration-300 ease-in-out md:h-8 md:w-8 2xl:h-16 2xl:w-16 2xl:gap-2.5`,
             {
-              'group-hover:border-foreground group-hover:bg-card': !isLocked,
-              'border-active-border bg-active-foreground': isInProgress,
-              'border-complete-border bg-complete-foreground': isCompleted,
+              'group-hover:border-foreground': !isLocked,
+              'border-active-border bg-active-foreground group-hover:bg-card dark:group-hover:bg-active':
+                isInProgress,
+              'border-complete-border bg-complete-foreground dark:group-hover:bg-complete':
+                isCompleted,
             },
           )}
         >
           <div
             className={cn(
               "font-['Co Headline'] font-bold leading-loose text-card transition-all duration-300 ease-in-out",
-              { 'group-hover:text-card-foreground': !isLocked },
+              {
+                'group-hover:text-card-foreground dark:group-hover:text-foreground':
+                  !isLocked,
+              },
             )}
           >
             {number}
