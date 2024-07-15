@@ -71,8 +71,13 @@ export function userHasRole(
 
 // Refers to user progress through content like chapters, subchapters & onboarding
 export const UserStateSchema = z.enum(['LOCKED', 'IN_PROGRESS', 'DONE'])
+
 export enum UserState {
   LOCKED = 'LOCKED',
   IN_PROGRESS = 'IN_PROGRESS',
   DONE = 'DONE',
+}
+
+export function isUserState(value: unknown): value is UserState {
+  return UserStateSchema.safeParse(value).success
 }

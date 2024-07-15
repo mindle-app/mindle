@@ -13,6 +13,10 @@ export function getChapterImgSrc(imageId: string) {
   return `/resources/chapter-image/${imageId}`
 }
 
+export function getLessonImgSrc(imageId: string) {
+  return `/resources/lesson-image/${imageId}`
+}
+
 export function getNoteImgSrc(imageId: string) {
   return `/resources/note-images/${imageId}`
 }
@@ -299,4 +303,8 @@ export async function downloadFile(url: string, retries: number = 0) {
     if (retries > MAX_RETRIES) throw e
     return downloadFile(url, retries + 1)
   }
+}
+
+export function includeOption<T>(condition: boolean, value: T | T[]) {
+  return condition ? [...(Array.isArray(value) ? value : [value])] : []
 }
