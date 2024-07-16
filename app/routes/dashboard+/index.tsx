@@ -63,14 +63,14 @@ export default function Dashboard() {
                   Ce urmează pe azi
                 </h2>
                 <span className="font-coHeadline text-xl text-foreground">
-                  {learnedSubChapters} / {subChapters.length} lecții învățate
+                  {learnedSubChapters} / {subChapters.length} lecții învățatex
                 </span>
               </div>
               <div className="flex w-full flex-col gap-1 overflow-y-scroll py-1 transition-all duration-300 ease-in-out md:gap-3 2xl:gap-6 2xl:py-2">
                 {subChapters.map((subChapter, i) => {
                   return (
                     <StepRow
-                      href={`/mindmap/${chapter.id}`}
+                      href={`/mindmap/chapter/${chapter.id}`}
                       number={subChapter.order ?? i}
                       title={subChapter.name}
                       key={`subchapter-row-${subChapter.id}`}
