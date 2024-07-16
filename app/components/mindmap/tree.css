@@ -16,15 +16,14 @@
 .nodeNameBase,
 .nodeAttributesBase {
     fill: #333; /* Example text color; replace with your specific color code */
-    font-family: 'Arial', sans-serif; /* Use your desired font family */
     font-size: 14px; /* Adjust as needed */
 }
 
 /* Customize links (lines between nodes) */
 .rd3t-link {
-    @apply stroke-foreground;
     stroke-width: 1px;
-    stroke-dasharray: 5, 3 !important; /* Creates a dashed line if that's what's in your Figma design */
+    /* stroke-dasharray: 5, 3 !important; /\* Creates a dashed line if that's what's in your Figma design *\/ */
+    stroke: hsla(var(--primary-active-foreground)) !important;
 }
 
 /* Customize the circle node shapes if needed */

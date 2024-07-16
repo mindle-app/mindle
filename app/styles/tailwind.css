@@ -141,3 +141,7 @@
         @apply fill-disabled-foreground transition-all duration-300 ease-in-out;
     }
 }
+
+.default-transition {
+    @apply transition-colors duration-300 ease-in-out;
+}

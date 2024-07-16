@@ -8,134 +8,10 @@ import {
 import './tree.css'
 
 import { type MindmapTree } from '#app/utils/mindmap.js'
-import { cn } from '#app/utils/misc.js'
+
 import { toUserState, UserState } from '#app/utils/user.js'
-import { SvgImage } from '../svg-image'
-import { Card, CardContent, CardFooter } from '../ui/card'
-import { Icon } from '../ui/icon'
-
-function ChapterElement({
-  title,
-  image,
-  state,
-}: {
-  title: string
-  image: string | null
-  state: UserState
-}) {
-  const isActive = state === UserState.IN_PROGRESS
-  const isComplete = state === UserState.DONE
-  const isLocked = state === UserState.LOCKED
-  return (
-    <Card
-      className={cn(
-        'group min-w-52 overflow-hidden rounded-2xl border-2 border-solid pb-6 shadow-2xl dark:shadow-none',
-        {
-          'shadow-active': isActive,
-          'shadow-complete': isComplete,
-          'shadow-locked': isLocked,
-        },
-      )}
-    >
-      <CardContent
-        className={cn(
-          'W-full flex items-center justify-center border-b-2 pt-6 transition-all duration-300 ease-in-out',
-          {
-            'bg-active group-hover:bg-active-foreground': isActive,
-          },
-        )}
-      >
-        {image ? (
-          <SvgImage
-            src={image}
-            className={cn('h-24 w-24 stroke-transparent', {
-              'fill-active-svg': isActive,
-            })}
-          />
-        ) : (
-          <Icon
-            name={'brain'}
-            className="aspect-square w-24 max-w-full object-contain object-center"
-          />
-        )}
-      </CardContent>
-      <CardFooter className="pt-6 text-center font-poppinsBold text-3xl font-medium leading-7">
-        {title}
-      </CardFooter>
-    </Card>
-  )
-}
-
-const ClickableElement = ({
-  text,
-  buttonText,
-  state: state = UserState.LOCKED,
-  isNextLesson,
-}: {
-  text: string
-  buttonText: string
-  state: UserState
-  isNextLesson?: boolean
-}) => {
-  const isActive = state === UserState.IN_PROGRESS
-  const isComplete = state === UserState.DONE
-  const isLocked = state === UserState.LOCKED
-  return (
-    <div
-      className={cn('w-fit', {
-        'relative rounded-2xl border-2 border-active p-2': isNextLesson,
-      })}
-      key={text + state}
-    >
-      <div className="inline-flex h-[100px] items-start justify-start rounded-2xl border-opacity-20">
-        <div
-          className={cn(
-            'inline-flex w-[100px] flex-col items-center justify-center gap-6 self-stretch rounded-bl-2xl rounded-tl-2xl border-2 border-opacity-20 p-6',
-            {
-              'bg-active': isActive,
-              'bg-complete': isComplete,
-              'bg-locked': isLocked,
-            },
-          )}
-        >
-          <div
-            className={cn(
-              'flex h-16 w-16 items-center justify-center rounded-full border-2',
-              {
-                'bg-active-foreground': isActive,
-                'bg-complete-foreground': isComplete,
-                'bg-locked-foreground': isLocked,
-              },
-            )}
-          >
-            <div
-              className={`font-['Co Headline'] text-[32px] font-bold leading-loose text-card`}
-            >
-              {buttonText}
-            </div>
-          </div>
-        </div>
-        <div
-          className={`inline-flex shrink grow basis-0 flex-col items-center justify-center gap-2.5 self-stretch rounded-br-2xl rounded-tr-2xl border-2 border-l-0 border-opacity-10 px-6 py-4`}
-        >
-          <div
-            className={`self-stretch text-center font-poppins text-2xl font-medium leading-[28.80px] text-foreground`}
-          >
-            {text}
-          </div>
-        </div>
-      </div>
-      {isNextLesson && (
-        <Icon
-          name={'mindle-head'}
-          width={60}
-          height={60}
-          className="absolute right-[-30px] top-[-30px] h-14 w-14 rounded-full border-2 border-active bg-background p-2"
-        />
-      )}
-    </div>
-  )
-}
+import { ChapterElement } from './chapter-element.tsx'
+import { ClickableElement } from './clickable-element.tsx'
 
 const NonClickableElement = ({ text }: { text: string }) => {
   return (
@@ -304,7 +180,7 @@ const Mindmap = ({
         translate={translate}
         renderCustomNodeElement={renderNodeWithCustomEvents}
         orientation="horizontal"
-        pathFunc="step"
+        pathFunc="diagonal"
         zoomable={true}
         draggable={true}
         depthFactor={depthFactor}

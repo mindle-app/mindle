@@ -1,5 +1,5 @@
-import { cn } from '#app/utils/misc.js'
 import React, { useEffect, useState } from 'react'
+import { cn } from '#app/utils/misc'
 
 type Props = {
   src: string
