@@ -6,8 +6,13 @@ import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { QuizCard } from '#app/components/quiz-card.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
-import { generateSubchapterMindmap } from '#app/utils/mindmap.js'
+import { generateSubchapterMindmap, MindmapTree } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
+import { RenderCustomNodeElementFn } from 'react-d3-tree'
+import { useCallback } from 'react'
+import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
+import { ChapterElement } from '#app/components/mindmap/chapter-element.js'
+import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
 
 const ParamsSchema = z.object({
   subchapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -43,6 +48,53 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function SubchapterMindmap() {
   const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
+  const studyProgramActive = false
+  const renderNode = useCallback<RenderCustomNodeElementFn>(
+    ({ nodeDatum }) => {
+      // TODO Parse with Zod
+      const treeDatum = nodeDatum as unknown as MindmapTree
+      const buttonText =
+        treeDatum.attributes?.displayId ?? treeDatum.attributes?.id
+      const text = treeDatum.name
+      const noPopup = treeDatum?.attributes?.noPopup
+      const x = 0
+      const y = -50
+
+      return (
+        <g overflow="visible">
+          <foreignObject
+            overflow="visible"
+            width={`${nodeDatum.attributes?.width ?? 200}px`}
+            height={`${nodeDatum.attributes?.height ?? 200}px`}
+            x={x}
+            y={y}
+          >
+            <div>
+              {!noPopup && (
+                <ClickableElement
+                  text={text}
+                  buttonText={buttonText?.toString() ?? ''}
+                  state={
+                    studyProgramActive
+                      ? treeDatum.attributes.state
+                      : UserState.IN_PROGRESS
+                  }
+                  // next lesson is leaf that is in progress
+                  isNextLesson={
+                    studyProgramActive &&
+                    !treeDatum.children.length &&
+                    treeDatum.attributes.state === UserState.IN_PROGRESS
+                  }
+                />
+              )}
+              {noPopup && <NonClickableElement text={text} />}
+            </div>
+          </foreignObject>
+        </g>
+      )
+    },
+    [studyProgramActive],
+  )
 
   return (
     <>
@@ -68,9 +120,8 @@ export default function SubchapterMindmap() {
         {/* Main content */}
         <main className="col-span-1 row-span-1 p-base-padding">
           <Mindmap
-            isSubchapter={true}
             mindmap={subchapterMindmap}
-            studyProgramActive={true}
+            renderCustomNodeElement={renderNode}
           />
         </main>
       </div>
