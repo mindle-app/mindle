@@ -134,17 +134,7 @@ export default function ChapterMindmap() {
             className={`flex max-h-screen flex-col gap-4 overflow-y-scroll p-8 transition-all duration-300 ease-in-out md:h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] xl:h-[calc(100vh-100px)] 2xl:h-[calc(100vh-100px)] 2xl:gap-7`}
           >
             {quizzes.map((q, i) => (
-              <QuizCard
-                key={q.id}
-                {...q}
-                state={
-                  i === 1
-                    ? UserState.IN_PROGRESS
-                    : i === 2
-                      ? UserState.DONE
-                      : q.state
-                }
-              />
+              <QuizCard key={q.id} {...q} />
             ))}
           </div>
         </aside>
@@ -154,7 +144,7 @@ export default function ChapterMindmap() {
           <Mindmap
             isSubchapter={false}
             mindmap={chapterMindmap}
-            studyProgramActive={false}
+            studyProgramActive={true}
             handleNodeClick={(node) =>
               navigate(`mindmap/subchapter/${node.id}`)
             }

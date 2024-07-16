@@ -1,3 +1,4 @@
+import { cn } from '#app/utils/misc.js'
 import React, { useEffect, useState } from 'react'
 
 type Props = {
@@ -30,7 +31,7 @@ export const SvgImage: React.FC<Props> = ({ src, className = '' }) => {
 
   return (
     <div
-      className={className}
+      className={cn('[&>svg]:h-full [&>svg]:w-full', className)}
       dangerouslySetInnerHTML={{ __html: svgContent || '' }}
     />
   )

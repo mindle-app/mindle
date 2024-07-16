@@ -9,36 +9,60 @@ import './tree.css'
 
 import { type MindmapTree } from '#app/utils/mindmap.js'
 import { cn } from '#app/utils/misc.js'
-import { UserState } from '#app/utils/user.js'
+import { toUserState, UserState } from '#app/utils/user.js'
 import { SvgImage } from '../svg-image'
+import { Card, CardContent, CardFooter } from '../ui/card'
 import { Icon } from '../ui/icon'
 
 function ChapterElement({
   title,
   image,
+  state,
 }: {
   title: string
   image: string | null
+  state: UserState
 }) {
+  const isActive = state === UserState.IN_PROGRESS
+  const isComplete = state === UserState.DONE
+  const isLocked = state === UserState.LOCKED
   return (
-    <div className="flex max-w-[300px] flex-col items-stretch justify-center rounded-2xl border-2 border-solid border-orange-700 border-opacity-10 bg-white pb-6">
-      <div className="flex w-full flex-col items-center justify-center rounded-t-2xl border-2 border-solid border-orange-700 border-opacity-10 bg-orange-100 px-16 py-7">
+    <Card
+      className={cn(
+        'group min-w-52 overflow-hidden rounded-2xl border-2 border-solid pb-6 shadow-2xl dark:shadow-none',
+        {
+          'shadow-active': isActive,
+          'shadow-complete': isComplete,
+          'shadow-locked': isLocked,
+        },
+      )}
+    >
+      <CardContent
+        className={cn(
+          'W-full flex items-center justify-center border-b-2 pt-6 transition-all duration-300 ease-in-out',
+          {
+            'bg-active group-hover:bg-active-foreground': isActive,
+          },
+        )}
+      >
         {image ? (
           <SvgImage
             src={image}
-            className="aspect-[0.99] w-[100px] max-w-full overflow-hidden object-contain object-center"
+            className={cn('h-24 w-24 stroke-transparent', {
+              'fill-active-svg': isActive,
+            })}
           />
         ) : (
           <Icon
             name={'brain'}
-            className="aspect-[0.99] w-[100px] max-w-full overflow-hidden object-contain object-center"
+            className="aspect-square w-24 max-w-full object-contain object-center"
           />
         )}
-      </div>
-      <div className="whitespace-wrap mt-6 min-w-0 self-center text-center font-poppinsBold text-3xl font-medium leading-7 text-black">
+      </CardContent>
+      <CardFooter className="pt-6 text-center font-poppinsBold text-3xl font-medium leading-7">
         {title}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -53,32 +77,49 @@ const ClickableElement = ({
   state: UserState
   isNextLesson?: boolean
 }) => {
+  const isActive = state === UserState.IN_PROGRESS
+  const isComplete = state === UserState.DONE
+  const isLocked = state === UserState.LOCKED
   return (
     <div
-      className={cn('w-fit bg-background', {
-        'relative rounded-2xl border-2 border-primary': isNextLesson,
+      className={cn('w-fit', {
+        'relative rounded-2xl border-2 border-active p-2': isNextLesson,
       })}
       key={text + state}
     >
       <div className="inline-flex h-[100px] items-start justify-start rounded-2xl border-opacity-20">
         <div
-          className={`inline-flex w-[100px] flex-col items-center justify-center gap-6 self-stretch rounded-bl-2xl rounded-tl-2xl border-2 border-opacity-20 p-6`}
+          className={cn(
+            'inline-flex w-[100px] flex-col items-center justify-center gap-6 self-stretch rounded-bl-2xl rounded-tl-2xl border-2 border-opacity-20 p-6',
+            {
+              'bg-active': isActive,
+              'bg-complete': isComplete,
+              'bg-locked': isLocked,
+            },
+          )}
         >
           <div
-            className={`flex h-16 w-16 flex-col items-center justify-center gap-2.5 rounded-[90px] border-2 border-black border-opacity-20`}
+            className={cn(
+              'flex h-16 w-16 items-center justify-center rounded-full border-2',
+              {
+                'bg-active-foreground': isActive,
+                'bg-complete-foreground': isComplete,
+                'bg-locked-foreground': isLocked,
+              },
+            )}
           >
             <div
-              className={`font-['Co Headline'] text-[32px] font-bold leading-loose text-white`}
+              className={`font-['Co Headline'] text-[32px] font-bold leading-loose text-card`}
             >
               {buttonText}
             </div>
           </div>
         </div>
         <div
-          className={`inline-flex shrink grow basis-0 flex-col items-center justify-center gap-2.5 self-stretch rounded-br-2xl rounded-tr-2xl border-2 border-l-0 border-opacity-10 bg-white px-6 py-4`}
+          className={`inline-flex shrink grow basis-0 flex-col items-center justify-center gap-2.5 self-stretch rounded-br-2xl rounded-tr-2xl border-2 border-l-0 border-opacity-10 px-6 py-4`}
         >
           <div
-            className={`self-stretch text-center font-poppins text-2xl font-medium leading-[28.80px] text-black`}
+            className={`self-stretch text-center font-poppins text-2xl font-medium leading-[28.80px] text-foreground`}
           >
             {text}
           </div>
@@ -86,10 +127,10 @@ const ClickableElement = ({
       </div>
       {isNextLesson && (
         <Icon
-          name={'mindle-rounded-mindmap'}
+          name={'mindle-head'}
           width={60}
           height={60}
-          className="absolute right-[-30px] top-[-30px]"
+          className="absolute right-[-30px] top-[-30px] h-14 w-14 rounded-full border-2 border-active bg-background p-2"
         />
       )}
     </div>
@@ -236,7 +277,11 @@ const Mindmap = ({
                 />
               )}
               {nodeDatum.children?.length !== 0 && (
-                <ChapterElement title={text} image={imageUrl} />
+                <ChapterElement
+                  title={text}
+                  image={imageUrl}
+                  state={toUserState(nodeDatum.attributes?.state)}
+                />
               )}
             </div>
           </foreignObject>

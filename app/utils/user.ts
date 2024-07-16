@@ -81,3 +81,11 @@ export enum UserState {
 export function isUserState(value: unknown): value is UserState {
   return UserStateSchema.safeParse(value).success
 }
+
+export const toUserState = (value: unknown) => {
+  if (isUserState(value)) {
+    return value
+  }
+
+  return UserState.LOCKED
+}
