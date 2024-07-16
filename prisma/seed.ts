@@ -3,6 +3,7 @@ import { promiseHash } from 'remix-utils/promise'
 import { getFirstUserContent } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server.ts'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
+import { UserState } from '#app/utils/user'
 import {
   cleanupDb,
   createPassword,
@@ -16,8 +17,7 @@ import {
   getUserImages,
   img,
 } from '#tests/db-utils'
-import { insertGitHubUser } from '#tests/mocks/github '
-import { UserState } from '#app/utils/user.js'
+import { insertGitHubUser } from '#tests/mocks/github'
 
 async function seed() {
   console.log('🌱 Seeding...')
@@ -98,7 +98,17 @@ async function seed() {
   console.time('📚 Created biology chapters, subchapters, and lessons...')
   await prisma.chapter.createMany({ data: dbChapters })
   await prisma.subChapter.createMany({ data: dbSubChapters })
-  await prisma.lesson.createMany({ data: dbLessons })
+
+  try {
+    // Disable FK constraints to avoid relation conflicts during lesson creation
+    await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`)
+    await prisma.lesson.createMany({ data: dbLessons })
+  } catch (e) {
+    console.error('Error inserting lessons', e)
+  } finally {
+    await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`)
+  }
+
   console.timeEnd('📚 Created biology chapters, subchapters, and lessons...')
 
   console.time('🖼️ Created chapter images...')

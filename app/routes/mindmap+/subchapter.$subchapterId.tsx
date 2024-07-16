@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData, useNavigate, useParams } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Logo } from '#app/components/logo.js'
 import { Mindmap } from '#app/components/mindmap/mindmap.js'
@@ -43,9 +43,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function SubchapterMindmap() {
   const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
-  const navigate = useNavigate()
-  const { chapterId } = useParams()
-  console.log(subchapterMindmap)
 
   return (
     <>
@@ -74,9 +71,6 @@ export default function SubchapterMindmap() {
             isSubchapter={true}
             mindmap={subchapterMindmap}
             studyProgramActive={true}
-            handleNodeClick={(node) =>
-              navigate(`/mindmap/chapter/${chapterId}/subchapter/${node.id}`)
-            }
           />
         </main>
       </div>

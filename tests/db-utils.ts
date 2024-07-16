@@ -214,14 +214,19 @@ export async function cleanupDb(prisma: PrismaClient) {
   const tables = await prisma.$queryRaw<
     { name: string }[]
   >`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_prisma_migrations';`
-  // Disable FK constraints to avoid relation conflicts during deletion
-  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`)
-  await prisma.$transaction([
-    ...tables.map(({ name }) =>
-      prisma.$executeRawUnsafe(`DELETE from "${name}"`),
-    ),
-  ])
-  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`)
+  try {
+    // Disable FK constraints to avoid relation conflicts during deletion
+    await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`)
+    await prisma.$transaction([
+      ...tables.map(({ name }) =>
+        prisma.$executeRawUnsafe(`DELETE from "${name}"`),
+      ),
+    ])
+  } catch (e) {
+    console.error('Error cleaning up db', e)
+  } finally {
+    await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON`)
+  }
 }
 
 function nullToUndefined<T>(value: T) {
@@ -265,6 +270,7 @@ const bioSubjectSchema = z.object({
               image: z.string().nullable(),
               noPopup: z.boolean(),
               description: z.string().nullable(),
+              parentLessonId: z.number().nullable(),
             }),
           ),
         }),

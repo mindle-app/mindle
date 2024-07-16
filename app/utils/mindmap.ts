@@ -66,23 +66,12 @@ export async function generateSubchapterMindmap(
 ) {
   const lessons = await prisma.lesson.findMany({
     where: { subchapterId },
-    select: {
-      id: true,
-      depth: true,
-      height: true,
-      width: true,
-      name: true,
-      userLessons: { where: { userId }, select: { state: true } },
-      image: true,
-      zoom: true,
-      noPopup: true,
-      spacing: true,
-      nonSiblings: true,
-      displayId: true,
-      description: true,
-      isParent: true,
+    include: {
       parentLesson: true,
+      userLessons: { where: { userId } },
+      image: true,
     },
+
     orderBy: { order: 'asc' },
   })
 
