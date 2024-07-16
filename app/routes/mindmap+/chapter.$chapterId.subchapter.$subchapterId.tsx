@@ -35,6 +35,7 @@ import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 
 const ParamsSchema = z.object({
   subchapterId: z.string().transform((v) => parseInt(v, 10)),
+  chapterId: z.string().transform((v) => parseInt(v, 10)),
 })
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -78,13 +79,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function SubchapterMindmap() {
   const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
   const params = useParams()
-  const { subchapterId } = ParamsSchema.parse(params)
+  const { subchapterId, chapterId } = ParamsSchema.parse(params)
   const studyProgramActive = false
   const completeLesson = useFetcher<typeof action>()
   const [form, fields] = useForm({
     id: 'mark-lesson-complete',
     constraint: getZodConstraint(MarkLessonCompleteSchema),
-    defaultValue: { subchapterId },
+    defaultValue: { subchapterId, chapterId },
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: MarkLessonCompleteSchema })
     },
@@ -109,36 +110,40 @@ export default function SubchapterMindmap() {
             })}
             value={treeDatum.attributes.id}
           />
-          <g overflow="visible">
-            <foreignObject
-              overflow="visible"
-              width={`${nodeDatum.attributes?.width ?? 200}px`}
-              height={`${nodeDatum.attributes?.height ?? 200}px`}
-              x={x}
-              y={y}
-            >
-              <div>
-                {!noPopup && (
-                  <ClickableElement
-                    text={text}
-                    buttonText={buttonText?.toString() ?? ''}
-                    state={
-                      studyProgramActive
-                        ? treeDatum.attributes.state
-                        : UserState.IN_PROGRESS
-                    }
-                    // next lesson is leaf that is in progress
-                    isNextLesson={
-                      studyProgramActive &&
-                      !treeDatum.children.length &&
-                      treeDatum.attributes.state === UserState.IN_PROGRESS
-                    }
-                  />
-                )}
-                {noPopup && <NonClickableElement text={text} />}
-              </div>
-            </foreignObject>
-          </g>
+          <input {...getInputProps(fields.subchapterId, { type: 'hidden' })} />
+          <input {...getInputProps(fields.chapterId, { type: 'hidden' })} />
+          <Button asChild type="submit">
+            <g overflow="visible">
+              <foreignObject
+                overflow="visible"
+                width={`${nodeDatum.attributes?.width ?? 200}px`}
+                height={`${nodeDatum.attributes?.height ?? 200}px`}
+                x={x}
+                y={y}
+              >
+                <div>
+                  {!noPopup && (
+                    <ClickableElement
+                      text={text}
+                      buttonText={buttonText?.toString() ?? ''}
+                      state={
+                        studyProgramActive
+                          ? treeDatum.attributes.state
+                          : UserState.IN_PROGRESS
+                      }
+                      // next lesson is leaf that is in progress
+                      isNextLesson={
+                        studyProgramActive &&
+                        !treeDatum.children.length &&
+                        treeDatum.attributes.state === UserState.IN_PROGRESS
+                      }
+                    />
+                  )}
+                  {noPopup && <NonClickableElement text={text} />}
+                </div>
+              </foreignObject>
+            </g>
+          </Button>
         </completeLesson.Form>
       )
       const description = treeDatum.attributes?.description
