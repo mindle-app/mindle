@@ -77,7 +77,7 @@ export default function ChapterMindmap() {
             mindmap={chapterMindmap}
             studyProgramActive={true}
             handleNodeClick={(node) =>
-              navigate(`subchapter/${node.attributes.id}`)
+              navigate(`/mindmap/subchapter/${node.attributes.id}`)
             }
           />
         </main>

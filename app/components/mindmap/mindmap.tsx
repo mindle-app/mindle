@@ -55,7 +55,7 @@ interface MindmapProps {
   handleNodeClick: (node: MindmapTree) => void
 }
 
-const Mindmap = ({
+export const Mindmap = ({
   isSubchapter,
   studyProgramActive,
   mindmap,
@@ -190,4 +190,3 @@ const Mindmap = ({
     </div>
   )
 }
-export default Mindmap
