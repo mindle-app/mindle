@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import { faker } from '@faker-js/faker'
 import { type PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -6,10 +7,9 @@ import { UniqueEnforcer } from 'enforce-unique'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
 import { downloadFile } from '#app/utils/misc.js'
-import bio from './fixtures/data/biology.json'
-import quizzes from './fixtures/data/quiz.json'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
+const require = createRequire(import.meta.url)
 
 export function createUser() {
   const firstName = faker.person.firstName()
@@ -280,6 +280,7 @@ const bioSubjectSchema = z.object({
 })
 
 export function getBiologyChapters() {
+  const bio = require('./fixtures/data/biology.json')
   const { chapters } = bioSubjectSchema.parse(bio)
   return chapters
 }
@@ -311,6 +312,7 @@ const QuizSchema = z.object({
 })
 
 export function getQuizzes() {
+  const quizzes = require('./fixtures/data/quiz.json')
   const { tests, questions, answers } = QuizSchema.parse(quizzes)
   return { tests, questions, answers }
 }
