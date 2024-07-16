@@ -1,13 +1,17 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData, useNavigate } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
+import { useCallback } from 'react'
+import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
 import { Logo } from '#app/components/logo.js'
+import { ChapterElement } from '#app/components/mindmap/chapter-element.js'
+import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
 import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { QuizCard } from '#app/components/quiz-card.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
-import { generateChapterMindmap } from '#app/utils/mindmap.js'
+import { generateChapterMindmap, type MindmapTree } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
 
 const ParamsSchema = z.object({
@@ -47,7 +51,58 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function ChapterMindmap() {
   const { quizzes, chapterMindmap } = useLoaderData<typeof loader>()
-  const navigate = useNavigate()
+  const studyProgramActive = false // todo correct study program
+  const renderNode = useCallback<RenderCustomNodeElementFn>(
+    ({ nodeDatum }) => {
+      // TODO Parse with Zod
+      const treeDatum = nodeDatum as unknown as MindmapTree
+      const buttonText =
+        treeDatum.attributes?.displayId ?? treeDatum.attributes?.id
+      const text = treeDatum.name
+      const imageUrl = treeDatum.attributes?.imageUrl?.toString() ?? ''
+
+      const x = 0
+      const y = -50
+
+      return (
+        <Link to={`/mindmap/subchapter/${treeDatum.attributes.id}`}>
+          <g overflow="visible">
+            <foreignObject
+              overflow="visible"
+              width={`${treeDatum?.attributes?.width ?? 200}px`}
+              height={`${treeDatum?.attributes?.height ?? 200}px`}
+              x={x}
+              y={treeDatum.children?.length !== 0 ? y * 2 : y}
+            >
+              {treeDatum.children?.length === 0 ? (
+                <ClickableElement
+                  text={text}
+                  buttonText={buttonText?.toString() ?? ''}
+                  state={
+                    studyProgramActive
+                      ? treeDatum.attributes.state
+                      : UserState.IN_PROGRESS
+                  }
+                  isNextLesson={
+                    studyProgramActive &&
+                    !treeDatum.children.length &&
+                    treeDatum.attributes.state === UserState.IN_PROGRESS
+                  }
+                />
+              ) : (
+                <ChapterElement
+                  title={text}
+                  image={imageUrl}
+                  state={toUserState(treeDatum.attributes?.state)}
+                />
+              )}
+            </foreignObject>
+          </g>
+        </Link>
+      )
+    },
+    [studyProgramActive],
+  )
 
   return (
     <>
@@ -73,12 +128,8 @@ export default function ChapterMindmap() {
         {/* Main content */}
         <main className="col-span-1 row-span-1 p-base-padding">
           <Mindmap
-            isSubchapter={false}
             mindmap={chapterMindmap}
-            studyProgramActive={true}
-            handleNodeClick={(node) =>
-              navigate(`/mindmap/subchapter/${node.attributes.id}`)
-            }
+            renderCustomNodeElement={renderNode}
           />
         </main>
       </div>
