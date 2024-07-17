@@ -42,7 +42,7 @@ export function QuizCard({ name, id, score, state }: Quiz) {
         >
           <div
             className={cn(
-              'flex max-h-16 items-center justify-center rounded-full border-2 border-disabled-border bg-disabled-foreground',
+              'default-transition flex max-h-16 items-center justify-center rounded-full border-2 border-disabled-border bg-disabled-foreground',
               {
                 'border-active-border bg-active-foreground group-hover:bg-card dark:group-hover:bg-primary':
                   isInProgress,
@@ -54,7 +54,7 @@ export function QuizCard({ name, id, score, state }: Quiz) {
           >
             <span
               className={cn(
-                'px-5 py-4 text-center font-coHeadlineBold text-xl text-primary-foreground',
+                'default-transition px-5 py-4 text-center font-coHeadlineBold text-xl text-primary-foreground',
                 {
                   'dark:text-card': isInProgress || isCompleted,
                   'group-hover:text-card-foreground': !isLocked,
