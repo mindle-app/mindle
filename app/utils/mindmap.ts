@@ -435,11 +435,6 @@ async function markNextChapterInProgress(chapterId: number, userId: string) {
   })
 
   if (res && res.nextChapterId) {
-    await prisma.userChapter.update({
-      where: { chapterId_userId: { userId, chapterId: res.nextChapterId } },
-      data: { state: UserState.IN_PROGRESS },
-    })
-
     // Mark the first lesson from the next chapter as in progress
     const chapterMindmap = await generateChapterMindmap(
       res.nextChapterId,
@@ -448,17 +443,31 @@ async function markNextChapterInProgress(chapterId: number, userId: string) {
     const subchapter = chapterMindmap.children[0]
     const lesson = subchapter?.children[0]
 
-    await Promise.all([
-      ...(!!subchapter
+    return prisma.$transaction([
+      prisma.userChapter.upsert({
+        where: { chapterId_userId: { userId, chapterId: res.nextChapterId } },
+        update: { state: UserState.IN_PROGRESS },
+        create: {
+          state: UserState.IN_PROGRESS,
+          chapterId: res.nextChapterId,
+          userId,
+        },
+      }),
+      ...(subchapter
         ? [
-            prisma.userSubChapter.update({
+            prisma.userSubChapter.upsert({
               where: {
                 subchapterId_userId: {
                   userId,
                   subchapterId: subchapter?.attributes.id,
                 },
               },
-              data: { state: UserState.IN_PROGRESS },
+              update: { state: UserState.IN_PROGRESS },
+              create: {
+                state: UserState.IN_PROGRESS,
+                subchapterId: subchapter?.attributes.id,
+                userId,
+              },
             }),
           ]
         : []),
@@ -489,11 +498,16 @@ async function markLessonFromNextSubchapterInProgress(
     userId,
   )
 
-  await prisma.userLesson.update({
+  await prisma.userLesson.upsert({
     where: {
       lessonId_userId: { userId, lessonId: subchapterMindmap.attributes.id },
     },
-    data: { state: UserState.IN_PROGRESS },
+    update: { state: UserState.IN_PROGRESS },
+    create: {
+      state: UserState.IN_PROGRESS,
+      lessonId: subchapterMindmap.attributes.id,
+      userId,
+    },
   })
 }
 
@@ -527,34 +541,47 @@ export async function updateChapterMindmap({
   const { subchapters: nextInProgressSubchapters } =
     mindMapIdsToDbIds(nextInProgressNodes)
 
-  const subchaptersDoneUpdate = prisma.userSubChapter.updateMany({
-    data: { state: UserState.DONE },
-    where: {
-      userId: userId,
-      subchapterId: { in: subchaptersToComplete },
-    },
-  })
+  // Update the user chapter state, including the subchapters and lessons
+  const currentChapterOperations = prisma.$transaction([
+    // mark completed subchapters as done
+    prisma.userSubChapter.deleteMany({
+      where: { userId, subchapterId: { in: subchaptersToComplete } },
+    }),
+    prisma.userSubChapter.createMany({
+      data: subchaptersToComplete.map((subchapterId) => ({
+        userId,
+        state: UserState.DONE,
+        subchapterId,
+      })),
+    }),
 
-  const subchaptersInProgressUpdate = prisma.userSubChapter.updateMany({
-    data: { state: UserState.IN_PROGRESS },
-    where: {
-      userId: userId,
-      subchapterId: { in: nextInProgressSubchapters },
-    },
-  })
+    // mark next subchapters as in progress
+    prisma.userSubChapter.deleteMany({
+      where: { userId, subchapterId: { in: nextInProgressSubchapters } },
+    }),
+    prisma.userSubChapter.createMany({
+      data: nextInProgressSubchapters.map((subchapterId) => ({
+        userId,
+        state: UserState.IN_PROGRESS,
+        subchapterId,
+      })),
+    }),
 
-  const chaptersDoneUpdate = prisma.userChapter.updateMany({
-    data: { state: UserState.DONE },
-    where: {
-      userId: userId,
-      chapterId: { in: chaptersToComplete },
-    },
-  })
+    // mark completed chapters as done
+    prisma.userChapter.deleteMany({
+      where: { userId, chapterId: { in: chaptersToComplete } },
+    }),
+    prisma.userChapter.createMany({
+      data: chaptersToComplete.map((chapterId) => ({
+        userId,
+        state: UserState.DONE,
+        chapterId,
+      })),
+    }),
+  ])
 
-  await Promise.all([
-    subchaptersDoneUpdate,
-    subchaptersInProgressUpdate,
-    chaptersDoneUpdate,
+  return Promise.all([
+    currentChapterOperations,
     ...(chaptersToComplete.length && chaptersToComplete[0]
       ? [markNextChapterInProgress(chaptersToComplete[0], userId)]
       : []),

@@ -3,7 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { Link, useFetcher, useLoaderData, useParams } from '@remix-run/react'
+import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -13,9 +13,10 @@ import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
 import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
 import { QuizCard } from '#app/components/quiz-card.js'
-import { Button } from '#app/components/ui/button.js'
+
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -26,12 +27,17 @@ import {
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
+  findMindmapNode,
+  findNextInProgress,
   generateSubchapterMindmap,
+  MindmapId,
+  mindMapIdsToDbIds,
+  updateChapterMindmap,
   type MindmapTree,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
+import { invariantResponse } from '@epic-web/invariant'
+import { Button } from '#app/components/ui/button.js'
 
 const ParamsSchema = z.object({
   subchapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -66,31 +72,119 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   })
 }
 
-const MarkLessonCompleteSchema = z.object({
-  lessonId: z.number(),
-  subchapterId: z.number(),
-  chapterId: z.number(),
+const MarkLessonAsDone = z.object({
+  lessonId: z.string().transform((v) => parseInt(v, 10)),
 })
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  console.log('this got called')
+  const userId = await requireUserId(request)
+  const result = ParamsSchema.safeParse(params)
+  invariantResponse(result.success, 'Invalid params', { status: 500 })
+
+  const formData = await request.formData()
+  const lessonResult = MarkLessonAsDone.safeParse(Object.fromEntries(formData))
+  invariantResponse(lessonResult.success, 'Invalid lessonId provided', {
+    status: 400,
+  })
+
+  const lessonId = lessonResult.data.lessonId
+
+  const subChapterMindmap = await generateSubchapterMindmap(
+    result.data.subchapterId,
+    userId,
+  )
+
+  const lessonNode = findMindmapNode(subChapterMindmap, `lesson|${lessonId}`)
+  invariantResponse(lessonNode, 'Lesson not found', { status: 404 })
+  invariantResponse(
+    lessonNode.attributes.state !== UserState.DONE,
+    'Lesson already completed',
+    {
+      status: 400,
+    },
+  )
+
+  const { completed, nextInProgress } = findNextInProgress(
+    subChapterMindmap,
+    lessonNode,
+  )
+
+  const { lessons: lessonsToComplete } = mindMapIdsToDbIds(
+    [lessonNode.id, completed].filter((id) => !!id) as MindmapId[],
+  )
+
+  const updateLessonsDone = prisma.$transaction([
+    prisma.userLesson.deleteMany({
+      where: {
+        userId,
+        lessonId: { in: lessonsToComplete },
+      },
+    }),
+    prisma.userLesson.createMany({
+      data: lessonsToComplete.map((lessonId) => ({
+        userId,
+        lessonId,
+        state: UserState.DONE,
+      })),
+    }),
+  ])
+
+  const [_, nextInProgressLessonId] = nextInProgress
+    ? nextInProgress.split('|')
+    : []
+
+  await Promise.all([
+    updateLessonsDone,
+    ...(nextInProgressLessonId
+      ? [
+          prisma.userLesson.upsert({
+            where: {
+              lessonId_userId: {
+                userId,
+                lessonId: parseInt(nextInProgressLessonId),
+              },
+            },
+            update: {
+              state: UserState.IN_PROGRESS,
+            },
+            create: {
+              userId,
+              lessonId: parseInt(nextInProgressLessonId),
+              state: UserState.IN_PROGRESS,
+            },
+          }),
+        ]
+      : []),
+  ])
+
+  const shouldCompleteSubChapter = (
+    await prisma.lesson.findMany({
+      include: { userLessons: { where: { userId } } },
+      where: {
+        subchapterId: result.data.subchapterId,
+      },
+    })
+  ).every((lesson) => lesson.userLessons[0]?.state === UserState.DONE)
+
+  if (shouldCompleteSubChapter) {
+    // Mark next subchapter as in progress and potentially mark next
+    // chapter as in progress
+    await updateChapterMindmap({
+      chapterId: result.data.chapterId,
+      subChapterId: result.data.subchapterId,
+
+      userId,
+    })
+  }
+
+  return json({ success: true })
 }
 
 export default function SubchapterMindmap() {
   const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
-  const params = useParams()
-  const { subchapterId, chapterId } = ParamsSchema.parse(params)
-  const studyProgramActive = false
+  const studyProgramActive = true
   const completeLesson = useFetcher<typeof action>()
-  const [form, fields] = useForm({
-    id: 'mark-lesson-complete',
-    constraint: getZodConstraint(MarkLessonCompleteSchema),
-    defaultValue: { subchapterId, chapterId },
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: MarkLessonCompleteSchema })
-    },
-    shouldRevalidate: 'onBlur',
-  })
+
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
       // TODO Parse with Zod
@@ -103,56 +197,63 @@ export default function SubchapterMindmap() {
       const y = -50
 
       const element = (
-        <completeLesson.Form method={'POST'} {...getFormProps(form)}>
-          <input
-            {...getInputProps(fields.lessonId, {
-              type: 'hidden',
-            })}
-            value={treeDatum.attributes.id}
-          />
-          <input {...getInputProps(fields.subchapterId, { type: 'hidden' })} />
-          <input {...getInputProps(fields.chapterId, { type: 'hidden' })} />
-          <Button asChild type="submit">
-            <g overflow="visible">
-              <foreignObject
-                overflow="visible"
-                width={`${nodeDatum.attributes?.width ?? 200}px`}
-                height={`${nodeDatum.attributes?.height ?? 200}px`}
-                x={x}
-                y={y}
-              >
-                <div>
-                  {!noPopup && (
-                    <ClickableElement
-                      text={text}
-                      buttonText={buttonText?.toString() ?? ''}
-                      state={
-                        studyProgramActive
-                          ? treeDatum.attributes.state
-                          : UserState.IN_PROGRESS
-                      }
-                      // next lesson is leaf that is in progress
-                      isNextLesson={
-                        studyProgramActive &&
-                        !treeDatum.children.length &&
-                        treeDatum.attributes.state === UserState.IN_PROGRESS
-                      }
-                    />
-                  )}
-                  {noPopup && <NonClickableElement text={text} />}
-                </div>
-              </foreignObject>
-            </g>
-          </Button>
-        </completeLesson.Form>
+        <g overflow="visible">
+          <foreignObject
+            overflow="visible"
+            width={`${nodeDatum.attributes?.width ?? 200}px`}
+            height={`${nodeDatum.attributes?.height ?? 200}px`}
+            x={x}
+            y={y}
+          >
+            {noPopup ? (
+              <NonClickableElement text={text} />
+            ) : (
+              <ClickableElement
+                text={text}
+                buttonText={buttonText?.toString() ?? ''}
+                state={
+                  studyProgramActive
+                    ? treeDatum.attributes.state
+                    : UserState.IN_PROGRESS
+                }
+                // next lesson is leaf that is in progress
+                isNextLesson={
+                  studyProgramActive &&
+                  !treeDatum.children.length &&
+                  treeDatum.attributes.state === UserState.IN_PROGRESS
+                }
+              />
+            )}
+          </foreignObject>
+        </g>
       )
       const description = treeDatum.attributes?.description
 
       if (description) {
         return (
           <Dialog>
-            <DialogTrigger asChild>{element}</DialogTrigger>
-            <DialogContent className="h-2/3">
+            <DialogTrigger
+              onClick={() => {
+                if (
+                  !studyProgramActive ||
+                  treeDatum.attributes.state !== UserState.IN_PROGRESS
+                )
+                  return
+
+                completeLesson.submit(
+                  {
+                    lessonId: treeDatum.attributes?.id,
+                  },
+                  {
+                    method: 'POST',
+                  },
+                )
+              }}
+              asChild
+            >
+              {element}
+            </DialogTrigger>
+            <DialogContent className="p-12 pb-6">
               <DialogHeader className="gap-8">
                 <DialogTitle className="text-2xl">{text}</DialogTitle>
                 <DialogDescription
@@ -162,6 +263,9 @@ export default function SubchapterMindmap() {
                   }}
                 ></DialogDescription>
               </DialogHeader>
+              <DialogClose>
+                <Button className="mt-8 w-full">Am înțeles</Button>
+              </DialogClose>
             </DialogContent>
           </Dialog>
         )

@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react'
+import { cn } from '#app/utils/misc.js'
 import { UserState } from '#app/utils/user.js'
 import { Icon } from './ui/icon'
-import { cn } from '#app/utils/misc.js'
 
 interface StepRowProps {
   number: number
@@ -51,8 +51,8 @@ export function StepRow({
           className={cn(
             `flex h-8 w-8 flex-1 items-center justify-center rounded-full border-2 border-disabled-border border-opacity-20 bg-disabled-foreground transition-all duration-300 ease-in-out md:h-8 md:w-8 2xl:h-16 2xl:w-16 2xl:gap-2.5`,
             {
-              'group-hover:border-foreground': !isLocked,
-              'border-active-border bg-active-foreground group-hover:bg-card dark:group-hover:bg-active':
+              'group-hover:border-foreground group-hover:bg-card': !isLocked,
+              'border-active-border bg-active-foreground dark:group-hover:bg-active':
                 isInProgress,
               'border-complete-border bg-complete-foreground dark:group-hover:bg-complete':
                 isCompleted,

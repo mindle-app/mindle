@@ -13,6 +13,7 @@ import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { generateChapterMindmap, type MindmapTree } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
+import { cn } from '#app/utils/misc.js'
 
 const ParamsSchema = z.object({
   chapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -52,7 +53,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export default function ChapterMindmap() {
   const { quizzes, chapterMindmap } = useLoaderData<typeof loader>()
   const { chapterId } = useParams()
-  const studyProgramActive = false // todo correct study program
+  const studyProgramActive = true // todo correct study program
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
       // TODO Parse with Zod
@@ -65,44 +66,61 @@ export default function ChapterMindmap() {
       const x = 0
       const y = -50
 
-      return (
-        <Link
-          to={`/mindmap/chapter/${chapterId}/subchapter/${treeDatum.attributes.id}`}
+      const element = (
+        <g
+          overflow="visible"
+          className={cn({
+            'cursor-not-allowed':
+              studyProgramActive &&
+              treeDatum.attributes.state === UserState.LOCKED,
+          })}
         >
-          <g overflow="visible">
-            <foreignObject
-              overflow="visible"
-              width={`${treeDatum?.attributes?.width ?? 200}px`}
-              height={`${treeDatum?.attributes?.height ?? 200}px`}
-              x={x}
-              y={treeDatum.children?.length !== 0 ? y * 2 : y}
-            >
-              {treeDatum.children?.length === 0 ? (
-                <ClickableElement
-                  text={text}
-                  buttonText={buttonText?.toString() ?? ''}
-                  state={
-                    studyProgramActive
-                      ? treeDatum.attributes.state
-                      : UserState.IN_PROGRESS
-                  }
-                  isNextLesson={
-                    studyProgramActive &&
-                    !treeDatum.children.length &&
-                    treeDatum.attributes.state === UserState.IN_PROGRESS
-                  }
-                />
-              ) : (
-                <ChapterElement
-                  title={text}
-                  image={imageUrl}
-                  state={toUserState(treeDatum.attributes?.state)}
-                />
-              )}
-            </foreignObject>
-          </g>
-        </Link>
+          <foreignObject
+            overflow="visible"
+            width={`${treeDatum?.attributes?.width ?? 200}px`}
+            height={`${treeDatum?.attributes?.height ?? 200}px`}
+            x={x}
+            y={treeDatum.children?.length !== 0 ? y * 2 : y}
+          >
+            {treeDatum.children?.length === 0 ? (
+              <ClickableElement
+                text={text}
+                buttonText={buttonText?.toString() ?? ''}
+                state={
+                  studyProgramActive
+                    ? treeDatum.attributes.state
+                    : UserState.IN_PROGRESS
+                }
+                isNextLesson={
+                  studyProgramActive &&
+                  !treeDatum.children.length &&
+                  treeDatum.attributes.state === UserState.IN_PROGRESS
+                }
+              />
+            ) : (
+              <ChapterElement
+                title={text}
+                image={imageUrl}
+                state={toUserState(treeDatum.attributes?.state)}
+              />
+            )}
+          </foreignObject>
+        </g>
       )
+
+      if (
+        !studyProgramActive ||
+        (studyProgramActive && treeDatum.attributes.state !== UserState.LOCKED)
+      ) {
+        return (
+          <Link
+            to={`/mindmap/chapter/${chapterId}/subchapter/${treeDatum.attributes.id}`}
+          >
+            {element}
+          </Link>
+        )
+      }
+      return element
     },
     [studyProgramActive],
   )

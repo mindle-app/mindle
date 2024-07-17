@@ -68,7 +68,10 @@ export const ClickableElement = ({
         <div
           className={cn(
             'default-transition inline-flex shrink grow basis-0 flex-col items-center justify-center gap-2.5 self-stretch bg-card px-6 py-4',
-            { 'group-hover:bg-active': isActive },
+            {
+              'group-hover:bg-active': isActive,
+              'group-hover:bg-complete': isComplete,
+            },
           )}
         >
           <div
