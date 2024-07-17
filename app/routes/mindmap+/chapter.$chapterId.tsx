@@ -1,6 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { Link, useLoaderData, useParams } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -51,6 +51,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function ChapterMindmap() {
   const { quizzes, chapterMindmap } = useLoaderData<typeof loader>()
+  const { chapterId } = useParams()
   const studyProgramActive = false // todo correct study program
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
@@ -65,7 +66,9 @@ export default function ChapterMindmap() {
       const y = -50
 
       return (
-        <Link to={`/mindmap/subchapter/${treeDatum.attributes.id}`}>
+        <Link
+          to={`/mindmap/chapter/${chapterId}/subchapter/${treeDatum.attributes.id}`}
+        >
           <g overflow="visible">
             <foreignObject
               overflow="visible"
