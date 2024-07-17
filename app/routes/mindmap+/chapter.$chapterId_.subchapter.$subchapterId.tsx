@@ -32,7 +32,7 @@ import {
   generateSubchapterMindmap,
   MindmapId,
   mindMapIdsToDbIds,
-  updateChapterMindmap,
+  completeChapterMindmap,
   type MindmapTree,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
@@ -169,7 +169,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (shouldCompleteSubChapter) {
     // Mark next subchapter as in progress and potentially mark next
     // chapter as in progress
-    await updateChapterMindmap({
+    await completeChapterMindmap({
       chapterId: result.data.chapterId,
       subChapterId: result.data.subchapterId,
 
@@ -228,8 +228,9 @@ export default function SubchapterMindmap() {
         </g>
       )
       const description = treeDatum.attributes?.description
+      const imageUrl = treeDatum.attributes.imageUrl
 
-      if (description) {
+      if (description || imageUrl) {
         return (
           <Dialog>
             <DialogTrigger
@@ -253,13 +254,20 @@ export default function SubchapterMindmap() {
             >
               {element}
             </DialogTrigger>
-            <DialogContent className="p-12 pb-6">
+            <DialogContent className="my-4 max-h-[90vh] overflow-scroll p-12 pb-6">
               <DialogHeader className="gap-8">
                 <DialogTitle className="text-2xl">{text}</DialogTitle>
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt="Lesson image"
+                    className="h-auto w-full"
+                  />
+                )}
                 <DialogDescription
                   className="text-xl text-foreground"
                   dangerouslySetInnerHTML={{
-                    __html: description,
+                    __html: description ?? '',
                   }}
                 ></DialogDescription>
               </DialogHeader>
@@ -270,7 +278,29 @@ export default function SubchapterMindmap() {
           </Dialog>
         )
       }
-      return element
+      return (
+        <Button
+          asChild
+          onClick={() => {
+            if (
+              !studyProgramActive ||
+              treeDatum.attributes.state !== UserState.IN_PROGRESS
+            )
+              return
+
+            completeLesson.submit(
+              {
+                lessonId: treeDatum.attributes?.id,
+              },
+              {
+                method: 'POST',
+              },
+            )
+          }}
+        >
+          {element}
+        </Button>
+      )
     },
     [studyProgramActive],
   )

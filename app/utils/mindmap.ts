@@ -90,7 +90,7 @@ export async function generateSubchapterMindmap(
           name: lesson.name ?? '',
           state: lessonState,
           id: lesson.id,
-          imageUrl: getLessonImgSrc(lesson.image?.id ?? ''),
+          imageUrl: lesson.image?.id ? getLessonImgSrc(lesson.image?.id) : null,
           description: lesson.description,
           isParent: lesson.isParent,
           noPopup: lesson.noPopup,
@@ -441,7 +441,10 @@ async function markNextChapterInProgress(chapterId: number, userId: string) {
       userId,
     )
     const subchapter = chapterMindmap.children[0]
-    const lesson = subchapter?.children[0]
+    let lesson: MindmapTree | null = null
+    if (subchapter) {
+      lesson = await generateSubchapterMindmap(subchapter.attributes.id, userId)
+    }
 
     return prisma.$transaction([
       prisma.userChapter.upsert({
@@ -474,14 +477,19 @@ async function markNextChapterInProgress(chapterId: number, userId: string) {
 
       ...(lesson
         ? [
-            prisma.userLesson.update({
+            prisma.userLesson.upsert({
               where: {
                 lessonId_userId: {
                   userId,
                   lessonId: lesson.attributes.id,
                 },
               },
-              data: { state: UserState.IN_PROGRESS },
+              update: { state: UserState.IN_PROGRESS },
+              create: {
+                state: UserState.IN_PROGRESS,
+                lessonId: lesson.attributes.id,
+                userId,
+              },
             }),
           ]
         : []),
@@ -498,6 +506,8 @@ async function markLessonFromNextSubchapterInProgress(
     userId,
   )
 
+  console.log('subchapterMindmap', subchapterMindmap)
+
   await prisma.userLesson.upsert({
     where: {
       lessonId_userId: { userId, lessonId: subchapterMindmap.attributes.id },
@@ -511,7 +521,7 @@ async function markLessonFromNextSubchapterInProgress(
   })
 }
 
-export async function updateChapterMindmap({
+export async function completeChapterMindmap({
   chapterId,
   subChapterId,
   userId,
@@ -537,6 +547,7 @@ export async function updateChapterMindmap({
   )
 
   const nextInProgressNodes = getNextInProgressNodes(nextTreeState)
+  console.log('nextInProgNodes', nextInProgressNodes)
 
   const { subchapters: nextInProgressSubchapters } =
     mindMapIdsToDbIds(nextInProgressNodes)
@@ -579,6 +590,8 @@ export async function updateChapterMindmap({
       })),
     }),
   ])
+
+  console.log('nextInProgressSubchapters', nextInProgressSubchapters)
 
   return Promise.all([
     currentChapterOperations,

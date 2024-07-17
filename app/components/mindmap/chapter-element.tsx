@@ -32,6 +32,7 @@ export function ChapterElement({
           'W-full flex items-center justify-center border-b-2 pt-6 transition-all duration-300 ease-in-out',
           {
             'bg-active group-hover:bg-active-foreground': isActive,
+            'bg-complete group-hover:bg-complete-foreground': isComplete,
           },
         )}
       >
@@ -40,6 +41,7 @@ export function ChapterElement({
             src={image}
             className={cn('h-24 w-24 stroke-transparent', {
               'fill-active-svg delay-0': isActive,
+              'fill-complete-svg delay-0': isComplete,
             })}
           />
         ) : (
