@@ -78,6 +78,12 @@ export enum UserState {
   DONE = 'DONE',
 }
 
+export enum QuizState {
+  WRONG = 'WRONG',
+  CORRECT = 'CORRECT',
+  UNANSWERED = 'UNANSWERED',
+}
+
 export function isUserState(value: unknown): value is UserState {
   return UserStateSchema.safeParse(value).success
 }
