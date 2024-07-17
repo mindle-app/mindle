@@ -4,7 +4,7 @@ import {
   type GetFindResult,
 } from '@prisma/client/runtime/library'
 import { prisma } from './db.server'
-import { getChapterImgSrc, getLessonImgSrc } from './misc'
+import { getChapterImgSrc, getLessonImgSrc, includeOption } from './misc'
 import { isUserState, UserState } from './user'
 
 export type MindmapId = `${
@@ -547,7 +547,6 @@ export async function completeChapterMindmap({
   )
 
   const nextInProgressNodes = getNextInProgressNodes(nextTreeState)
-  console.log('nextInProgNodes', nextInProgressNodes)
 
   const { subchapters: nextInProgressSubchapters } =
     mindMapIdsToDbIds(nextInProgressNodes)
@@ -591,10 +590,12 @@ export async function completeChapterMindmap({
     }),
   ])
 
-  console.log('nextInProgressSubchapters', nextInProgressSubchapters)
-
   return Promise.all([
     currentChapterOperations,
+    ...includeOption(
+      !!subchaptersToComplete.length,
+      unlockSubchaptersQuizzes(subchaptersToComplete, userId),
+    ),
     ...(chaptersToComplete.length && chaptersToComplete[0]
       ? [markNextChapterInProgress(chaptersToComplete[0], userId)]
       : []),
@@ -607,6 +608,29 @@ export async function completeChapterMindmap({
           ),
         ]
       : []),
+  ])
+}
+
+async function unlockSubchaptersQuizzes(
+  subchapterIds: number[],
+  userId: string,
+) {
+  const quizzes = await prisma.quiz.findMany({
+    where: { subchapterId: { in: subchapterIds } },
+    select: { id: true },
+  })
+
+  return prisma.$transaction([
+    prisma.userQuiz.deleteMany({
+      where: { userId, quizId: { in: quizzes.map((q) => q.id) } },
+    }),
+    prisma.userQuiz.createMany({
+      data: quizzes.map((q) => ({
+        userId,
+        quizId: q.id,
+        state: UserState.IN_PROGRESS,
+      })),
+    }),
   ])
 }
 
