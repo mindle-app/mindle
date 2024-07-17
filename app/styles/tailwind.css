@@ -27,10 +27,10 @@
         --base-padding: 1.75rem;
 
         /* Related to user progress */
-        --primary-active: 20, 88%, 90%, 1;
-        --primary-complete: 140, 54%, 89%, 1;
+        --primary-active: 20 88% 90%;
+        --primary-complete: 140 54% 89%;
         --primary-disabled: 0, 0%, 91%, 1;
-        --primary-active-foreground: 20, 89%, 50%, 1;
+        --primary-active-foreground: 20 89% 50% 1;
         --primary-complete-foreground: 140, 64%, 45%, 1;
         --primary-disabled-foreground: 0, 0%, 0%, 0.3;
         --complete-border: 140, 63%, 36%, 0.1;
@@ -45,8 +45,8 @@
         --card-foreground: 60 9.1% 97.8%;
         --popover: 20 14.3% 4.1%;
         --popover-foreground: 60 9.1% 97.8%;
-        --primary: 20.5 90.2% 48.2%;
-        --primary-foreground: 60 9.1% 97.8%;
+        --primary: 20.5 70% 40%;
+        --Primary-foreground: 20.5 30% 85%;
         --secondary: 12 6.5% 15.1%;
         --secondary-foreground: 60 9.1% 97.8%;
         --muted: 12 6.5% 15.1%;
@@ -61,15 +61,16 @@
         --base-padding: 1.75rem;
 
         /* Related to user progress */
-        --primary-active: 20, 89%, 50%, 1;
-        --primary-complete: 140, 64%, 45%, 1;
-        --primary-disabled: 0, 0%, 100%, 0.12;
-        --primary-active-foreground: 20, 88%, 90%, 1;
-        --primary-complete-foreground: 140, 54%, 89%, 1;
-        --primary-disabled-foreground: 0, 0%, 100%, 0.3;
-        --complete-border: 140, 63%, 36%, 0.1;
-        --active-border: 20, 87%, 40%, 0.2;
-        --disabled-border: 0, 0%, 0%, 0.1;
+        --primary-complete: 120 50% 40%;
+        --primary-disabled: 0 0% 50%;
+        --primary-complete-foreground: 140 54% 70%;
+        --primary-disabled-foreground: 0 0% 70%;
+        --complete-border: 140 63% 36%;
+        --disabled-border: 0 0% 30%;
+
+        --primary-active: 20.5 70% 40%;
+        --primary-active-foreground: 20.5 30% 85%;
+        --active-border: 20 87% 40% 0.2;
     }
 }
 

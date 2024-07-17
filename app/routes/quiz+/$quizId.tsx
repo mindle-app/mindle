@@ -71,10 +71,10 @@ export function Score({ score }: { score: number }) {
 }
 
 const selectedStyle = {
-  borderColor: 'border-active-foreground',
-  backgroundColorSecondary: 'bg-active-foreground',
-  backgroundColor: ' bg-active',
-  textColor: 'text-active-foreground',
+  borderColor: 'border-primary',
+  backgroundColorSecondary: 'bg-primary',
+  backgroundColor: ' bg-primary/10',
+  textColor: 'text-primary',
 }
 
 const wrongAnswerStyle = {
@@ -86,7 +86,7 @@ const wrongAnswerStyle = {
 
 const correctAnswerStyle = {
   borderColor: 'border-complete-foreground',
-  backgroundColor: 'bg-complete',
+  backgroundColor: 'bg-complete/20',
   backgroundColorSecondary: 'bg-complete-foreground',
   textColor: 'text-complete-foreground',
 }
@@ -136,10 +136,10 @@ type StateProps = {
 
 const statePropsMap: Record<QuizState, StateProps> = {
   [QuizState.CORRECT]: {
-    backgroundColor: 'bg-complete-foreground',
+    backgroundColor: 'bg-complete',
   },
   [QuizState.WRONG]: {
-    backgroundColor: ' bg-destructive',
+    backgroundColor: ' bg-destructive/80',
   },
   [QuizState.UNANSWERED]: {
     backgroundColor: 'bg-primary/20 bg-opacity-5',
@@ -293,7 +293,7 @@ export default function Quiz() {
 
             <Score score={displayScore} />
           </section>
-          <section className="mt-9 flex w-full flex-1 flex-col gap-9 rounded-lg border-2 border-solid border-active-border bg-card p-9 shadow-sm">
+          <section className="mt-9 flex w-full flex-1 flex-col gap-9 rounded-lg border-2 border-solid border-primary/20 bg-card p-9 shadow-sm">
             <QuizQuestionCounter
               numberOfSteps={quiz.questions.length}
               questionStates={questionStates}
