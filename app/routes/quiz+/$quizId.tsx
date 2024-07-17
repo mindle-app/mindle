@@ -225,7 +225,8 @@ export default function Quiz() {
 
   const nextQuestionButton = (
     <Button
-      className="flex h-20 w-full items-center justify-center rounded-xl border-opacity-[0] bg-[#F15B10] px-9 py-5 text-center text-xl font-semibold text-white 2xl:text-2xl"
+      className="w-full"
+      size={'lg'}
       onClick={() => {
         if (isLastQuestion) {
           // add user score to db if it's higher than the previous one
@@ -245,8 +246,9 @@ export default function Quiz() {
 
   const previousQuestionButton = (
     <Button
+      className="w-full"
+      size={'lg'}
       variant="outline"
-      className="flex w-full items-center justify-center rounded-xl border-opacity-[0] bg-[#FEEFE7] px-9 py-5 text-center text-xl font-semibold text-[#F15B10] 2xl:text-2xl"
       disabled={currentQuestionIdx === 0}
       onClick={() => {
         if (currentQuestionIdx >= 1) {
@@ -260,7 +262,8 @@ export default function Quiz() {
 
   const submitAnswerButton = (
     <Button
-      className="flex h-20 w-full items-center justify-center rounded-xl border-opacity-[0] bg-[#F15B10] px-9 py-5 text-center text-xl font-semibold text-white 2xl:text-2xl"
+      className="w-full"
+      size={'lg'}
       disabled={!userChoice}
       onClick={() => {
         if (!question) return
@@ -276,92 +279,98 @@ export default function Quiz() {
   )
 
   return (
-    <>
-      <section className="flex flex-row justify-between backdrop-blur-sm">
-        <div
-          className="flex h-16 w-16 flex-col items-center justify-center rounded-2xl border-2 border-solid border-primary bg-card px-3"
-          role="img"
-          aria-label="Image Component"
-        >
-          <Icon name={'mini-mindle'} className="h-9 w-auto" />
-        </div>
+    <div className="flex h-screen flex-col">
+      <div className="flex flex-grow overflow-hidden">
+        <main className="flex-grow overflow-scroll p-5 2xl:p-9">
+          <section className="flex flex-row justify-between backdrop-blur-sm">
+            <div
+              className="flex h-16 w-16 flex-col items-center justify-center rounded-2xl border-2 border-solid border-primary bg-card px-3"
+              role="img"
+              aria-label="Image Component"
+            >
+              <Icon name={'mini-mindle'} className="h-9 w-auto" />
+            </div>
 
-        <Score score={displayScore} />
-      </section>
-      <section className="mt-9 flex w-full flex-1 flex-col gap-9 rounded-lg border-2 border-solid border-active-border bg-card p-9 shadow-sm">
-        <QuizQuestionCounter
-          numberOfSteps={quiz.questions.length}
-          questionStates={questionStates}
-        />
-        <p className="mt-8 text-3xl font-bold">
-          {currentQuestionIdx + 1}. {question?.name}
-        </p>
-        <div className="flex h-full w-full flex-col">
-          <section id="quiz-choice" className="flex flex-col gap-6">
-            {(question?.answers ?? []).map((answer) => {
-              const isSelected = userChoice === answer.id
-
-              const {
-                borderColor,
-                backgroundColorSecondary,
-                backgroundColor,
-                textColor,
-              } = getCorrectStyle({
-                isCorrect: answer.isCorrect ?? false,
-                isSelected,
-                userSubmittedChoice: !!userSubmittedCurrentAnswer,
-              })
-
-              const extraStyle = `${backgroundColor} ${borderColor}  ${textColor} `
-              return (
-                <label
-                  key={answer.title}
-                  className={cn(
-                    'flex cursor-pointer items-center rounded-xl border-2 p-6',
-                    'text-2xl font-medium leading-[100%]',
-                    extraStyle,
-                    !userSubmittedCurrentAnswer &&
-                      !isSelected &&
-                      'hover:bg-grey-200',
-                  )}
-                >
-                  <Input
-                    type="radio"
-                    value={answer.title}
-                    checked={isSelected}
-                    className="hidden"
-                    onClick={() => {
-                      if (userSubmittedCurrentAnswer || !question) return
-                      setUserAnswers((prev) => ({
-                        ...prev,
-                        [question.id]: answer.id,
-                      }))
-                    }}
-                  />
-                  <div
-                    className={cn(
-                      'mr-4 flex h-6 w-6 items-center justify-center rounded-full border-2',
-                      `${borderColor} ${backgroundColor}`,
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'h-3 w-3 rounded-full',
-                        `${backgroundColorSecondary}`,
-                      )}
-                    />
-                  </div>
-                  {answer.title}
-                </label>
-              )
-            })}
+            <Score score={displayScore} />
           </section>
-        </div>
-        <div className="flex w-full flex-row gap-9">
-          {previousQuestionButton}
-          {userSubmittedCurrentAnswer ? nextQuestionButton : submitAnswerButton}
-        </div>
-      </section>
-    </>
+          <section className="mt-9 flex w-full flex-1 flex-col gap-9 rounded-lg border-2 border-solid border-active-border bg-card p-9 shadow-sm">
+            <QuizQuestionCounter
+              numberOfSteps={quiz.questions.length}
+              questionStates={questionStates}
+            />
+            <p className="mt-8 text-3xl font-bold">
+              {currentQuestionIdx + 1}. {question?.name}
+            </p>
+            <div className="flex h-full w-full flex-col">
+              <section id="quiz-choice" className="flex flex-col gap-6">
+                {(question?.answers ?? []).map((answer) => {
+                  const isSelected = userChoice === answer.id
+
+                  const {
+                    borderColor,
+                    backgroundColorSecondary,
+                    backgroundColor,
+                    textColor,
+                  } = getCorrectStyle({
+                    isCorrect: answer.isCorrect ?? false,
+                    isSelected,
+                    userSubmittedChoice: !!userSubmittedCurrentAnswer,
+                  })
+
+                  const extraStyle = `${backgroundColor} ${borderColor}  ${textColor} `
+                  return (
+                    <label
+                      key={answer.title}
+                      className={cn(
+                        'flex cursor-pointer items-center rounded-xl border-2 p-6',
+                        'text-2xl font-medium leading-[100%]',
+                        extraStyle,
+                        !userSubmittedCurrentAnswer &&
+                          !isSelected &&
+                          'hover:bg-grey-200',
+                      )}
+                    >
+                      <Input
+                        type="radio"
+                        value={answer.title}
+                        checked={isSelected}
+                        className="hidden"
+                        onClick={() => {
+                          if (userSubmittedCurrentAnswer || !question) return
+                          setUserAnswers((prev) => ({
+                            ...prev,
+                            [question.id]: answer.id,
+                          }))
+                        }}
+                      />
+                      <div
+                        className={cn(
+                          'mr-4 flex h-6 w-6 items-center justify-center rounded-full border-2',
+                          `${borderColor} ${backgroundColor}`,
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            'h-3 w-3 rounded-full',
+                            `${backgroundColorSecondary}`,
+                          )}
+                        />
+                      </div>
+                      {answer.title}
+                    </label>
+                  )
+                })}
+              </section>
+            </div>
+            <div className="flex w-full flex-row gap-9">
+              {previousQuestionButton}
+              {userSubmittedCurrentAnswer
+                ? nextQuestionButton
+                : submitAnswerButton}
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
   )
 }
