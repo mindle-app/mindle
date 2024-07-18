@@ -12,8 +12,8 @@ import { QuizCard } from '#app/components/quiz-card.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { generateChapterMindmap, type MindmapTree } from '#app/utils/mindmap.js'
-import { toUserState, UserState } from '#app/utils/user.js'
 import { cn } from '#app/utils/misc.js'
+import { toUserState, UserState } from '#app/utils/user.js'
 
 const ParamsSchema = z.object({
   chapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -121,7 +121,7 @@ export default function ChapterMindmap() {
       }
       return element
     },
-    [studyProgramActive],
+    [chapterId, studyProgramActive],
   )
 
   return (
