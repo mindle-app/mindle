@@ -27,10 +27,10 @@
         --base-padding: 1.75rem;
 
         /* Related to user progress */
-        --primary-active: 20 88% 90%;
-        --primary-complete: 140 54% 89%;
+        --primary-active: 20, 88%, 90%, 1;
+        --primary-complete: 140, 54%, 89%, 1;
         --primary-disabled: 0, 0%, 91%, 1;
-        --primary-active-foreground: 20 89% 50% 1;
+        --primary-active-foreground: 20, 89%, 50%, 1;
         --primary-complete-foreground: 140, 64%, 45%, 1;
         --primary-disabled-foreground: 0, 0%, 0%, 0.3;
         --complete-border: 140, 63%, 36%, 0.1;

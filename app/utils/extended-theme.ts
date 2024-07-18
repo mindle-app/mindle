@@ -2,13 +2,6 @@ import { type Config } from 'tailwindcss'
 import defaultTheme from 'tailwindcss/defaultTheme.js'
 
 export const extendedTheme = {
-  container: {
-    center: true,
-    padding: '0rem',
-    screens: {
-      '2xl': '2400px',
-    },
-  },
   colors: {
     border: 'hsl(var(--border))',
     input: {
