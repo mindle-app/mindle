@@ -49,7 +49,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
   await expect(page).toHaveURL(`/login`)
 
   const createAccountLink = page.getByRole('link', {
-    name: /create an account/i,
+    name: /înregistrează-te/i,
   })
   await createAccountLink.click()
 
@@ -86,15 +86,15 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
     .getByRole('textbox', { name: /^username/i })
     .fill(onboardingData.username)
 
-  await page.getByRole('textbox', { name: /^name/i }).fill(onboardingData.name)
+  await page.getByRole('textbox', { name: /^nume/i }).fill(onboardingData.name)
 
-  await page.getByLabel(/^password/i).fill(onboardingData.password)
+  await page.getByLabel(/^parola/i).fill(onboardingData.password)
 
-  await page.getByLabel(/^confirm password/i).fill(onboardingData.password)
+  await page.getByLabel(/^confirmă parola/i).fill(onboardingData.password)
 
-  await page.getByLabel(/terms/i).check()
+  await page.getByLabel(/termenii de serviciu/i).check()
 
-  await page.getByLabel(/remember me/i).check()
+  await page.getByLabel(/ține-mă minte/i).check()
 
   await page.getByRole('button', { name: /Create an account/i }).click()
 
@@ -330,7 +330,7 @@ test('login as existing user', async ({ page, insertNewUser }) => {
   invariant(user.name, 'User name not found')
   await page.goto('/login')
   await page.getByRole('textbox', { name: /username/i }).fill(user.username)
-  await page.getByLabel(/^password$/i).fill(password)
+  await page.getByLabel(/^parola$/i).fill(password)
   await page.getByRole('button', { name: /log in/i }).click()
   await expect(page).toHaveURL(`/`)
 
@@ -343,7 +343,7 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
   invariant(user.name, 'User name not found')
   await page.goto('/login')
 
-  await page.getByRole('link', { name: /forgot password/i }).click()
+  await page.getByRole('link', { name: /ai uitat parola/i }).click()
   await expect(page).toHaveURL('/forgot-password')
 
   await expect(
@@ -384,12 +384,12 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
 
   await expect(page).toHaveURL('/login')
   await page.getByRole('textbox', { name: /username/i }).fill(user.username)
-  await page.getByLabel(/^password$/i).fill(originalPassword)
+  await page.getByLabel(/^parola$/i).fill(originalPassword)
   await page.getByRole('button', { name: /log in/i }).click()
 
   await expect(page.getByText(/invalid username or password/i)).toBeVisible()
 
-  await page.getByLabel(/^password$/i).fill(newPassword)
+  await page.getByLabel(/^parola$/i).fill(newPassword)
   await page.getByRole('button', { name: /log in/i }).click()
 
   await expect(page).toHaveURL(`/`)
@@ -401,7 +401,7 @@ test('reset password with a short code', async ({ page, insertNewUser }) => {
   const user = await insertNewUser()
   await page.goto('/login')
 
-  await page.getByRole('link', { name: /forgot password/i }).click()
+  await page.getByRole('link', { name: /ai uitat parola/i }).click()
   await expect(page).toHaveURL('/forgot-password')
 
   await expect(

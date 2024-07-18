@@ -183,7 +183,7 @@ export default function OnboardingRoute() {
             errors={fields.name.errors}
           />
           <Field
-            labelProps={{ htmlFor: fields.password.id, children: 'Parolă' }}
+            labelProps={{ htmlFor: fields.password.id, children: 'Parola' }}
             inputProps={{
               ...getInputProps(fields.password, { type: 'password' }),
               autoComplete: 'new-password',
