@@ -24,16 +24,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const like = `%${searchTerm ?? ''}%`
   const rawUsers = await prisma.$queryRaw`
-		SELECT User.id, User.username, User.name, UserImage.id AS imageId
-		FROM User
-		LEFT JOIN UserImage ON User.id = UserImage.userId
-		WHERE User.username LIKE ${like}
-		OR User.name LIKE ${like}
+		SELECT user.id, user.username, user.name, user_image.id AS imageId
+		FROM user
+		LEFT JOIN user_image ON user.id = user_image.userId
+		WHERE user.username LIKE ${like}
+		OR user.name LIKE ${like}
 		ORDER BY (
-			SELECT Note.updatedAt
-			FROM Note
-			WHERE Note.ownerId = User.id
-			ORDER BY Note.updatedAt DESC
+			SELECT note.updatedAt
+			FROM note
+			WHERE note.ownerId = user.id
+			ORDER BY note.updatedAt DESC
 			LIMIT 1
 		) DESC
 		LIMIT 50
