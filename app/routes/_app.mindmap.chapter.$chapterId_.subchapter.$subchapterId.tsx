@@ -1,5 +1,6 @@
+import { invariantResponse } from '@epic-web/invariant'
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
@@ -14,6 +15,7 @@ import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
 import { QuizCard } from '#app/components/quiz-card.js'
 
+import { Button } from '#app/components/ui/button.js'
 import {
   Dialog,
   DialogClose,
@@ -30,14 +32,12 @@ import {
   findMindmapNode,
   findNextInProgress,
   generateSubchapterMindmap,
-  MindmapId,
+  type MindmapId,
   mindMapIdsToDbIds,
   completeChapterMindmap,
   type MindmapTree,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState } from '#app/utils/user.js'
-import { invariantResponse } from '@epic-web/invariant'
-import { Button } from '#app/components/ui/button.js'
 
 const ParamsSchema = z.object({
   subchapterId: z.string().transform((v) => parseInt(v, 10)),

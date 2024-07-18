@@ -56,7 +56,6 @@ export default function ChapterMindmap() {
   const studyProgramActive = true // todo correct study program
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
-      // TODO Parse with Zod
       const treeDatum = nodeDatum as unknown as MindmapTree
       const buttonText =
         treeDatum.attributes?.displayId ?? treeDatum.attributes?.id
