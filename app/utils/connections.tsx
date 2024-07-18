@@ -22,7 +22,7 @@ export const providerLabels: Record<ProviderName, string> = {
 
 export const providerIcons: Record<ProviderName, React.ReactNode> = {
   [GITHUB_PROVIDER_NAME]: <Icon name="github-logo" />,
-  [GOOGLE_PROVIDER_NAME]: <Icon name="google-icon" />,
+  [GOOGLE_PROVIDER_NAME]: <Icon name="google-logo" />,
 } as const
 
 export function ProviderConnectionForm({
