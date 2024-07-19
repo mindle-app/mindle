@@ -4,11 +4,10 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { Link, useFetcher, useLoaderData } from '@remix-run/react'
+import { useFetcher, useLoaderData } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
-import { Logo } from '#app/components/logo.js'
 
 import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
 import { Mindmap } from '#app/components/mindmap/mindmap.js'

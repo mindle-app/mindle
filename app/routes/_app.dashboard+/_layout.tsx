@@ -1,7 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
-import { Logo } from '#app/components/logo'
 import { SvgImage } from '#app/components/svg-image.js'
 import { Card, CardContent, CardFooter } from '#app/components/ui/card'
 import { requireUserId } from '#app/utils/auth.server'
