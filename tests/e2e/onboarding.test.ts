@@ -360,7 +360,7 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
   invariant(email, 'Email not found')
   expect(email.subject).toMatch(/password reset/i)
   expect(email.to).toBe(user.email.toLowerCase())
-  expect(email.from).toBe('hello@rs.mindle.dev')
+  expect(email.from).toBe('hello@rs.mindle.ro')
   const resetPasswordUrl = extractUrl(email.text)
   invariant(resetPasswordUrl, 'Reset password URL not found')
   await page.goto(resetPasswordUrl)
