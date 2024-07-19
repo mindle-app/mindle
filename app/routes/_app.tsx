@@ -12,7 +12,7 @@ export function NavHeader() {
     <>
       <div className="absolute -z-30 mx-auto h-20 w-screen" />
 
-      <header className={cn('w-full pt-6 text-primary-foreground')}>
+      <header className={cn('w-full px-8 pt-6 text-primary-foreground')}>
         <nav
           className={cn(
             'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',

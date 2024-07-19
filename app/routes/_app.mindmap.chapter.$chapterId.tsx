@@ -127,13 +127,6 @@ export default function ChapterMindmap() {
   return (
     <>
       <div className="grid min-h-screen grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
-        <header className="col-span-1 row-span-1 flex h-full w-full items-center justify-center border-b-2 border-r-2 border-border">
-          <Link to="/dashboard">
-            <Logo className="h-24 w-36" />
-          </Link>
-        </header>
-
-        <nav className="col-span-1 row-span-1 border-b-2 border-border"></nav>
         {/* Sidebar */}
         <aside className="col-span-1 row-span-1 border-r-2 border-border">
           <div

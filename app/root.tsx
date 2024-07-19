@@ -21,6 +21,7 @@ import { useToast } from './components/toaster.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
 import { TailwindIndicator } from './components/ui/tailwind-indicator.tsx'
+import { TooltipProvider } from './components/ui/tooltip.tsx'
 import { ThemeSwitch, useTheme } from './routes/resources+/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
 import { getUserId, logout } from './utils/auth.server.ts'
@@ -187,7 +188,7 @@ function App() {
       allowIndexing={allowIndexing}
       env={data.ENV}
     >
-      <div className="container relative flex h-screen flex-col justify-between">
+      <div className="relative flex h-screen flex-col justify-between">
         <Outlet />
         <div className="fixed bottom-2 right-2">
           <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
@@ -204,7 +205,9 @@ function AppWithProviders() {
   const data = useLoaderData<typeof loader>()
   return (
     <HoneypotProvider {...data.honeyProps}>
-      <App />
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
     </HoneypotProvider>
   )
 }

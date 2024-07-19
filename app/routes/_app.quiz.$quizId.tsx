@@ -279,7 +279,7 @@ export default function Quiz() {
   )
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="container flex h-screen flex-col">
       <div className="flex flex-grow overflow-hidden">
         <main className="flex-grow overflow-scroll p-5 2xl:p-9">
           <section className="flex flex-row justify-between backdrop-blur-sm">

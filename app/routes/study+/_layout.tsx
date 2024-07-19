@@ -1,15 +1,15 @@
 import {
-  combineServerTimings,
-  getServerTimeHeader,
-  makeTimings,
-} from '@epic-web/workshop-utils/timing.server'
-import { type HeadersFunction, type LoaderFunctionArgs } from '@remix-run/node'
+  json,
+  type HeadersFunction,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
 import {
   Link,
   NavLink,
   Outlet,
   useLoaderData,
   useParams,
+  useRouteLoaderData,
 } from '@remix-run/react'
 import { clsx } from 'clsx'
 import {
@@ -20,39 +20,48 @@ import {
 import * as React from 'react'
 import { makeMediaQueryStore } from '#app/components/media-query.js'
 
+import { Icon } from '#app/components/ui/icon.js'
 import { SimpleTooltip } from '#app/components/ui/tooltip.tsx'
-import { cn } from '#app/utils/misc.tsx'
+import { type loader as rootLoader } from '#app/root.tsx'
+import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.js'
+import { ThemeSwitch } from '../resources+/theme-switch'
 
 export async function loader({}: LoaderFunctionArgs) {
-  return null
+  const exercises = [
+    {
+      exerciseNumber: 1,
+      title: 'Introduction to React',
+      steps: [
+        { name: 'what-is-react', stepNumber: 1, title: 'What is React?' },
+        { name: 'create-react-app', stepNumber: 2, title: 'Create React App' },
+        { name: 'jsx', stepNumber: 3, title: 'JSX' },
+      ],
+    },
+    {
+      exerciseNumber: 2,
+      title: 'Components',
+      steps: [
+        { name: 'components', stepNumber: 1, title: 'Components' },
+        {
+          name: 'reusable-components',
+          stepNumber: 2,
+          title: 'Reusable Components',
+        },
+        { name: 'props', stepNumber: 3, title: 'Props' },
+      ],
+    },
+  ]
+
+  return json({ exercises, workshopTitle: 'Mindle' })
 }
 
-export const headers: HeadersFunction = ({ loaderHeaders, parentHeaders }) => {
+export const headers: HeadersFunction = ({ loaderHeaders }) => {
   const headers = {
     'Cache-Control': loaderHeaders.get('Cache-Control') ?? '',
     Vary: 'Cookie',
-    'Server-Timing': combineServerTimings(loaderHeaders, parentHeaders),
   }
   return headers
-}
-
-const opacities = ['opacity-70', 'opacity-80', 'opacity-90', 'opacity-100']
-const shadows = [
-  'shadow-[0_0_2px_0_rgba(0,0,0,0.3)]',
-  'shadow-[0_0_4px_0_rgba(0,0,0,0.3)]',
-  'shadow-[0_0_7px_0_rgba(0,0,0,0.3)]',
-  'shadow-[0_0_10px_0_rgba(0,0,0,0.3)]',
-]
-function getScoreClassNames(score: number) {
-  const opacityNumber = Math.round(score * opacities.length - 1)
-  const shadowNumber = Math.round(score * shadows.length - 1)
-  return cn(
-    'shadow-purple-700 hover:opacity-100 focus:opacity-100 dark:shadow-purple-200',
-    opacities[opacityNumber] ?? 'opacity-60',
-    shadows[shadowNumber] ?? 'shadow-none',
-    score === 1 ? 'animate-pulse hover:animate-none focus:animate-none' : null,
-  )
 }
 
 const useIsWide = makeMediaQueryStore('(min-width: 640px)', true)
@@ -112,7 +121,6 @@ const itemVariants = {
   visible: { opacity: 1, x: 0 },
 }
 function NavigationExerciseListItem({
-  exerciseNumber,
   children,
 }: {
   exerciseNumber: number
@@ -159,6 +167,7 @@ function MobileNavigation({
   onMenuOpenChange: (change: boolean) => void
 }) {
   const data = useLoaderData<typeof loader>()
+  const rootData = useRouteLoaderData<typeof rootLoader>('root')
   const user = useOptionalUser()
   const nextExerciseRoute = '/next-exercise-todo'
   const params = useParams()
@@ -207,9 +216,7 @@ function MobileNavigation({
                 {data.exercises.map(({ exerciseNumber, title, steps }) => {
                   const isActive =
                     Number(params.exerciseNumber) === exerciseNumber
-                  const showPlayground =
-                    !isActive &&
-                    data.playground.exerciseNumber === exerciseNumber
+                  const showPlayground = false
                   const exerciseNum = exerciseNumber.toString().padStart(2, '0')
                   return (
                     <NavigationExerciseListItem
@@ -233,14 +240,9 @@ function MobileNavigation({
                           variants={listVariants}
                           initial="hidden"
                           animate="visible"
-                          // @ts-expect-error framer-motion + latest typescript types has issues
                           className="ml-4 mt-4 flex flex-col"
                         >
-                          <NavigationExerciseStepListItem
-                            key={exerciseNumber}
-                            type="instructions"
-                            exerciseNumber={exerciseNumber}
-                          >
+                          <NavigationExerciseStepListItem key={exerciseNumber}>
                             <Link
                               to={`/${exerciseNum}`}
                               prefetch="intent"
@@ -257,20 +259,16 @@ function MobileNavigation({
                           </NavigationExerciseStepListItem>
                           {steps
                             .filter(Boolean)
-                            .map(({ name, stepNumber, title }) => {
+                            .map(({ stepNumber, title }) => {
                               const isActive =
                                 Number(params.stepNumber) === stepNumber
                               const step = stepNumber
                                 .toString()
                                 .padStart(2, '0')
-                              const isPlayground =
-                                name === data.playground.appName
+                              const isPlayground = false
                               return (
                                 <NavigationExerciseStepListItem
                                   key={stepNumber}
-                                  type="step"
-                                  stepNumber={stepNumber}
-                                  exerciseNumber={exerciseNumber}
                                 >
                                   <Link
                                     to={`/${exerciseNum}/${step}`}
@@ -290,10 +288,7 @@ function MobileNavigation({
                                 </NavigationExerciseStepListItem>
                               )
                             })}
-                          <NavigationExerciseStepListItem
-                            type="finished"
-                            exerciseNumber={exerciseNumber}
-                          >
+                          <NavigationExerciseStepListItem>
                             <NavLink
                               to={`/${exerciseNum}/finished`}
                               prefetch="intent"
@@ -334,19 +329,8 @@ function MobileNavigation({
             </motion.div>
           )}
           <div className="flex-grow" />
-          <div
-            className={cn(
-              'flex items-center justify-start p-4',
-              isMenuOpened && users.length > 4 ? 'min-h-14' : 'h-14',
-              {
-                'w-full border-t': isMenuOpened,
-                'border-l': !isMenuOpened,
-              },
-            )}
-          >
-            <FacePile isMenuOpened={isMenuOpened} />
-          </div>
-          {ENV.EPICSHOP_DEPLOYED ? null : user ? (
+
+          {user ? (
             <SimpleTooltip content={isMenuOpened ? null : 'Your account'}>
               <Link
                 className={cn(
@@ -358,18 +342,21 @@ function MobileNavigation({
                 )}
                 to="/account"
               >
-                {user.avatarUrl ? (
+                {user.image?.id ? (
                   <img
-                    alt={user.name ?? user.email}
-                    src={user.avatarUrl}
+                    alt={user.name ?? user.username}
+                    src={getUserImgSrc(user.image.id)}
                     className="h-full rounded-full"
                   />
                 ) : (
-                  <Icon name="User" className="flex-shrink-0" size="lg" />
+                  <Icon
+                    name="mindle-head"
+                    className="flex-shrink-0"
+                    size="lg"
+                  />
                 )}
                 {isMenuOpened ? (
                   <motion.div
-                    // @ts-expect-error framer-motion + latest typescript types has issues
                     className="flex items-center whitespace-nowrap"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -382,7 +369,7 @@ function MobileNavigation({
               </Link>
             </SimpleTooltip>
           ) : null}
-          {ENV.EPICSHOP_DEPLOYED ? null : user && nextExerciseRoute ? (
+          {user && nextExerciseRoute ? (
             <SimpleTooltip
               content={isMenuOpened ? null : 'Continue to next lesson'}
             >
@@ -394,10 +381,9 @@ function MobileNavigation({
                 )}
                 state={{ from: 'continue next lesson button' }}
               >
-                <Icon name="FastForward" className="flex-shrink-0" size="md" />
+                <Icon name="fast-forward" className="flex-shrink-0" size="md" />
                 {isMenuOpened ? (
                   <motion.div
-                    // @ts-expect-error framer-motion + latest typescript types has issues
                     className="flex items-center whitespace-nowrap"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -416,7 +402,9 @@ function MobileNavigation({
               'border-l': !isMenuOpened,
             })}
           >
-            <ThemeSwitch />
+            <ThemeSwitch
+              userPreference={rootData?.requestInfo.userPrefs.theme}
+            />
           </div>
         </div>
       </div>
@@ -434,24 +422,16 @@ function Navigation({
   onMenuOpenChange: (change: boolean) => void
 }) {
   const data = useLoaderData<typeof loader>()
+  const rootData = useRouteLoaderData<typeof rootLoader>('root')
+
   const user = useOptionalUser()
-  const nextExerciseRoute = useNextExerciseRoute()
+  const nextExerciseRoute = '/next-exercise-todo'
   const params = useParams()
-  const { users } = usePresence()
 
   const exercise = data.exercises.find(
     (e) => e.exerciseNumber === Number(params.exerciseNumber),
   )
-  const app =
-    params.type === 'solution'
-      ? exercise?.solutions.find(
-          (s) => s.stepNumber === Number(params.stepNumber),
-        )
-      : params.type === 'problem'
-        ? exercise?.problems.find(
-            (p) => p.stepNumber === Number(params.stepNumber),
-          )
-        : null
+  const app = { title: 'TODO Mindle App', stepNumber: 1 }
 
   // container
   const menuControls = useAnimationControls()
@@ -493,7 +473,6 @@ function Navigation({
           {isMenuOpened && (
             <motion.div
               style={{ width: OPENED_MENU_WIDTH }}
-              // @ts-expect-error framer-motion + latest typescript types has issues
               className="scrollbar-thin scrollbar-thumb-scrollbar flex flex-grow flex-col justify-between overflow-y-auto p-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -502,15 +481,12 @@ function Navigation({
                 variants={listVariants}
                 initial="hidden"
                 animate="visible"
-                // @ts-expect-error framer-motion + latest typescript types has issues
                 className="flex flex-col"
               >
                 {data.exercises.map(({ exerciseNumber, title, steps }) => {
                   const isActive =
                     Number(params.exerciseNumber) === exerciseNumber
-                  const showPlayground =
-                    !isActive &&
-                    data.playground.exerciseNumber === exerciseNumber
+                  const showPlayground = false
                   const exerciseNum = exerciseNumber.toString().padStart(2, '0')
                   return (
                     <NavigationExerciseListItem
@@ -534,14 +510,9 @@ function Navigation({
                           variants={listVariants}
                           initial="hidden"
                           animate="visible"
-                          // @ts-expect-error framer-motion + latest typescript types has issues
                           className="ml-4 mt-4 flex flex-col"
                         >
-                          <NavigationExerciseStepListItem
-                            key={exerciseNumber}
-                            type="instructions"
-                            exerciseNumber={exerciseNumber}
-                          >
+                          <NavigationExerciseStepListItem key={exerciseNumber}>
                             <Link
                               to={`/${exerciseNum}`}
                               prefetch="intent"
@@ -558,20 +529,16 @@ function Navigation({
                           </NavigationExerciseStepListItem>
                           {steps
                             .filter(Boolean)
-                            .map(({ name, stepNumber, title }) => {
+                            .map(({ stepNumber, title }) => {
                               const isActive =
                                 Number(params.stepNumber) === stepNumber
                               const step = stepNumber
                                 .toString()
                                 .padStart(2, '0')
-                              const isPlayground =
-                                name === data.playground.appName
+                              const isPlayground = false
                               return (
                                 <NavigationExerciseStepListItem
                                   key={stepNumber}
-                                  type="step"
-                                  stepNumber={stepNumber}
-                                  exerciseNumber={exerciseNumber}
                                 >
                                   <Link
                                     to={`/${exerciseNum}/${step}`}
@@ -591,10 +558,7 @@ function Navigation({
                                 </NavigationExerciseStepListItem>
                               )
                             })}
-                          <NavigationExerciseStepListItem
-                            type="finished"
-                            exerciseNumber={exerciseNumber}
-                          >
+                          <NavigationExerciseStepListItem>
                             <NavLink
                               to={`/${exerciseNum}/finished`}
                               prefetch="intent"
@@ -653,33 +617,28 @@ function Navigation({
               </div>
             </div>
           )}
-          <div
-            className={cn(
-              'flex w-full items-center justify-start border-t p-4 transition-[height]',
-              isMenuOpened && users.length > 4 ? 'h-28' : 'h-14',
-            )}
-            style={isMenuOpened ? { width: OPENED_MENU_WIDTH } : {}}
-          >
-            <FacePile isMenuOpened={isMenuOpened} />
-          </div>
-          {ENV.EPICSHOP_DEPLOYED ? null : user ? (
+
+          {user ? (
             <SimpleTooltip content={isMenuOpened ? null : 'Your account'}>
               <Link
                 className="flex h-14 w-full items-center justify-start space-x-3 border-t px-4 py-4 text-center no-underline hover:underline"
                 to="/account"
               >
-                {user.avatarUrl ? (
+                {user?.image?.id ? (
                   <img
-                    alt={user.name ?? user.email}
-                    src={user.avatarUrl}
+                    alt={user.name ?? user.username}
+                    src={getUserImgSrc(user.image.id)}
                     className="h-full rounded-full"
                   />
                 ) : (
-                  <Icon name="User" className="flex-shrink-0" size="lg" />
+                  <Icon
+                    name="mindle-head"
+                    className="flex-shrink-0"
+                    size="lg"
+                  />
                 )}
                 {isMenuOpened ? (
                   <motion.div
-                    // @ts-expect-error framer-motion + latest typescript types has issues
                     className="flex items-center whitespace-nowrap"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -692,7 +651,7 @@ function Navigation({
               </Link>
             </SimpleTooltip>
           ) : null}
-          {ENV.EPICSHOP_DEPLOYED ? null : user && nextExerciseRoute ? (
+          {user && nextExerciseRoute ? (
             <SimpleTooltip
               content={isMenuOpened ? null : 'Continue to next lesson'}
             >
@@ -704,10 +663,9 @@ function Navigation({
                 )}
                 state={{ from: 'continue next lesson button' }}
               >
-                <Icon name="FastForward" className="flex-shrink-0" size="md" />
+                <Icon name="fast-forward" className="flex-shrink-0" size="md" />
                 {isMenuOpened ? (
                   <motion.div
-                    // @ts-expect-error framer-motion + latest typescript types has issues
                     className="flex items-center whitespace-nowrap"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -721,7 +679,9 @@ function Navigation({
             </SimpleTooltip>
           ) : null}
           <div className="mb-4 w-full self-start border-t pl-3 pt-[15px]">
-            <ThemeSwitch />
+            <ThemeSwitch
+              userPreference={rootData?.requestInfo.userPrefs.theme}
+            />
           </div>
         </div>
       </motion.div>
