@@ -25,7 +25,7 @@ export function LandingHeader() {
 
 export default function AuthLayout() {
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="container flex min-h-screen flex-col items-center">
       <LandingHeader />
       <main className="flex-grow">
         <Outlet />

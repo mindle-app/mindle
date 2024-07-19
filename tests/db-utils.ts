@@ -131,6 +131,10 @@ export async function getChapterImages() {
     }),
     5: img({
       filepath: `./tests/fixtures/images/chapters/5.svg`,
+      altText: 'Human bone',
+    }),
+    6: img({
+      filepath: `./tests/fixtures/images/chapters/6.svg`,
       altText: 'Flexing biceps',
     }),
     7: img({
@@ -164,6 +168,34 @@ export async function getChapterImages() {
     14: img({
       filepath: `./tests/fixtures/images/chapters/14.svg`,
       altText: 'Hands holding Earth',
+    }),
+    15: img({
+      filepath: `./tests/fixtures/images/chapters/15.svg`,
+      altText: 'Human eye',
+    }),
+    16: img({
+      filepath: './tests/fixtures/images/chapters/16.svg',
+      altText: 'Human ear',
+    }),
+    3: img({
+      filepath: './tests/fixtures/images/chapters/3.svg',
+      altText: 'Human skin',
+    }),
+    19: img({
+      filepath: './tests/fixtures/images/chapters/19.svg',
+      altText: 'Glandele supra-renale',
+    }),
+    20: img({
+      filepath: './tests/fixtures/images/chapters/20.svg',
+      altText: 'Gonadele',
+    }),
+    18: img({
+      filepath: './tests/fixtures/images/chapters/18.svg',
+      altText: 'Pancreas',
+    }),
+    17: img({
+      filepath: './tests/fixtures/images/chapters/17.svg',
+      altText: 'Thyroid gland',
     }),
   })
 }
