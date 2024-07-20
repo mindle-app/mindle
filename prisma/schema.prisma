@@ -69,6 +69,7 @@ model NoteImage {
 
   // non-unique foreign key
   @@index([noteId])
+  @@map("note_image")
 }
 
 model UserImage {
@@ -194,9 +195,10 @@ model Subject {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chapters     Chapter[]
-  userSubjects UserSubject[]
-  image        SubjectImage?
+  chapters       Chapter[]
+  userSubjects   UserSubject[]
+  image          SubjectImage?
+  studyMaterials StudyMaterial[]
 
   @@map("subject")
 }
@@ -297,10 +299,13 @@ model SubChapterImage {
 }
 
 model Lesson {
-  id             Int     @id @default(autoincrement())
-  name           String
-  subchapterId   Int
-  parentLessonId Int?
+  id               Int     @id @default(autoincrement())
+  name             String
+  subchapterId     Int?
+  parentLessonId   Int?
+  essayId          String?
+  essayParagraphId String?
+
   isParent       Boolean @default(false)
   studySessionId Int?
   description    String?
@@ -317,11 +322,13 @@ model Lesson {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  parentLesson Lesson?      @relation("lessonTolesson", fields: [parentLessonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  childLessons Lesson[]     @relation("lessonTolesson")
-  subChapter   SubChapter   @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userLessons  UserLesson[]
-  image        LessonImage?
+  parentLesson   Lesson?         @relation("lessonTolesson", fields: [parentLessonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  childLessons   Lesson[]        @relation("lessonTolesson")
+  subChapter     SubChapter?     @relation(fields: [subchapterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userLessons    UserLesson[]
+  image          LessonImage?
+  essay          Essay?          @relation(fields: [essayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  essayParagraph EssayParagraph? @relation(fields: [essayParagraphId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("lesson")
 }
@@ -383,6 +390,50 @@ model QuizAnswer {
   userAnswers UserQuizAnswer[]
 
   @@map("quiz_answer")
+}
+
+model StudyMaterial {
+  id        String  @id @default(cuid())
+  title     String
+  author    String
+  type      String // e.g "LITERARY_WORK", "MATH_CONCEPT", "PROGRAMMING_TOPIC" etc
+  subjectId Int
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  essays Essay[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("study_material")
+}
+
+model Essay {
+  id              String        @id @default(cuid())
+  title           String
+  studyMaterialId String
+  studyMaterial   StudyMaterial @relation(fields: [studyMaterialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  paragraphs EssayParagraph[]
+  lessons    Lesson[] // used to generate the mindmap
+
+  @@map("essay")
+}
+
+model EssayParagraph {
+  id          String @id @default(cuid())
+  content     String
+  explanation String
+  order       Int
+  essayId     String
+  essay       Essay  @relation(fields: [essayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  lessons Lesson[] // used to generate the mindmap
+
+  @@map("essay_paragraph")
 }
 
 model UserSubject {

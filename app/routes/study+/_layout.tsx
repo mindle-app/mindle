@@ -495,7 +495,7 @@ function Navigation({
                     >
                       <Link
                         prefetch="intent"
-                        to={`/${exerciseNum}`}
+                        to={`/study/${exerciseNum}`}
                         className={clsx(
                           'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
                           'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
