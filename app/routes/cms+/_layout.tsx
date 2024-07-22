@@ -449,23 +449,6 @@ function Navigation({
                           animate="visible"
                           className="ml-4 mt-4 flex flex-col"
                         >
-                          <NavigationExerciseStepListItem
-                            key={`subject/${subjectId}`}
-                          >
-                            <Link
-                              to={`/cms/subjects/${subjectId}`}
-                              prefetch="intent"
-                              className={clsx(
-                                'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                {
-                                  'bg-foreground text-background':
-                                    !params.stepNumber,
-                                },
-                              )}
-                            >
-                              Intro
-                            </Link>
-                          </NavigationExerciseStepListItem>
                           {chapters
                             .filter(Boolean)
                             .map(({ order, name, id: chapterId }) => {

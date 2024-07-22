@@ -271,7 +271,7 @@ const bioSubjectSchema = z.object({
       id: z.number(),
       name: z.string(),
       subjectId: z.number(),
-      chapterOrder: z.number(),
+      order: z.number(),
       nextChapterId: z.number().nullable(),
       subchapters: z.array(
         z.object({
