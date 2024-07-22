@@ -13,13 +13,7 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
-import {
-  Form,
-  Outlet,
-  redirect,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react'
+import { Form, Outlet, useActionData, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
@@ -145,9 +139,6 @@ export default function SubjectCMS() {
     id: 'subject-editor',
     constraint: getZodConstraint(SubjectEditorSchema),
     lastResult: actionData?.result,
-    onSubmit: async (data) => {
-      console.log(data)
-    },
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SubjectEditorSchema })
     },
@@ -160,14 +151,30 @@ export default function SubjectCMS() {
 
   return (
     <div className="flex h-full flex-col md:flex-row">
-      <div className="relative flex h-full w-full flex-col items-start">
+      <div className="relative flex h-full w-full flex-col items-start border-r">
         <FormProvider context={form.context}>
           <Form
             method={'POST'}
-            className="flex h-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-10 pb-28 pt-12"
+            className="flex h-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-4"
             {...getFormProps(form)}
             encType="multipart/form-data"
           >
+            <div className="flex gap-2">
+              <p className="text-2xl">Subject</p>
+              <div className="flex w-full gap-2.5">
+                <Button variant="destructive" {...form.reset.getButtonProps()}>
+                  Reset
+                </Button>
+                <StatusButton
+                  form={form.id}
+                  type="submit"
+                  disabled={isPending}
+                  status={isPending ? 'pending' : 'idle'}
+                >
+                  Save
+                </StatusButton>
+              </div>
+            </div>
             {/*
 					This hidden submit button is here to ensure that when the user hits
 					"enter" on an input field, the primary form function is submitted
@@ -178,7 +185,7 @@ export default function SubjectCMS() {
             {subject ? (
               <input type="hidden" name="id" value={subject.id} />
             ) : null}
-            <div className="flex flex-col gap-1">
+            <div className="flex gap-1">
               <Field
                 labelProps={{ children: 'Name' }}
                 inputProps={{
@@ -189,19 +196,6 @@ export default function SubjectCMS() {
               />
 
               <ImageChooser meta={fields.image} getImgSrc={getSubjectImgSrc} />
-            </div>
-            <div className="flex gap-2.5 p-4">
-              <Button variant="destructive" {...form.reset.getButtonProps()}>
-                Reset
-              </Button>
-              <StatusButton
-                form={form.id}
-                type="submit"
-                disabled={isPending}
-                status={isPending ? 'pending' : 'idle'}
-              >
-                Submit
-              </StatusButton>
             </div>
           </Form>
         </FormProvider>

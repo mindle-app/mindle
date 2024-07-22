@@ -71,7 +71,7 @@ export function ImageChooser({
                   <img
                     src={previewImage}
                     alt={altText ?? ''}
-                    className="h-32 w-32 rounded-lg object-cover"
+                    className="h-32 w-32 rounded-lg border object-cover"
                   />
                   {existingImage ? null : (
                     <div className="pointer-events-none absolute -right-0.5 -top-0.5 rotate-12 rounded-sm bg-secondary px-2 py-1 text-xs text-secondary-foreground shadow-md">
