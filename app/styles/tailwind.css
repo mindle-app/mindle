@@ -4,6 +4,43 @@
 
 @layer base {
     :root {
+        --international-orange-50: 33 100% 96%;
+        --international-orange-100: 34 100% 92%;
+        --international-orange-200: 31 95% 83%;
+        --international-orange-300: 30 96% 72%;
+        --international-orange-400: 27 95% 61%;
+        --international-orange-500: 24 93% 53%;
+        --international-orange-600: 20 89% 50%;
+        --international-orange-700: 17 87% 40%;
+        --international-orange-800: 14 78% 34%;
+        --international-orange-900: 14 73% 28%;
+        --international-orange-950: 13 81% 15%;
+
+        /* Pallette for mindle primary */
+        --vermilion-50: 30 100% 96;
+        --vermilion-100: 31 100% 92;
+        --vermilion-200: 30 100% 83;
+        --vermilion-300: 28 99% 72;
+        --vermilion-400: 25 98% 61;
+        --vermilion-500: 22 97% 53;
+        --vermilion-600: 18 92% 50;
+        --vermilion-700: 15 90% 40;
+        --vermilion-800: 12 80% 34;
+        --vermilion-900: 13 76% 28;
+        --vermilion-950: 12 84% 15;
+
+        --quarter-pearl-lusta-50: 40 100% 97%;
+        --quarter-pearl-lusta-100: 41 100% 92%;
+        --quarter-pearl-lusta-200: 39 98% 83%;
+        --quarter-pearl-lusta-300: 37 97% 72%;
+        --quarter-pearl-lusta-400: 34 96% 61%;
+        --quarter-pearl-lusta-500: 31 95% 53%;
+        --quarter-pearl-lusta-600: 27 90% 48%;
+        --quarter-pearl-lusta-700: 24 88% 40%;
+        --quarter-pearl-lusta-800: 22 79% 34%;
+        --quarter-pearl-lusta-900: 22 75% 28%;
+        --quarter-pearl-lusta-950: 20 81% 15%;
+
         --background: 40 100% 97%;
         --foreground: 20 14.3% 4.1%;
         --card: 0 0% 100%;
@@ -14,9 +51,9 @@
         --primary-foreground: 60 9.1% 97.8%;
         --secondary: 0 0% 100%;
         --secondary-foreground: 20, 14.3%, 4.1%;
-        --muted: 60 4.8% 95.9%;
-        --muted-foreground: 25 5.3% 44.7%;
-        --accent: 60 4.8% 95.9%;
+        --muted: 41 100% 92%; /* quarter-pearl-lusta-100 */
+        --muted-foreground: 22 79% 34%; /* quarter-pearl-lusta-800 */
+        --accent: 34 100% 92%;
         --accent-foreground: 24 9.8% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 60 9.1% 97.8%;
@@ -45,8 +82,8 @@
         --card-foreground: 60 9.1% 97.8%;
         --popover: 20 14.3% 4.1%;
         --popover-foreground: 60 9.1% 97.8%;
-        --primary: 20.5 70% 40%;
-        --Primary-foreground: 20.5 30% 85%;
+        --primary: 24 93% 53%;
+        --primary-foreground: 20.5 30% 85%;
         --secondary: 12 6.5% 15.1%;
         --secondary-foreground: 60 9.1% 97.8%;
         --muted: 12 6.5% 15.1%;

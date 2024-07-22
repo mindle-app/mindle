@@ -41,10 +41,12 @@ export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>
 
 export function ImageChooser({
   meta,
+  preview = false,
   getImgSrc,
 }: {
   meta: FieldMetadata<ImageFieldset>
   getImgSrc: (imgValue: string) => string
+  preview?: boolean
 }) {
   const fields = meta.getFieldset()
   const existingImage = Boolean(fields.id.initialValue)
@@ -88,6 +90,7 @@ export function ImageChooser({
                 <input {...getInputProps(fields.id, { type: 'hidden' })} />
               ) : null}
               <input
+                disabled={preview}
                 aria-label="Image"
                 className="absolute left-0 top-0 z-0 h-32 w-32 cursor-pointer opacity-0"
                 onChange={(event) => {
@@ -115,6 +118,7 @@ export function ImageChooser({
         <div className="flex-1">
           <Label htmlFor={fields.altText.id}>Alt Text</Label>
           <Textarea
+            disabled={preview}
             onChange={(e) => setAltText(e.currentTarget.value)}
             {...getTextareaProps(fields.altText)}
           />

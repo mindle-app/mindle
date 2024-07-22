@@ -3,6 +3,20 @@ import defaultTheme from 'tailwindcss/defaultTheme.js'
 
 export const extendedTheme = {
   colors: {
+    'primary-orange': {
+      '50': 'hsl(var(--international-orange-50))',
+      '100': 'hsl(var(--international-orange-100))',
+      '200': 'hsl(var(--international-orange-200))',
+      '300': 'hsl(var(--international-orange-300))',
+      '400': 'hsl(var(--international-orange-400))',
+      '500': 'hsl(var(--international-orange-500))',
+      '600': 'hsl(var(--international-orange-600))',
+      '700': 'hsl(var(--international-orange-700))',
+      '800': 'hsl(var(--international-orange-800))',
+      '900': 'hsl(var(--international-orange-900))',
+      '950': 'hsl(var(--international-orange-950))',
+    },
+
     border: 'hsl(var(--border))',
     input: {
       DEFAULT: 'hsl(var(--input))',
