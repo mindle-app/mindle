@@ -135,14 +135,4 @@ export const extendedTheme = {
     coHeadline: ['Co Headline Regular', ...defaultTheme.fontFamily.sans],
     coHeadlineLight: ['Co Headline Light', ...defaultTheme.fontFamily.sans],
   },
-
-  screens: {
-    xs: '372px',
-    tn: '428px',
-    sm: '576px',
-    xl: '1320px',
-    '2xl': '1900px',
-    '3xl': '2133px',
-    '4k': '3840px',
-  },
 } satisfies Config['theme']

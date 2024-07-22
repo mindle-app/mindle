@@ -284,7 +284,7 @@ function MobileNavigation({
                     'w-full border-t': isMenuOpened,
                   },
                 )}
-                to="/account"
+                to={`/users/${rootData?.user?.username}`}
               >
                 {user.image?.id ? (
                   <img

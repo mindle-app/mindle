@@ -1,0 +1,5 @@
+.orientation-sideways {
+    text-orientation: sideways;
+    writing-mode: vertical-rl;
+    @apply rotate-180;
+}

@@ -1,4 +1,9 @@
-import { FormProvider, getInputProps, useForm } from '@conform-to/react'
+import {
+  FormProvider,
+  getFormProps,
+  getInputProps,
+  useForm,
+} from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import {
@@ -16,6 +21,9 @@ import {
   useLoaderData,
 } from '@remix-run/react'
 import { z } from 'zod'
+import { Field } from '#app/components/forms.js'
+import { Button } from '#app/components/ui/button.js'
+import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
   ImageChooser,
@@ -25,14 +33,10 @@ import {
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getSubjectImgSrc, useIsPending } from '#app/utils/misc.js'
-import { Field } from '#app/components/forms.js'
-import { floatingToolbarClassName } from '#app/components/floating-toolbar.js'
-import { Button } from '#app/components/ui/button.js'
-import { StatusButton } from '#app/components/ui/status-button.js'
+import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const SubjectEditorSchema = z.object({
   name: z.string().min(1),
-  description: z.string(),
   image: ImageFieldsetSchema,
   id: z.number(),
 })
@@ -125,7 +129,11 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   })
 
-  return redirect(`/cms/subjects/${updatedSubject.id}`)
+  return redirectWithToast(`/cms/subjects/${updatedSubject.id}`, {
+    type: 'success',
+    title: 'Subject updated',
+    description: 'The subject has been updated successfully',
+  })
 }
 
 export default function SubjectCMS() {
@@ -134,9 +142,12 @@ export default function SubjectCMS() {
   const isPending = useIsPending()
 
   const [form, fields] = useForm({
-    id: 'note-editor',
+    id: 'subject-editor',
     constraint: getZodConstraint(SubjectEditorSchema),
     lastResult: actionData?.result,
+    onSubmit: async (data) => {
+      console.log(data)
+    },
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SubjectEditorSchema })
     },
@@ -154,12 +165,16 @@ export default function SubjectCMS() {
           <Form
             method={'POST'}
             className="flex h-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-10 pb-28 pt-12"
+            {...getFormProps(form)}
+            encType="multipart/form-data"
           >
             {/*
 					This hidden submit button is here to ensure that when the user hits
 					"enter" on an input field, the primary form function is submitted
 					rather than the first button in the form (which is delete/add image).
-				*/}
+				      */}
+            <button type="submit" className="hidden" />
+
             {subject ? (
               <input type="hidden" name="id" value={subject.id} />
             ) : null}

@@ -24,6 +24,7 @@ import { TailwindIndicator } from './components/ui/tailwind-indicator.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
 import { ThemeSwitch, useTheme } from './routes/resources+/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
+import appStyleSheetUrl from './styles/app.css?url'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { prisma } from './utils/db.server.ts'
@@ -53,6 +54,7 @@ export const links: LinksFunction = () => {
     } as const, // necessary to make typescript happy
     { rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
     { rel: 'stylesheet', href: tailwindStyleSheetUrl },
+    { rel: 'stylesheet', href: appStyleSheetUrl },
   ].filter(Boolean)
 }
 
