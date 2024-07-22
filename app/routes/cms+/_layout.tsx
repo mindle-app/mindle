@@ -3,7 +3,7 @@ import {
   type HeadersFunction,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { Link, NavLink, Outlet } from '@remix-run/react'
+import { Link, NavLink, Outlet, useLoaderData } from '@remix-run/react'
 import { Logo } from '#app/components/logo'
 
 import { Button } from '#app/components/ui/button.js'
@@ -70,15 +70,11 @@ export default function CmsLayout() {
       <div className="flex w-full flex-grow pt-5">
         <aside className="border-r p-2">
           <nav className="flex flex-col gap-4">
-            <NavLink className={linkClasses} to="/cms/subjects">
-              Subjects
-            </NavLink>
-            <NavLink className={linkClasses} to="/cms/study-materials">
-              Study Materials
-            </NavLink>
-            <NavLink className={linkClasses} to="/cms/users">
-              Users
-            </NavLink>
+            {items.map((i) => (
+              <NavLink key={i.name} className={linkClasses} to={i.to}>
+                {i.name}
+              </NavLink>
+            ))}
           </nav>
         </aside>
         <Outlet />
