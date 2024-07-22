@@ -11,22 +11,12 @@ import { z } from 'zod'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import {
-  MAX_UPLOAD_SIZE,
-  NoteEditorSchema,
   type ImageFieldset,
-} from './__note-editor'
-
-function imageHasFile(
-  image: ImageFieldset,
-): image is ImageFieldset & { file: NonNullable<ImageFieldset['file']> } {
-  return Boolean(image.file?.size && image.file?.size > 0)
-}
-
-function imageHasId(
-  image: ImageFieldset,
-): image is ImageFieldset & { id: NonNullable<ImageFieldset['id']> } {
-  return image.id != null
-}
+  imageHasFile,
+  imageHasId,
+  MAX_UPLOAD_SIZE,
+} from '#app/utils/image.js'
+import { NoteEditorSchema } from './__note-editor'
 
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserId(request)

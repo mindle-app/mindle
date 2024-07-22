@@ -17,6 +17,9 @@ export function getLessonImgSrc(imageId: string) {
   return `/resources/lesson-image/${imageId}`
 }
 
+export function getSubjectImgSrc(imageId: string) {
+  return `/resources/subject-image/${imageId}`
+}
 export function getNoteImgSrc(imageId: string) {
   return `/resources/note-images/${imageId}`
 }
