@@ -120,7 +120,7 @@ export async function getFirstUserContent(subjectId = 1) {
   const { id: firstChapterId } = await prisma.chapter.findFirstOrThrow({
     where: { subjectId },
     select: { id: true },
-    orderBy: { chapterOrder: 'asc' },
+    orderBy: { order: 'asc' },
   })
   const { id: firstSubchapterId } = await prisma.subChapter.findFirstOrThrow({
     select: { id: true },

@@ -26,7 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       userChapters: { where: { userId } },
       image: { select: { id: true, altText: true } },
     },
-    orderBy: { chapterOrder: 'asc' },
+    orderBy: { order: 'asc' },
   })
 
   return json({

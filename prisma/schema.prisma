@@ -225,7 +225,7 @@ model Chapter {
   name          String
   nextChapterId Int?   @unique()
   subjectId     Int
-  chapterOrder  Int?
+  order  Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

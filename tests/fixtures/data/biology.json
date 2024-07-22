@@ -1081,7 +1081,7 @@
       ],
       "name": "Sistemul Nervos",
       "subjectId": 1,
-      "chapterOrder": 2,
+      "order": 2,
       "imageLocked": "3f78a2c1-0938-426d-9eab-a210e51bc9d6",
       "nextChapterId": 3
     },
@@ -1670,7 +1670,7 @@
       ],
       "name": "Analizatorul cutanat",
       "subjectId": 1,
-      "chapterOrder": 3,
+      "order": 3,
       "imageLocked": "1b54cd46-5616-4367-871d-f81bea800dce",
       "nextChapterId": 15
     },
@@ -2542,7 +2542,7 @@
       ],
       "name": "Analizatorul vizual",
       "subjectId": 1,
-      "chapterOrder": 4,
+      "order": 4,
       "imageLocked": "8be32777-8944-4698-9fd4-a6705a201be5",
       "nextChapterId": 16
     },
@@ -3114,7 +3114,7 @@
       ],
       "name": "Analizatorul acustico-vestibular",
       "subjectId": 1,
-      "chapterOrder": 5,
+      "order": 5,
       "imageLocked": "ea7d38c7-5f82-408e-b1b5-ac742c2f66b7",
       "nextChapterId": 4
     },
@@ -3764,7 +3764,7 @@
       ],
       "name": "Hipofiza",
       "subjectId": 1,
-      "chapterOrder": 6,
+      "order": 6,
       "imageLocked": "8429a626-47b7-4d16-8d23-e88daec1fe53",
       "nextChapterId": 17
     },
@@ -4057,7 +4057,7 @@
       ],
       "name": "Tiroida",
       "subjectId": 1,
-      "chapterOrder": 7,
+      "order": 7,
       "imageLocked": "e8648b95-e6f0-43a3-a051-400b9fb5ade1",
       "nextChapterId": 18
     },
@@ -4236,7 +4236,7 @@
       ],
       "name": "Pancreas",
       "subjectId": 1,
-      "chapterOrder": 8,
+      "order": 8,
       "imageLocked": "cf8b5d95-40e5-4c81-8e1c-9e9f7e3e8c48",
       "nextChapterId": 19
     },
@@ -4434,7 +4434,7 @@
       ],
       "name": "Glandele suprarenale",
       "subjectId": 1,
-      "chapterOrder": 9,
+      "order": 9,
       "imageLocked": "4d445f2c-4f24-4785-83ee-11e2ade7eb21",
       "nextChapterId": 20
     },
@@ -4932,7 +4932,7 @@
       ],
       "name": "Alcǎtuirea Corpului Uman",
       "subjectId": 1,
-      "chapterOrder": 1,
+      "order": 1,
       "imageLocked": "fb770e2b-b7ac-4013-8f06-6a23c1d90248",
       "nextChapterId": 2
     },
@@ -5111,7 +5111,7 @@
       ],
       "name": "Gonadele",
       "subjectId": 1,
-      "chapterOrder": 10,
+      "order": 10,
       "imageLocked": "d74001da-ad52-4f5d-9692-d918c5ecd039",
       "nextChapterId": 5
     },
@@ -5873,7 +5873,7 @@
       ],
       "name": "Sistemul Osos",
       "subjectId": 1,
-      "chapterOrder": 11,
+      "order": 11,
       "imageLocked": "31db3a65-996a-4a46-a68a-359aa4cc539b",
       "nextChapterId": 6
     },
@@ -6335,7 +6335,7 @@
       ],
       "name": "Sistemul Muscular",
       "subjectId": 1,
-      "chapterOrder": 12,
+      "order": 12,
       "imageLocked": "322029e3-be0b-4dc6-ad9d-0680b2f03959",
       "nextChapterId": 7
     },
@@ -7002,7 +7002,7 @@
       ],
       "name": "Sistemul Digestiv",
       "subjectId": 1,
-      "chapterOrder": 13,
+      "order": 13,
       "imageLocked": "877457bd-9f10-48af-9f62-6c158deedc86",
       "nextChapterId": 8
     },
@@ -7764,7 +7764,7 @@
       ],
       "name": "Sistemul Circulator",
       "subjectId": 1,
-      "chapterOrder": 14,
+      "order": 14,
       "imageLocked": "e270595f-7b73-4a33-ba36-94672d9e49a2",
       "nextChapterId": 9
     },
@@ -8393,7 +8393,7 @@
       ],
       "name": "Sistemul Respirator",
       "subjectId": 1,
-      "chapterOrder": 15,
+      "order": 15,
       "imageLocked": "183f400e-a45d-4b63-bd73-1c0f194ff28e",
       "nextChapterId": 10
     },
@@ -8834,7 +8834,7 @@
       ],
       "name": "Sistemul Excretor",
       "subjectId": 1,
-      "chapterOrder": 16,
+      "order": 16,
       "imageLocked": "02a4e707-323c-49f1-9b9b-b542703b3678",
       "nextChapterId": 11
     },
@@ -9725,7 +9725,7 @@
       ],
       "name": "Sistemul Reproducător",
       "subjectId": 1,
-      "chapterOrder": 17,
+      "order": 17,
       "imageLocked": "acaf6882-7b71-4791-bc71-0b64970d7c67",
       "nextChapterId": 12
     },
@@ -10637,7 +10637,7 @@
       ],
       "name": "Genetica Moleculară",
       "subjectId": 1,
-      "chapterOrder": 18,
+      "order": 18,
       "imageLocked": "f4afd01a-66b9-4fca-9794-74e6e9b0d41d",
       "nextChapterId": 13
     },
@@ -11363,7 +11363,7 @@
       ],
       "name": "Ecologia Umană",
       "subjectId": 1,
-      "chapterOrder": 20,
+      "order": 20,
       "imageLocked": "95095b8f-1e68-48ff-bbac-9b1701ac5e81",
       "nextChapterId": null
     },
@@ -12087,7 +12087,7 @@
       ],
       "name": "Genetica Umană",
       "subjectId": 1,
-      "chapterOrder": 19,
+      "order": 19,
       "imageLocked": "70b5314b-c6fe-4594-bf04-ce8d1aefec15",
       "nextChapterId": 14
     }
