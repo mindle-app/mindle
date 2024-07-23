@@ -15,12 +15,10 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
-import { Form, useActionData, useLoaderData } from '@remix-run/react'
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { floatingToolbarClassName } from '#app/components/floating-toolbar.js'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
-import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
   ImageChooser,
@@ -195,28 +193,28 @@ export default function ChapterCMS() {
           >
             <div className="flex items-center gap-2">
               <p className="text-2xl">Chapter</p>
+              <Link to={'edit'}>
+                <Button variant={'link'}>Edit</Button>
+              </Link>
             </div>
-            {/*
-					This hidden submit button is here to ensure that when the user hits
-					"enter" on an input field, the primary form function is submitted
-					rather than the first button in the form (which is delete/add image).
-				      */}
-            <button type="submit" className="hidden" />
 
-            {chapter ? (
-              <input type="hidden" name="id" value={chapter.id} />
-            ) : null}
             <div className="flex w-full gap-8">
               <Field
                 labelProps={{ children: 'Name' }}
                 inputProps={{
                   autoFocus: true,
+                  disabled: true,
+
                   ...getInputProps(fields.name, { type: 'text' }),
                 }}
                 errors={fields.name.errors}
               />
 
-              <ImageChooser meta={fields.image} getImgSrc={getChapterImgSrc} />
+              <ImageChooser
+                preview
+                meta={fields.image}
+                getImgSrc={getChapterImgSrc}
+              />
             </div>
             <div className="x flex w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pb-4">
               <div className="flex items-center gap-2">
@@ -225,19 +223,6 @@ export default function ChapterCMS() {
               <SubchapterList subchapters={subchapters} />
             </div>
           </Form>
-          <div className={floatingToolbarClassName}>
-            <Button variant="destructive" {...form.reset.getButtonProps()}>
-              Reset
-            </Button>
-            <StatusButton
-              form={form.id}
-              type="submit"
-              disabled={isPending}
-              status={isPending ? 'pending' : 'idle'}
-            >
-              Save
-            </StatusButton>
-          </div>
         </FormProvider>
       </div>
     </div>
@@ -265,12 +250,16 @@ function SubchapterList({
             labelProps={{ children: 'Name' }}
             inputProps={{
               ...getInputProps(subchapter.name, { type: 'text' }),
+              disabled: true,
             }}
             errors={subchapter.name.errors}
           />
           <Field
             labelProps={{ children: 'Order' }}
-            inputProps={getInputProps(subchapter.order, { type: 'number' })}
+            inputProps={{
+              ...getInputProps(subchapter.order, { type: 'number' }),
+              disabled: true,
+            }}
             errors={subchapter.order.errors}
           />
         </div>

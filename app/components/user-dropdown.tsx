@@ -18,6 +18,7 @@ export function UserDropdown({
   buttonProps?: ButtonProps
 }) {
   const user = useUser()
+  const isAdmin = user.roles.find((role) => role.name === 'admin')
   const submit = useSubmit()
   const formRef = useRef<HTMLFormElement>(null)
   return (
@@ -43,6 +44,22 @@ export function UserDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent sideOffset={8} align="start">
+          {isAdmin ? (
+            <DropdownMenuItem asChild>
+              <Link prefetch="intent" to={`/cms`}>
+                <Icon className="text-body-md" name="mindle-head">
+                  CMS
+                </Icon>
+              </Link>
+            </DropdownMenuItem>
+          ) : null}
+          <DropdownMenuItem asChild>
+            <Link prefetch="intent" to={`/dashboard`}>
+              <Icon className="text-body-md" name="check">
+                Dashboard
+              </Icon>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link prefetch="intent" to={`/users/${user.username}`}>
               <Icon className="text-body-md" name="avatar">
