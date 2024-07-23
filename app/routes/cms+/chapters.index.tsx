@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
 import { prisma } from '#app/utils/db.server.js'
-import { cn, getSubjectImgSrc, useDelayedIsPending } from '#app/utils/misc.js'
+import { cn, getChapterImgSrc, useDelayedIsPending } from '#app/utils/misc.js'
 
-const SubjectSearchResult = z.array(
+const ChapterSearchResult = z.array(
   z.object({
     id: z.number(),
     name: z.string(),
@@ -17,31 +17,31 @@ const SubjectSearchResult = z.array(
 export async function loader({ request }: LoaderFunctionArgs) {
   const searchTerm = new URL(request.url).searchParams.get('search')
   if (searchTerm === '') {
-    return redirect('/cms/subjects')
+    return redirect('/cms/chapters')
   }
 
   const like = `%${searchTerm ?? ''}%`
   const rawUsers = await prisma.$queryRaw`
-		SELECT subject.id, subject.name, subject_image.id AS imageId
-		FROM subject
-		LEFT JOIN subject_image ON subject.id = subject_image.subjectId
-		WHERE subject.name LIKE ${like}
-		ORDER BY subject."updatedAt" DESC
+		SELECT chapter.id, chapter.name, chapter_image.id AS imageId
+		FROM chapter
+		LEFT JOIN chapter_image ON chapter.id = chapter_image.chapterId
+		WHERE chapter.name LIKE ${like}
+		ORDER BY chapter."updatedAt" DESC
 	`
 
-  const result = SubjectSearchResult.safeParse(rawUsers)
+  const result = ChapterSearchResult.safeParse(rawUsers)
   if (!result.success) {
     return json({ status: 'error', error: result.error.message } as const, {
       status: 400,
     })
   }
-  return json({ status: 'idle', subjects: result.data } as const)
+  return json({ status: 'idle', chapters: result.data } as const)
 }
-export default function SubjectCms() {
+export default function ChapterCms() {
   const data = useLoaderData<typeof loader>()
   const isPending = useDelayedIsPending({
     formMethod: 'GET',
-    formAction: '/cms/subjects',
+    formAction: '/cms/chapters',
   })
 
   if (data.status === 'error') {
@@ -51,10 +51,10 @@ export default function SubjectCms() {
   return (
     <div className="container flex flex-col gap-6">
       <div className="flex flex-col">
-        <h1 className="text-xl">Mindle Subjects</h1>
+        <h1 className="text-xl">Mindle Chapters</h1>
         <div className="w-1/2">
           <SearchBar
-            action="/cms/subjects"
+            action="/cms/chapters"
             status={data.status}
             autoFocus
             autoSubmit
@@ -64,29 +64,29 @@ export default function SubjectCms() {
 
       <main>
         {data.status === 'idle' ? (
-          data.subjects.length ? (
+          data.chapters.length ? (
             <ul
               className={cn(
-                'flex w-full flex-wrap items-center justify-start gap-4 delay-200',
+                'flex w-full flex-col justify-start gap-4 delay-200',
                 { 'opacity-50': isPending },
               )}
             >
-              {data.subjects.map((subject) => (
-                <li key={subject.id}>
+              {data.chapters.map((chapter) => (
+                <li key={chapter.id}>
                   <Link
-                    to={`/cms/subjects/${subject.id}`}
+                    to={`/cms/chapters/${chapter.id}`}
                     className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
                   >
-                    {subject.imageId ? (
+                    {chapter.imageId ? (
                       <img
-                        alt={subject.name}
-                        src={getSubjectImgSrc(subject.imageId)}
+                        alt={chapter.name}
+                        src={getChapterImgSrc(chapter.imageId)}
                         className="h-16 w-16 rounded-full"
                       />
                     ) : null}
-                    {subject.name ? (
+                    {chapter.name ? (
                       <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-body-md">
-                        {subject.name}
+                        {chapter.name}
                       </span>
                     ) : null}
                   </Link>
@@ -94,7 +94,7 @@ export default function SubjectCms() {
               ))}
             </ul>
           ) : (
-            <p>No subjects found</p>
+            <p>No chapters found</p>
           )
         ) : data.status === 'error' ? (
           <ErrorList errors={['There was an error parsing the results']} />
