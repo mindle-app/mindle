@@ -15,44 +15,56 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
+import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
+import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
   ImageChooser,
   type ImageFieldset,
   ImageFieldsetSchema,
+  imageHasFile,
+  imageHasId,
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
-import { getLessonImgSrc } from '#app/utils/misc.js'
+import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const BaseLessonSchema = z.object({
   name: z.string().min(1).max(255),
   order: z.number().int().min(0),
   id: z.number().optional(),
-  image: ImageFieldsetSchema.optional(),
-  displayId: z.string().max(2),
+  image: ImageFieldsetSchema.optional().nullable(),
+  displayId: z.string().max(5).min(1),
   width: z.number().int().min(1).optional(),
   height: z.number().int().min(1).optional(),
   parentLessonId: z.number().optional().nullable(),
 })
+type BaseLesson = z.infer<typeof BaseLessonSchema>
 
-type Lesson = z.infer<typeof BaseLessonSchema> & {
-  childLessons: Lesson[]
+type Lesson = BaseLesson & {
+  childLessons?: Lesson[]
 }
 
 const LessonFieldsetSchema: z.ZodType<Lesson> = BaseLessonSchema.extend({
-  childLessons: z.lazy(() => LessonFieldsetSchema.array()),
+  childLessons: z.lazy(() => LessonFieldsetSchema.array().optional()),
 })
 
 type LessonFieldset = z.infer<typeof LessonFieldsetSchema>
 
+function flattenLessons(lessons: Lesson[]): Lesson[] {
+  return lessons.flatMap((l) => [
+    l,
+    ...(l.childLessons && l.childLessons.length
+      ? flattenLessons(l.childLessons)
+      : []),
+  ])
+}
 const SubchapterEditorSchema = z.object({
   name: z.string().min(1),
-  displayId: z.string().max(2),
+  displayId: z.string().max(4),
   id: z.number(),
   order: z.number().int().min(0).optional(),
   width: z.number().int().min(1).optional(),
@@ -66,22 +78,48 @@ export async function loader({ params }: LoaderFunctionArgs) {
     include: {
       image: true,
       lessons: {
-        where: { parentLessonId: null },
-        include: {
-          image: true,
-          childLessons: {
-            include: {
-              childLessons: { include: { childLessons: true, image: true } },
-              image: true,
-            },
-          },
-        },
+        include: { image: true },
         orderBy: { order: 'asc' },
       },
     },
   })
+
   invariantResponse(subchapter, 'Subject not found', { status: 404 })
-  return json({ subchapter })
+  const lessons = LessonFieldsetSchema.array().parse(
+    subchapter.lessons.map((l) => ({ ...l, childLessons: [] })),
+  )
+
+  let root: LessonFieldset | null = null
+
+  const lessonMap = lessons.reduce(
+    (acc: Record<number, LessonFieldset>, lesson) => {
+      if (!lesson.id) return acc
+      acc[lesson.id] = lesson
+      return acc
+    },
+    {},
+  )
+  for (const lesson of lessons) {
+    if (!lesson.id) continue
+    const currentNode = lessonMap[lesson.id]
+    if (!currentNode) {
+      continue
+    }
+    if (lesson.parentLessonId) {
+      const parentLesson = lessonMap[lesson.parentLessonId]
+      if (!parentLesson) {
+        continue
+      }
+      if (parentLesson.childLessons) parentLesson.childLessons.push(currentNode)
+      else {
+        parentLesson.childLessons = [currentNode]
+      }
+    } else {
+      // This node has no parent, hence it's the root
+      root = currentNode || null
+    }
+  }
+  return json({ subchapter: { ...subchapter, lessons: root ? [root] : [] } })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -105,19 +143,34 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
     }).transform(async ({ ...data }) => {
-      return {
+      const lessons = flattenLessons(data.lessons ?? [])
+      const update = {
         ...data,
-        lessonUpdates: (data.lessons ?? [])
+        lessonUpdates: lessons
           .filter((l) => l.id)
-          .map((l) => ({
-            name: l.name,
-            order: l.order,
-            id: l.id,
+          .map(({ childLessons, image, ...l }) => ({
+            ...l,
+            image:
+              image && imageHasFile(image)
+                ? imageHasId(image)
+                  ? { update: image }
+                  : { create: image }
+                : undefined,
           })),
-        newLessons: (data.lessons ?? [])
+        newLessons: lessons
           .filter((l) => !l.id)
-          .map((l) => ({ name: l.name, order: l.order })),
+          .map(({ childLessons, image, ...l }) => ({
+            ...l,
+            image:
+              image && imageHasFile(image)
+                ? imageHasId(image)
+                  ? { update: image }
+                  : { create: image }
+                : undefined,
+          })),
       }
+      console.log('Update', update)
+      return update
     }),
     async: true,
   })
@@ -142,11 +195,10 @@ export async function action({ request }: ActionFunctionArgs) {
             notIn: lessonUpdates.map((l) => l.id).filter(Boolean),
           },
         },
-        updateMany: lessonUpdates.map((s) => ({
-          where: { id: s.id },
-          data: { name: s.name, order: s.order },
+        updateMany: lessonUpdates.map(({ id, ...l }) => ({
+          where: { id },
+          data: l,
         })),
-        create: newLessons,
       },
     },
   })
@@ -161,13 +213,17 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function SubchapterCMS() {
   const actionData = useActionData<typeof action>()
   const { subchapter } = useLoaderData<typeof loader>()
+  const isPending = useIsPending()
 
   const [form, fields] = useForm({
     id: 'subchapter-editor',
+
     constraint: getZodConstraint(SubchapterEditorSchema),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: SubchapterEditorSchema })
+      const result = parseWithZod(formData, { schema: SubchapterEditorSchema })
+      console.log(result)
+      return result
     },
     defaultValue: {
       ...subchapter,
@@ -189,17 +245,35 @@ export default function SubchapterCMS() {
           >
             <div className="flex items-center gap-2">
               <p className="text-2xl">Subchapter</p>
-              <Link to={'edit'}>
-                <Button variant={'link'}>Edit</Button>
-              </Link>
+              <div className="flex w-full gap-1">
+                <Button variant="destructive" {...form.reset.getButtonProps()}>
+                  Reset
+                </Button>
+                <StatusButton
+                  form={form.id}
+                  type="submit"
+                  disabled={isPending}
+                  status={isPending ? 'pending' : 'idle'}
+                >
+                  Save
+                </StatusButton>
+              </div>
             </div>
 
             <div className="flex w-full flex-wrap gap-8">
+              {subchapter.id ? (
+                <Field
+                  labelProps={{ children: 'ID' }}
+                  inputProps={{
+                    ...getInputProps(fields.id, { type: 'hidden' }),
+                  }}
+                  errors={fields.id.errors}
+                />
+              ) : null}
               <Field
                 labelProps={{ children: 'Name' }}
                 inputProps={{
                   autoFocus: true,
-                  disabled: true,
 
                   ...getInputProps(fields.name, { type: 'text' }),
                 }}
@@ -208,8 +282,6 @@ export default function SubchapterCMS() {
               <Field
                 labelProps={{ children: 'Order' }}
                 inputProps={{
-                  disabled: true,
-
                   ...getInputProps(fields.order, { type: 'number' }),
                 }}
                 errors={fields.order.errors}
@@ -217,8 +289,6 @@ export default function SubchapterCMS() {
               <Field
                 labelProps={{ children: 'Width' }}
                 inputProps={{
-                  disabled: true,
-
                   ...getInputProps(fields.width, { type: 'number' }),
                 }}
                 errors={fields.width.errors}
@@ -226,8 +296,6 @@ export default function SubchapterCMS() {
               <Field
                 labelProps={{ children: 'Height' }}
                 inputProps={{
-                  disabled: true,
-
                   ...getInputProps(fields.height, { type: 'number' }),
                 }}
                 errors={fields.height.errors}
@@ -235,8 +303,6 @@ export default function SubchapterCMS() {
               <Field
                 labelProps={{ children: 'DisplayId' }}
                 inputProps={{
-                  disabled: true,
-
                   ...getInputProps(fields.displayId, { type: 'text' }),
                 }}
                 errors={fields.displayId.errors}
@@ -265,21 +331,18 @@ function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
           <div className="flex gap-4">
             <ImageChooser
               getImgSrc={getLessonImgSrc}
-              preview
               meta={lesson.image as FieldMetadata<ImageFieldset>}
             />
             <input {...getInputProps(lesson.id, { type: 'hidden' })} />
             <Field
               className="w-16"
               labelProps={{ children: 'ID' }}
-              inputProps={{ value: lesson.id.value, disabled: true }}
+              inputProps={{ value: lesson.id.value }}
               errors={lesson.name.errors}
             />
             <Field
               labelProps={{ children: 'ParentLessonId' }}
               inputProps={{
-                disabled: true,
-
                 ...getInputProps(lesson.parentLessonId, { type: 'text' }),
               }}
               errors={lesson.parentLessonId.errors}
@@ -288,7 +351,6 @@ function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
               labelProps={{ children: 'Name' }}
               inputProps={{
                 ...getInputProps(lesson.name, { type: 'text' }),
-                disabled: true,
               }}
               errors={lesson.name.errors}
             />
@@ -296,15 +358,12 @@ function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
               labelProps={{ children: 'Order' }}
               inputProps={{
                 ...getInputProps(lesson.order, { type: 'number' }),
-                disabled: true,
               }}
               errors={lesson.order.errors}
             />
             <Field
               labelProps={{ children: 'Width' }}
               inputProps={{
-                disabled: true,
-
                 ...getInputProps(lesson.width, { type: 'number' }),
               }}
               errors={lesson.width.errors}
@@ -312,8 +371,6 @@ function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
             <Field
               labelProps={{ children: 'Height' }}
               inputProps={{
-                disabled: true,
-
                 ...getInputProps(lesson.height, { type: 'number' }),
               }}
               errors={lesson.height.errors}
@@ -321,8 +378,6 @@ function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
             <Field
               labelProps={{ children: 'DisplayId' }}
               inputProps={{
-                disabled: true,
-
                 ...getInputProps(lesson.displayId, { type: 'text' }),
               }}
               errors={lesson.displayId.errors}

@@ -28,31 +28,39 @@ import {
 } from '#app/utils/image.js'
 import { getLessonImgSrc } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-
 const BaseLessonSchema = z.object({
   name: z.string().min(1).max(255),
   order: z.number().int().min(0),
   id: z.number().optional(),
-  image: ImageFieldsetSchema.optional(),
-  displayId: z.string().max(2),
+  image: ImageFieldsetSchema.optional().nullable(),
+  displayId: z.string().max(5).min(1),
   width: z.number().int().min(1).optional(),
   height: z.number().int().min(1).optional(),
   parentLessonId: z.number().optional().nullable(),
 })
+type BaseLesson = z.infer<typeof BaseLessonSchema>
 
-type Lesson = z.infer<typeof BaseLessonSchema> & {
-  childLessons: Lesson[]
+type Lesson = BaseLesson & {
+  childLessons?: Lesson[]
 }
 
 const LessonFieldsetSchema: z.ZodType<Lesson> = BaseLessonSchema.extend({
-  childLessons: z.lazy(() => LessonFieldsetSchema.array()),
+  childLessons: z.lazy(() => LessonFieldsetSchema.array().optional()),
 })
 
 type LessonFieldset = z.infer<typeof LessonFieldsetSchema>
 
+function flattenLessons(lessons: Lesson[]): Lesson[] {
+  return lessons.flatMap((l) => [
+    l,
+    ...(l.childLessons && l.childLessons.length
+      ? flattenLessons(l.childLessons)
+      : []),
+  ])
+}
 const SubchapterEditorSchema = z.object({
   name: z.string().min(1),
-  displayId: z.string().max(2),
+  displayId: z.string().max(4),
   id: z.number(),
   order: z.number().int().min(0).optional(),
   width: z.number().int().min(1).optional(),
@@ -66,22 +74,48 @@ export async function loader({ params }: LoaderFunctionArgs) {
     include: {
       image: true,
       lessons: {
-        where: { parentLessonId: null },
-        include: {
-          image: true,
-          childLessons: {
-            include: {
-              childLessons: { include: { childLessons: true, image: true } },
-              image: true,
-            },
-          },
-        },
+        include: { image: true },
         orderBy: { order: 'asc' },
       },
     },
   })
+
   invariantResponse(subchapter, 'Subject not found', { status: 404 })
-  return json({ subchapter })
+  const lessons = LessonFieldsetSchema.array().parse(
+    subchapter.lessons.map((l) => ({ ...l, childLessons: [] })),
+  )
+
+  let root: LessonFieldset | null = null
+
+  const lessonMap = lessons.reduce(
+    (acc: Record<number, LessonFieldset>, lesson) => {
+      if (!lesson.id) return acc
+      acc[lesson.id] = lesson
+      return acc
+    },
+    {},
+  )
+  for (const lesson of lessons) {
+    if (!lesson.id) continue
+    const currentNode = lessonMap[lesson.id]
+    if (!currentNode) {
+      continue
+    }
+    if (lesson.parentLessonId) {
+      const parentLesson = lessonMap[lesson.parentLessonId]
+      if (!parentLesson) {
+        continue
+      }
+      if (parentLesson.childLessons) parentLesson.childLessons.push(currentNode)
+      else {
+        parentLesson.childLessons = [currentNode]
+      }
+    } else {
+      // This node has no parent, hence it's the root
+      root = currentNode || null
+    }
+  }
+  return json({ subchapter: { ...subchapter, lessons: root ? [root] : [] } })
 }
 
 export async function action({ request }: ActionFunctionArgs) {

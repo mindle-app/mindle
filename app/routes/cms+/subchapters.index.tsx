@@ -82,7 +82,7 @@ export default function SubchapterCms() {
                         {subchapter.displayId} {subchapter.name}
                       </span>
                     ) : null}
-                    <Link to={`/cms/subchapter/${subchapter.id}/edit`}>
+                    <Link to={`/cms/subchapters/${subchapter.id}/edit`}>
                       <Button>Edit</Button>
                     </Link>
                   </Link>
