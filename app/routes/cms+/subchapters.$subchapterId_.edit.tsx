@@ -19,6 +19,7 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
+import { Icon } from '#app/components/ui/icon.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
@@ -76,9 +77,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const subchapter = await prisma.subChapter.findUnique({
     where: { id: Number(params.subchapterId) },
     include: {
-      image: true,
       lessons: {
-        include: { image: true },
+        include: { image: { select: { altText: true, id: true } } },
         orderBy: { order: 'asc' },
       },
     },
@@ -144,33 +144,61 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }).transform(async ({ ...data }) => {
       const lessons = flattenLessons(data.lessons ?? [])
-      const update = {
+      return {
         ...data,
-        lessonUpdates: lessons
-          .filter((l) => l.id)
-          .map(({ childLessons, image, ...l }) => ({
-            ...l,
-            image:
-              image && imageHasFile(image)
-                ? imageHasId(image)
-                  ? { update: image }
-                  : { create: image }
-                : undefined,
-          })),
-        newLessons: lessons
-          .filter((l) => !l.id)
-          .map(({ childLessons, image, ...l }) => ({
-            ...l,
-            image:
-              image && imageHasFile(image)
-                ? imageHasId(image)
-                  ? { update: image }
-                  : { create: image }
-                : undefined,
-          })),
+        lessonUpdates: await Promise.all(
+          lessons
+            .filter((l) => l.id)
+            .map(async ({ childLessons, image, ...l }) => ({
+              ...l,
+              ...(image
+                ? {
+                    image:
+                      image && imageHasFile(image)
+                        ? imageHasId(image)
+                          ? {
+                              update: {
+                                altText: image.altText,
+                                id: image.id,
+                                contentType: image.file.type,
+                                blob: Buffer.from(
+                                  await image.file.arrayBuffer(),
+                                ),
+                              },
+                            }
+                          : {
+                              create: {
+                                altText: image.altText,
+                                contentType: image.file.type,
+                                blob: Buffer.from(
+                                  await image.file.arrayBuffer(),
+                                ),
+                              },
+                            }
+                        : undefined,
+                  }
+                : {}),
+            })),
+        ),
+        newLessons: await Promise.all(
+          lessons
+            .filter((l) => !l.id)
+            .map(async ({ childLessons, image, ...l }) => ({
+              ...l,
+              subchapterId: data.id,
+              image:
+                image && imageHasFile(image)
+                  ? {
+                      create: {
+                        altText: image.altText,
+                        contentType: image.file.type,
+                        blob: Buffer.from(await image.file.arrayBuffer()),
+                      },
+                    }
+                  : undefined,
+            })),
+        ),
       }
-      console.log('Update', update)
-      return update
     }),
     async: true,
   })
@@ -182,28 +210,37 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { id, name, lessonUpdates, newLessons } = submission.value
+  const {
+    id,
+    name,
+    order,
+    width,
+    height,
+    displayId,
+    lessonUpdates = [],
+    newLessons = [],
+  } = submission.value
 
-  const updatedSubchapter = await prisma.subChapter.update({
-    include: { image: true, lessons: true },
-    where: { id },
-    data: {
-      name,
-      lessons: {
-        deleteMany: {
-          id: {
-            notIn: lessonUpdates.map((l) => l.id).filter(Boolean),
-          },
-        },
-        updateMany: lessonUpdates.map(({ id, ...l }) => ({
-          where: { id },
-          data: l,
-        })),
+  await prisma.$transaction([
+    ...lessonUpdates.map(({ id, ...l }) =>
+      prisma.lesson.update({ where: { id }, data: l }),
+    ),
+    ...(newLessons.length
+      ? [prisma.lesson.createMany({ data: newLessons })]
+      : []),
+    prisma.subChapter.update({
+      where: { id },
+      data: {
+        name,
+        order,
+        width,
+        height,
+        displayId,
       },
-    },
-  })
+    }),
+  ])
 
-  return redirectWithToast(`/cms/subchapters/${updatedSubchapter.id}`, {
+  return redirectWithToast(`/cms/subchapters/${id}`, {
     type: 'success',
     title: 'Success',
     description: 'The subchapter has been updated successfully',
@@ -227,6 +264,8 @@ export default function SubchapterCMS() {
     },
     defaultValue: {
       ...subchapter,
+      // @ts-expect-error this happens since we parse before returning the data here
+      lessons: subchapter.lessons,
     },
     shouldRevalidate: 'onBlur',
   })
@@ -311,8 +350,12 @@ export default function SubchapterCMS() {
             <div className="x flex w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pb-4">
               <div className="flex items-center gap-2">
                 <p className="text-2xl">Lessons</p>
+                <Button variant={'link'}>
+                  Create
+                  <Icon name={'plus'} className="ml-2" />
+                </Button>
               </div>
-              <LessonList lessons={lessons} />
+              <LessonList lessons={lessons as FieldMetadata<Lesson>[]} />
             </div>
           </Form>
         </FormProvider>
@@ -321,7 +364,7 @@ export default function SubchapterCMS() {
   )
 }
 
-function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
+function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
   return lessons.map((s) => {
     const lesson = s.getFieldset()
     const childLessons = lesson.childLessons
