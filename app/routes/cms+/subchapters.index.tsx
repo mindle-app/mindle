@@ -3,9 +3,9 @@ import { Link, redirect, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
+import { Button } from '#app/components/ui/button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDelayedIsPending } from '#app/utils/misc.js'
-import { Button } from '#app/components/ui/button.js'
 
 const SubchapterSearchResult = z.array(
   z.object({

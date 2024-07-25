@@ -1,9 +1,5 @@
-import {
-  json,
-  type HeadersFunction,
-  type LoaderFunctionArgs,
-} from '@remix-run/node'
-import { Link, NavLink, Outlet, useLoaderData } from '@remix-run/react'
+import { type HeadersFunction, type LoaderFunctionArgs } from '@remix-run/node'
+import { Link, NavLink, Outlet } from '@remix-run/react'
 import { Logo } from '#app/components/logo'
 
 import { Button } from '#app/components/ui/button.js'

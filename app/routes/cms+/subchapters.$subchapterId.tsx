@@ -272,8 +272,8 @@ function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
             />
           </div>
           {lesson.childLessons.getFieldList().length ? (
-            <div className="pl-8">
-              <p>Children</p>
+            <div className="pl-12">
+              <p className="pb-4 text-xl">Children</p>
               <LessonList lessons={childLessons.getFieldList()} />
             </div>
           ) : null}

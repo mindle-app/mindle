@@ -11,6 +11,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
+import { SvgImage } from '#app/components/svg-image.js'
 import { Button } from '#app/components/ui/button.js'
 import {
   Table,
@@ -31,7 +32,6 @@ import {
 } from '#app/utils/image.js'
 import { getChapterImgSrc, getSubjectImgSrc } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { SvgImage } from '#app/components/svg-image.js'
 
 const SubjectEditorSchema = z.object({
   name: z.string().min(1),

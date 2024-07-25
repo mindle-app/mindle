@@ -163,7 +163,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function ChapterCMS() {
   const actionData = useActionData<typeof action>()
   const { chapter } = useLoaderData<typeof loader>()
-  const isPending = useIsPending()
 
   const [form, fields] = useForm({
     id: 'subject-editor',

@@ -116,7 +116,7 @@ export const config = [
           args: 'after-used',
           argsIgnorePattern: '^_',
           ignoreRestSiblings: true,
-          varsIgnorePattern: '^ignored',
+          varsIgnorePattern: '^(ignored|_)',
         },
       ],
     },
@@ -140,8 +140,8 @@ export const config = [
         {
           args: 'after-used',
           argsIgnorePattern: '^_',
+          varsIgnorePattern: '^(ignored|_)',
           ignoreRestSiblings: true,
-          varsIgnorePattern: '^ignored',
         },
       ],
       'import/consistent-type-specifier-style': [WARN, 'prefer-inline'],
