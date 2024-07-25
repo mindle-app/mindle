@@ -8,14 +8,8 @@ import {
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-} from '@remix-run/node'
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
+import { Form, Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
@@ -24,10 +18,8 @@ import {
   ImageChooser,
   type ImageFieldset,
   ImageFieldsetSchema,
-  MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getLessonImgSrc } from '#app/utils/misc.js'
-import { redirectWithToast } from '#app/utils/toast.server.js'
 const BaseLessonSchema = z.object({
   name: z.string().min(1).max(255),
   order: z.number().int().min(0),
@@ -50,14 +42,6 @@ const LessonFieldsetSchema: z.ZodType<Lesson> = BaseLessonSchema.extend({
 
 type LessonFieldset = z.infer<typeof LessonFieldsetSchema>
 
-function flattenLessons(lessons: Lesson[]): Lesson[] {
-  return lessons.flatMap((l) => [
-    l,
-    ...(l.childLessons && l.childLessons.length
-      ? flattenLessons(l.childLessons)
-      : []),
-  ])
-}
 const SubchapterEditorSchema = z.object({
   name: z.string().min(1),
   displayId: z.string().max(4),
@@ -118,91 +102,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return json({ subchapter: { ...subchapter, lessons: root ? [root] : [] } })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await parseMultipartFormData(
-    request,
-    createMemoryUploadHandler({ maxPartSize: MAX_UPLOAD_SIZE }),
-  )
-
-  const submission = await parseWithZod(formData, {
-    schema: SubchapterEditorSchema.superRefine(async (data, ctx) => {
-      if (!data.id) return
-
-      const subchapter = await prisma.subChapter.findUnique({
-        select: { id: true },
-        where: { id: data.id },
-      })
-      if (!subchapter) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Subchapter not found',
-        })
-      }
-    }).transform(async ({ ...data }) => {
-      return {
-        ...data,
-        lessonUpdates: (data.lessons ?? [])
-          .filter((l) => l.id)
-          .map((l) => ({
-            name: l.name,
-            order: l.order,
-            id: l.id,
-          })),
-        newLessons: (data.lessons ?? [])
-          .filter((l) => !l.id)
-          .map((l) => ({ name: l.name, order: l.order })),
-      }
-    }),
-    async: true,
-  })
-
-  if (submission.status !== 'success') {
-    return json(
-      { result: submission.reply() },
-      { status: submission.status === 'error' ? 400 : 200 },
-    )
-  }
-
-  const { id, name, lessonUpdates, newLessons } = submission.value
-
-  const updatedSubchapter = await prisma.subChapter.update({
-    include: { image: true, lessons: true },
-    where: { id },
-    data: {
-      name,
-      lessons: {
-        deleteMany: {
-          id: {
-            notIn: lessonUpdates.map((l) => l.id).filter(Boolean),
-          },
-        },
-        updateMany: lessonUpdates.map((s) => ({
-          where: { id: s.id },
-          data: { name: s.name, order: s.order },
-        })),
-        create: newLessons,
-      },
-    },
-  })
-
-  return redirectWithToast(`/cms/subchapters/${updatedSubchapter.id}`, {
-    type: 'success',
-    title: 'Success',
-    description: 'The subchapter has been updated successfully',
-  })
-}
-
 export default function SubchapterCMS() {
-  const actionData = useActionData<typeof action>()
   const { subchapter } = useLoaderData<typeof loader>()
 
   const [form, fields] = useForm({
     id: 'subchapter-editor',
     constraint: getZodConstraint(SubchapterEditorSchema),
-    lastResult: actionData?.result,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SubchapterEditorSchema })
     },
+    // @ts-expect-error this happens since we parse before returning the data here
     defaultValue: {
       ...subchapter,
     },
@@ -280,7 +189,7 @@ export default function SubchapterCMS() {
               <div className="flex items-center gap-2">
                 <p className="text-2xl">Lessons</p>
               </div>
-              <LessonList lessons={lessons} />
+              <LessonList lessons={lessons as FieldMetadata<Lesson>[]} />
             </div>
           </Form>
         </FormProvider>
@@ -289,7 +198,7 @@ export default function SubchapterCMS() {
   )
 }
 
-function LessonList({ lessons }: { lessons: FieldMetadata<LessonFieldset>[] }) {
+function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
   return lessons.map((s) => {
     const lesson = s.getFieldset()
     const childLessons = lesson.childLessons

@@ -259,7 +259,6 @@ export default function SubchapterCMS() {
     lastResult: actionData?.result,
     onValidate({ formData }) {
       const result = parseWithZod(formData, { schema: SubchapterEditorSchema })
-      console.log(result)
       return result
     },
     defaultValue: {
