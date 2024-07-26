@@ -34,7 +34,7 @@ export const ImageFieldsetSchema = z.object({
     .refine((file) => {
       return !file || file.size <= MAX_UPLOAD_SIZE
     }, 'File size must be less than 3MB'),
-  altText: z.string().optional(),
+  altText: z.string().optional().nullable(),
 })
 
 export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>

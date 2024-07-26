@@ -10,12 +10,7 @@ import {
 import { z } from 'zod'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import {
-  type ImageFieldset,
-  imageHasFile,
-  imageHasId,
-  MAX_UPLOAD_SIZE,
-} from '#app/utils/image.js'
+import { imageHasFile, imageHasId, MAX_UPLOAD_SIZE } from '#app/utils/image.js'
 import { NoteEditorSchema } from './__note-editor'
 
 export async function action({ request }: ActionFunctionArgs) {

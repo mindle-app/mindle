@@ -13,8 +13,8 @@ export function getChapterImgSrc(imageId: string) {
   return `/resources/chapter-image/${imageId}`
 }
 
-export function getLessonImgSrc(imageId: string) {
-  return `/resources/lesson-image/${imageId}`
+export function getLessonImgSrc(imageId: string, noCache = false) {
+  return `/resources/lesson-image/${imageId}${noCache ? `?no-cache=true` : ''}`
 }
 
 export function getSubjectImgSrc(imageId: string) {

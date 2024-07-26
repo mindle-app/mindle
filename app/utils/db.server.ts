@@ -7,10 +7,11 @@ export const prisma = remember('prisma', () => {
   // the dev server to see your changes.
 
   // Feel free to change this log threshold to something that makes sense for you
-  const logThreshold = 20
+  const logThreshold = process.env.NODE_ENV === 'development' ? 1 : 20
 
   const client = new PrismaClient({
     log: [
+      { level: 'info', emit: 'stdout' },
       { level: 'query', emit: 'event' },
       { level: 'error', emit: 'stdout' },
       { level: 'warn', emit: 'stdout' },
@@ -29,7 +30,7 @@ export const prisma = remember('prisma', () => {
               ? 'redBright'
               : 'red'
     const dur = chalk[color](`${e.duration}ms`)
-    console.info(`prisma:query - ${dur} - ${e.query}`)
+    console.info(`prisma:query - ${dur} - ${e.query} - ${e.params}`)
   })
   client.$connect()
   return client

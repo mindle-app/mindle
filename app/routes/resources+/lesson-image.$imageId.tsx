@@ -2,7 +2,8 @@ import { invariantResponse } from '@epic-web/invariant'
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { prisma } from '#app/utils/db.server.ts'
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const noCache = Boolean(new URL(request.url).searchParams.get('no-cache'))
   invariantResponse(params.imageId, 'Image ID is required', { status: 400 })
   const image = await prisma.lessonImage.findUnique({
     where: { id: params.imageId },
@@ -16,7 +17,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       'Content-Type': image.contentType,
       'Content-Length': Buffer.byteLength(image.blob).toString(),
       'Content-Disposition': `inline; filename="${params.imageId}"`,
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': `public, max-age=${noCache ? 0 : 31536000}, immutable`,
     },
   })
 }

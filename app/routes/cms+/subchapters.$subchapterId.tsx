@@ -13,50 +13,47 @@ import { Form, Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
+import { Icon } from '#app/components/ui/icon.js'
 import { prisma } from '#app/utils/db.server.js'
-import {
-  ImageChooser,
-  type ImageFieldset,
-  ImageFieldsetSchema,
-} from '#app/utils/image.js'
 import { getLessonImgSrc } from '#app/utils/misc.js'
-const BaseLessonSchema = z.object({
+
+export const BaseLessonSchema = z.object({
   name: z.string().min(1).max(255),
-  order: z.number().int().min(0),
+  order: z.number().int().min(0).nullable(),
   id: z.number().optional(),
-  image: ImageFieldsetSchema.optional().nullable(),
-  displayId: z.string().max(5).min(1),
+  image: z.object({ id: z.string().optional() }).optional().nullable(),
+  displayId: z.string().max(5).min(1).nullable(),
   width: z.number().int().min(1).optional(),
   height: z.number().int().min(1).optional(),
   parentLessonId: z.number().optional().nullable(),
 })
-type BaseLesson = z.infer<typeof BaseLessonSchema>
+export type BaseLesson = z.infer<typeof BaseLessonSchema>
 
-type Lesson = BaseLesson & {
+export type Lesson = BaseLesson & {
   childLessons?: Lesson[]
 }
 
-const LessonFieldsetSchema: z.ZodType<Lesson> = BaseLessonSchema.extend({
+export const LessonFieldsetSchema: z.ZodType<Lesson> = BaseLessonSchema.extend({
   childLessons: z.lazy(() => LessonFieldsetSchema.array().optional()),
 })
 
-type LessonFieldset = z.infer<typeof LessonFieldsetSchema>
+export type LessonFieldset = z.infer<typeof LessonFieldsetSchema>
 
-const SubchapterEditorSchema = z.object({
+export const SubchapterEditorSchema = z.object({
   name: z.string().min(1),
   displayId: z.string().max(4),
   id: z.number(),
   order: z.number().int().min(0).optional(),
   width: z.number().int().min(1).optional(),
   height: z.number().int().min(1).optional(),
-  lessons: z.array(LessonFieldsetSchema).optional(),
+  lessons: z.array(LessonFieldsetSchema),
 })
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const subchapter = await prisma.subChapter.findUnique({
     where: { id: Number(params.subchapterId) },
     include: {
-      image: true,
+      image: { select: { id: true } },
       lessons: {
         include: { image: true },
         orderBy: { order: 'asc' },
@@ -111,7 +108,6 @@ export default function SubchapterCMS() {
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SubchapterEditorSchema })
     },
-    // @ts-expect-error this happens since we parse before returning the data here
     defaultValue: {
       ...subchapter,
     },
@@ -189,7 +185,7 @@ export default function SubchapterCMS() {
               <div className="flex items-center gap-2">
                 <p className="text-2xl">Lessons</p>
               </div>
-              <LessonList lessons={lessons as FieldMetadata<Lesson>[]} />
+              <LessonList lessons={lessons} />
             </div>
           </Form>
         </FormProvider>
@@ -201,16 +197,21 @@ export default function SubchapterCMS() {
 function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
   return lessons.map((s) => {
     const lesson = s.getFieldset()
+    const image = lesson.image.getFieldset()
     const childLessons = lesson.childLessons
     return (
       <fieldset key={s.id} {...getFieldsetProps(s)}>
         <div>
-          <div className="flex gap-4">
-            <ImageChooser
-              getImgSrc={getLessonImgSrc}
-              preview
-              meta={lesson.image as FieldMetadata<ImageFieldset>}
-            />
+          <Link
+            to={`/cms/lessons/${lesson.id.value}`}
+            className="flex items-center gap-4 rounded-sm p-4 hover:bg-accent"
+          >
+            {image.id.value ? (
+              <img
+                className={'h-20 w-20 rounded-md object-cover'}
+                src={getLessonImgSrc(image.id.value, true)}
+              />
+            ) : null}
             <input {...getInputProps(lesson.id, { type: 'hidden' })} />
             <Field
               className="w-16"
@@ -270,7 +271,13 @@ function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
               }}
               errors={lesson.displayId.errors}
             />
-          </div>
+            <Link to={`/cms/lessons/${lesson.id.value}/edit`} className="pb-2">
+              <Button variant={'link'}>
+                Edit
+                <Icon name={'arrow-right'} className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Link>
           {lesson.childLessons.getFieldList().length ? (
             <div className="pl-12">
               <p className="pb-4 text-xl">Children</p>

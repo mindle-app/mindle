@@ -7,6 +7,7 @@ import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc.tsx'
 import { requireUserWithRole } from '#app/utils/permissions.server.js'
 import { useOptionalUser } from '#app/utils/user.js'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserWithRole(request, 'admin')
@@ -76,5 +77,17 @@ export default function CmsLayout() {
         <Outlet />
       </div>
     </div>
+  )
+}
+
+export function ErrorBoundary() {
+  return (
+    <GeneralErrorBoundary
+      statusHandlers={{
+        403: ({ error }) => (
+          <p>You are not allowed to do that: {error?.data.message}</p>
+        ),
+      }}
+    />
   )
 }
