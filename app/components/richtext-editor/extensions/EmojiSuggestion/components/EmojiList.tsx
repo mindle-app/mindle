@@ -9,9 +9,9 @@ import {
   useState,
 } from 'react'
 
-import { Button } from '#app/components/ui/button.js'
-import { type EmojiListProps } from '../types'
+import { Button } from '#app/components/richtext-editor/components/Button'
 import { Panel } from '#app/components/ui/panel.js'
+import { type EmojiListProps } from '../types'
 
 const EmojiList = forwardRef(
   (

@@ -3,7 +3,9 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 // @ts-ignore
 function nodeEqualsType({ types, node }) {
-  return (Array.isArray(types) && types.includes(node.type)) || node.type === types
+  return (
+    (Array.isArray(types) && types.includes(node.type)) || node.type === types
+  )
 }
 
 /**
@@ -31,7 +33,7 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
     const plugin = new PluginKey(this.name)
     const disabledNodes = Object.entries(this.editor.schema.nodes)
       .map(([, value]) => value)
-      .filter(node => this.options.notAfter.includes(node.name))
+      .filter((node) => this.options.notAfter.includes(node.name))
 
     return [
       new Plugin({
@@ -46,8 +48,9 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
             return
           }
 
-          // eslint-disable-next-line consistent-return
-          return tr.insert(endPosition, type.create())
+          const newNode = type?.create()
+          if (!newNode) return
+          return tr.insert(endPosition, newNode)
         },
         state: {
           init: (_, state) => {

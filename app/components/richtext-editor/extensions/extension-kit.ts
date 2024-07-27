@@ -18,18 +18,13 @@ import {
   StarterKit,
   Subscript,
   Superscript,
-  Table,
   TableOfContents,
-  TableCell,
-  TableHeader,
-  TableRow,
   TextAlign,
   TextStyle,
   TrailingNode,
   Typography,
   Underline,
   emojiSuggestion,
-  Columns,
 } from '.'
 
 interface ExtensionKitProps {
@@ -40,7 +35,6 @@ interface ExtensionKitProps {
 
 export const ExtensionKit = ({}: ExtensionKitProps) => [
   Document,
-  Columns,
   Selection,
   Heading.configure({
     levels: [1, 2, 3, 4, 5, 6],
@@ -80,10 +74,6 @@ export const ExtensionKit = ({}: ExtensionKitProps) => [
   }),
   Subscript,
   Superscript,
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
   Typography,
   Placeholder.configure({
     includeChildren: true,
@@ -92,7 +82,6 @@ export const ExtensionKit = ({}: ExtensionKitProps) => [
   }),
   SlashCommand,
   Focus,
-  Figcaption,
   BlockquoteFigure,
   Dropcursor.configure({
     width: 2,
