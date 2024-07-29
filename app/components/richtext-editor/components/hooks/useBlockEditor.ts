@@ -1,6 +1,6 @@
 import { type Editor, useEditor, type UseEditorOptions } from '@tiptap/react'
 
-import { ExtensionKit } from '../../extensions/ExtensionKit'
+import { ExtensionKit } from '../../extensions/extension-kit.ts'
 import { useSidebar } from './useSidebar'
 
 declare global {
