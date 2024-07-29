@@ -3,13 +3,17 @@ import {
   getFormProps,
   getInputProps,
   useForm,
+  unstable_useControl as useControl,
 } from '@conform-to/react'
 import { parseWithZod, getZodConstraint } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import {
+  type ActionFunctionArgs,
   json,
   type LinksFunction,
   type LoaderFunctionArgs,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
@@ -20,8 +24,14 @@ import { Button } from '#app/components/ui/button.js'
 import { Label } from '#app/components/ui/label.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
-import { ImageChooser, ImageFieldsetSchema } from '#app/utils/image.js'
+import {
+  ImageChooser,
+  ImageFieldsetSchema,
+  MAX_UPLOAD_SIZE,
+} from '#app/utils/image.js'
 import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
+import { redirectWithToast } from '#app/utils/toast.server.js'
+import { useState } from 'react'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -51,6 +61,59 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return json({ lesson })
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await parseMultipartFormData(
+    request,
+    createMemoryUploadHandler({ maxPartSize: MAX_UPLOAD_SIZE }),
+  )
+
+  const submission = await parseWithZod(formData, {
+    schema: LessonSchema.superRefine(async (data, ctx) => {
+      if (!data.id) return
+
+      const lesson = await prisma.lesson.findUnique({
+        select: { id: true },
+        where: { id: data.id },
+      })
+      if (!lesson) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Subchapter not found',
+        })
+      }
+    }),
+    async: true,
+  })
+  if (submission.status !== 'success') {
+    return json(
+      { result: submission.reply() },
+      { status: submission.status === 'error' ? 400 : 200 },
+    )
+  }
+
+  const { id, name, order, width, height, displayId, description } =
+    submission.value
+
+  const { id: updatedId } = await prisma.lesson.update({
+    select: { id: true },
+    where: { id },
+    data: {
+      name,
+      order,
+      width,
+      height,
+      displayId,
+      description,
+    },
+  })
+
+  return redirectWithToast(`/cms/lessons/${updatedId}`, {
+    type: 'success',
+    title: 'Success',
+    description: 'The lesson has been updated successfully',
+  })
+}
+
 export default function LessonCMS() {
   const { lesson } = useLoaderData<typeof loader>()
 
@@ -65,6 +128,8 @@ export default function LessonCMS() {
       return parseWithZod(formData, { schema: LessonSchema })
     },
   })
+  const descControl = useControl(fields.description)
+  const [resetCounter, setResetCounter] = useState(0)
 
   const isPending = useIsPending()
 
@@ -73,6 +138,7 @@ export default function LessonCMS() {
       <div className="relative flex h-full w-full flex-col items-start border-r px-4 pt-4">
         <FormProvider context={form.context}>
           <Form
+            onReset={() => setResetCounter((c) => c + 1)}
             method={'POST'}
             className="relative flex w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden"
             {...getFormProps(form)}
@@ -96,6 +162,12 @@ export default function LessonCMS() {
             </div>
 
             <div className="flex w-full flex-wrap gap-8">
+              <input
+                className={'hidden'}
+                type={'hidden'}
+                name={'id'}
+                value={fields.id.value}
+              />
               <Field
                 labelProps={{ children: 'Name' }}
                 inputProps={{
@@ -133,6 +205,11 @@ export default function LessonCMS() {
                 }}
                 errors={fields.displayId.errors}
               />
+              <input
+                className="sr-only"
+                ref={descControl.register}
+                {...getInputProps(fields.description, { type: 'text' })}
+              />
             </div>
             <div>
               <ImageChooser
@@ -143,7 +220,13 @@ export default function LessonCMS() {
           </Form>
           <div className="w-full">
             <Label>Description</Label>
-            <BlockEditor content={fields.description.value} />
+            <BlockEditor
+              key={`desc-${resetCounter}`}
+              onFocus={descControl.focus}
+              onBlur={descControl.blur}
+              content={descControl.value}
+              onUpdate={({ editor }) => descControl.change(editor.getHTML())}
+            />
           </div>
         </FormProvider>
       </div>
