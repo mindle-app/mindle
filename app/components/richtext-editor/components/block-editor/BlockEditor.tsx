@@ -53,3 +53,26 @@ export function BlockEditor(props: UseEditorOptions) {
     </div>
   )
 }
+
+export function PreviewHTML(props: UseEditorOptions) {
+  const menuContainerRef = useRef(null)
+
+  const { editor } = useBlockEditor({ ...props, editable: false })
+
+  if (!editor) {
+    return null
+  }
+
+  return (
+    <div
+      className="relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2"
+      ref={menuContainerRef}
+    >
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
+        <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
+        <LinkMenu editor={editor} appendTo={menuContainerRef} />
+        <BubbleTextMenu editor={editor} />
+      </div>
+    </div>
+  )
+}

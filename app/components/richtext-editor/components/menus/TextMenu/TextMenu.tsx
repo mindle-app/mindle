@@ -10,8 +10,8 @@ import { EditLinkPopover } from './components/EditLinkPopover'
 import { FontFamilyPicker } from './components/FontFamilyPicker'
 import { FontSizePicker } from './components/FontSizePicker'
 import { useTextmenuCommands } from './hooks/useTextmenuCommands'
-import { useTextmenuStates } from './hooks/useTextmenuStates'
 import { useTextmenuContentTypes } from './hooks/useTextmenuContentTypes'
+import { useTextmenuStates } from './hooks/useTextmenuStates'
 
 // We memorize the button so each button is not rerendered
 // on every editor state change
