@@ -7,8 +7,6 @@ import { useBlockEditor } from '../hooks/useBlockEditor'
 import { LinkMenu, ContentItemMenu, TextMenu } from '../menus'
 import { EditorHeader } from './components/EditorHeader'
 
-import '@/styles/index.css'
-
 export const BlockEditor = () => {
   const menuContainerRef = useRef(null)
 

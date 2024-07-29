@@ -24,6 +24,7 @@ import { TailwindIndicator } from './components/ui/tailwind-indicator.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
 import { ThemeSwitch, useTheme } from './routes/resources+/theme-switch.tsx'
 import appStyleSheetUrl from './styles/app.css?url'
+import globalEditorStyles from './styles/editor.css?url'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
@@ -55,6 +56,7 @@ export const links: LinksFunction = () => {
     { rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
     { rel: 'stylesheet', href: tailwindStyleSheetUrl },
     { rel: 'stylesheet', href: appStyleSheetUrl },
+    { rel: 'stylesheet', href: globalEditorStyles },
   ].filter(Boolean)
 }
 

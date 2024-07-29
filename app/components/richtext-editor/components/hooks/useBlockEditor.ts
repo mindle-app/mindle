@@ -1,5 +1,6 @@
 import { type Editor, useEditor } from '@tiptap/react'
 
+import { useEffect } from 'react'
 import ExtensionKit from '../../extensions/extension-kit'
 import { useSidebar } from './useSidebar'
 
@@ -35,7 +36,10 @@ export const useBlockEditor = () => {
     words: () => 0,
   }
 
-  window.editor = editor
+  useEffect(() => {
+    if (!editor) return
+    window.editor = editor
+  }, [editor])
 
   return { editor, characterCount, leftSidebar }
 }
