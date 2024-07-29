@@ -16,6 +16,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
+import { useState } from 'react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
@@ -31,7 +32,6 @@ import {
 } from '#app/utils/image.js'
 import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { useState } from 'react'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)

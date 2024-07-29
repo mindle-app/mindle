@@ -8,7 +8,7 @@
 @import './partials/typography.css';
 
 .ProseMirror {
-    @apply z-0 py-16 pl-20 pr-8 caret-black outline-0 dark:caret-white lg:pl-8 lg:pr-8;
+    @apply z-0 caret-black outline-0 dark:caret-white lg:pl-8 lg:pr-8;
 
     & > * {
         @apply mx-auto max-w-2xl;

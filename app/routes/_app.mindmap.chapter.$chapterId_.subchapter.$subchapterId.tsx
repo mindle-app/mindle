@@ -2,9 +2,10 @@ import { invariantResponse } from '@epic-web/invariant'
 import {
   type ActionFunctionArgs,
   json,
+  type LinksFunction,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -14,6 +15,7 @@ import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
 import { QuizCard } from '#app/components/quiz-card.js'
 
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import {
   Dialog,
@@ -36,7 +38,13 @@ import {
   completeChapterMindmap,
   type MindmapTree,
 } from '#app/utils/mindmap.js'
-import { toUserState, UserState } from '#app/utils/user.js'
+import { toUserState, UserState, useUser } from '#app/utils/user.js'
+import { PreviewHTML } from '../components/richtext-editor/components/block-editor'
+import { Icon } from '#app/components/ui/icon.js'
+
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
 
 const ParamsSchema = z.object({
   subchapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -183,6 +191,8 @@ export default function SubchapterMindmap() {
   const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
   const studyProgramActive = true
   const completeLesson = useFetcher<typeof action>()
+  const user = useUser()
+  const isAdmin = user.roles.find((role) => role.name === 'admin')
 
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
@@ -255,7 +265,14 @@ export default function SubchapterMindmap() {
             </DialogTrigger>
             <DialogContent className="my-4 max-h-[90vh] overflow-scroll p-12 pb-6">
               <DialogHeader className="gap-8">
-                <DialogTitle className="text-2xl">{text}</DialogTitle>
+                <DialogTitle className="flex items-center text-2xl">
+                  {text}
+                  {isAdmin ? (
+                    <Link to={`/cms/lessons/${treeDatum.attributes?.id}/edit`}>
+                      <Button variant={'link'}>Edit</Button>
+                    </Link>
+                  ) : null}
+                </DialogTitle>
                 {imageUrl && (
                   <img
                     src={imageUrl}
@@ -263,12 +280,12 @@ export default function SubchapterMindmap() {
                     className="h-auto w-full"
                   />
                 )}
-                <DialogDescription
-                  className="text-xl text-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: description ?? '',
-                  }}
-                ></DialogDescription>
+                <DialogDescription className="text-xl text-foreground">
+                  <PreviewHTML
+                    content={description ?? ''}
+                    className="border-none bg-background"
+                  />
+                </DialogDescription>
               </DialogHeader>
               <DialogClose>
                 <Button className="mt-8 w-full">Am înțeles</Button>

@@ -1,6 +1,7 @@
 import { EditorContent, type UseEditorOptions } from '@tiptap/react'
 import { useRef } from 'react'
 
+import { cn } from '#app/utils/misc.js'
 import { useBlockEditor } from '../hooks/useBlockEditor'
 import { LinkMenu, ContentItemMenu, BubbleTextMenu } from '../menus'
 import { EditorHeader } from './components/EditorHeader'
@@ -54,7 +55,10 @@ export function BlockEditor(props: UseEditorOptions) {
   )
 }
 
-export function PreviewHTML(props: UseEditorOptions) {
+export function PreviewHTML({
+  className,
+  ...props
+}: UseEditorOptions & { className?: string }) {
   const menuContainerRef = useRef(null)
 
   const { editor } = useBlockEditor({ ...props, editable: false })
@@ -65,7 +69,10 @@ export function PreviewHTML(props: UseEditorOptions) {
 
   return (
     <div
-      className="relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2"
+      className={cn(
+        'relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2',
+        className,
+      )}
       ref={menuContainerRef}
     >
       <div className="flex h-full flex-1 flex-col overflow-hidden">
