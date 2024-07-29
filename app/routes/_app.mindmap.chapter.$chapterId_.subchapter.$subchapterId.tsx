@@ -40,7 +40,6 @@ import {
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState, useUser } from '#app/utils/user.js'
 import { PreviewHTML } from '../components/richtext-editor/components/block-editor'
-import { Icon } from '#app/components/ui/icon.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)

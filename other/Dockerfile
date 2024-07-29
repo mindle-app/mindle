@@ -15,7 +15,11 @@ FROM base as deps
 WORKDIR /myapp
 
 ADD package.json package-lock.json .npmrc ./
-RUN npm install --include=dev
+
+# Mount the secret and set it as an environment variable and run the build
+RUN --mount=type=secret,id=TIPTAP_PRO_TOKEN \
+  export TIPTAP_PRO_TOKEN=$(cat /run/secrets/TIPTAP_PRO_TOKEN) && \
+  npm install --include=dev
 
 # Setup production node_modules
 FROM base as production-deps
