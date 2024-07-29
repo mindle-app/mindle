@@ -6,17 +6,26 @@ import {
 } from '@conform-to/react'
 import { parseWithZod, getZodConstraint } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Form, Link, useLoaderData } from '@remix-run/react'
+import {
+  json,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
+import { Form, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
-import { RichTextField } from '#app/components/rich-text-field.js'
+import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import { Label } from '#app/components/ui/label.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { ImageChooser, ImageFieldsetSchema } from '#app/utils/image.js'
 import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
+
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
 
 export const LessonSchema = z.object({
   name: z.string().min(1).max(255),
@@ -61,11 +70,11 @@ export default function LessonCMS() {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="relative flex h-full w-full flex-col items-start border-r">
+      <div className="relative flex h-full w-full flex-col items-start border-r px-4 pt-4">
         <FormProvider context={form.context}>
           <Form
             method={'POST'}
-            className="relative flex h-full w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pt-4"
+            className="relative flex w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden"
             {...getFormProps(form)}
             encType="multipart/form-data"
           >
@@ -131,11 +140,11 @@ export default function LessonCMS() {
                 getImgSrc={(imageId) => getLessonImgSrc(imageId, true)}
               />
             </div>
-            <div>
-              <Label>Description</Label>
-              <RichTextField value={fields.description.value ?? ''} />
-            </div>
           </Form>
+          <div className="w-full">
+            <Label>Description</Label>
+            <BlockEditor content={fields.description.value} />
+          </div>
         </FormProvider>
       </div>
     </div>

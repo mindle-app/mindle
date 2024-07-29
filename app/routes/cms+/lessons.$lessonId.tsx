@@ -6,16 +6,26 @@ import {
 } from '@conform-to/react'
 import { parseWithZod, getZodConstraint } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
+import {
+  json,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
 import { Form, Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { RichTextField } from '#app/components/rich-text-field.js'
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import { Label } from '#app/components/ui/label.js'
 import { prisma } from '#app/utils/db.server.js'
 import { ImageChooser, ImageFieldsetSchema } from '#app/utils/image.js'
 import { getLessonImgSrc } from '#app/utils/misc.js'
+import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
+
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
 
 export const LessonSchema = z.object({
   name: z.string().min(1).max(255),
@@ -130,7 +140,10 @@ export default function LessonCMS() {
             </div>
             <div>
               <Label>Description</Label>
-              <RichTextField disabled value={fields.description.value ?? ''} />
+              <BlockEditor
+                editable={false}
+                content={fields.description.value}
+              />
             </div>
           </Form>
         </FormProvider>

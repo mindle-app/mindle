@@ -41,7 +41,6 @@ export const ExtensionKit = () => [
     heading: false,
     horizontalRule: false,
     blockquote: false,
-    history: false,
     codeBlock: false,
   }),
   TextStyle,

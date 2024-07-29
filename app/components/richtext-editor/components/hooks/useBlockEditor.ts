@@ -1,7 +1,6 @@
-import { type Editor, useEditor } from '@tiptap/react'
+import { type Editor, useEditor, type UseEditorOptions } from '@tiptap/react'
 
-import { useEffect } from 'react'
-import ExtensionKit from '../../extensions/extension-kit'
+import { ExtensionKit } from '../../extensions/ExtensionKit'
 import { useSidebar } from './useSidebar'
 
 declare global {
@@ -12,13 +11,14 @@ declare global {
 
 const extensions = ExtensionKit()
 
-export const useBlockEditor = () => {
+export const useBlockEditor = (options: UseEditorOptions = {}) => {
   const leftSidebar = useSidebar()
 
   const editor = useEditor(
     {
       autofocus: true,
       extensions: [...extensions],
+
       editorProps: {
         attributes: {
           autocomplete: 'off',
@@ -27,6 +27,7 @@ export const useBlockEditor = () => {
           class: 'min-h-full',
         },
       },
+      ...options,
     },
     [],
   )
@@ -35,11 +36,6 @@ export const useBlockEditor = () => {
     characters: () => 0,
     words: () => 0,
   }
-
-  useEffect(() => {
-    if (!editor) return
-    window.editor = editor
-  }, [editor])
 
   return { editor, characterCount, leftSidebar }
 }

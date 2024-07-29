@@ -1,37 +1,55 @@
-'use client'
-
-import { EditorContent } from '@tiptap/react'
+import { EditorContent, type UseEditorOptions } from '@tiptap/react'
 import { useRef } from 'react'
 
 import { useBlockEditor } from '../hooks/useBlockEditor'
-import { LinkMenu, ContentItemMenu, TextMenu } from '../menus'
+import { LinkMenu, ContentItemMenu, BubbleTextMenu } from '../menus'
 import { EditorHeader } from './components/EditorHeader'
 
-export const BlockEditor = () => {
+export const PageEditor = (props: UseEditorOptions) => {
   const menuContainerRef = useRef(null)
 
-  const { editor, characterCount, leftSidebar } = useBlockEditor()
+  const { editor, characterCount } = useBlockEditor(props)
 
   if (!editor) {
     return null
   }
 
   return (
-    <div className="flex h-full" ref={menuContainerRef}>
+    <div className="flex h-full bg-card" ref={menuContainerRef}>
       <div className="relative flex h-full flex-1 flex-col overflow-hidden">
         <EditorHeader
           characters={characterCount.characters()}
           words={characterCount.words()}
-          isSidebarOpen={leftSidebar.isOpen}
-          toggleSidebar={leftSidebar.toggle}
         />
         <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
         <ContentItemMenu editor={editor} />
         <LinkMenu editor={editor} appendTo={menuContainerRef} />
-        <TextMenu editor={editor} />
+        <BubbleTextMenu editor={editor} />
       </div>
     </div>
   )
 }
 
-export default BlockEditor
+export function BlockEditor(props: UseEditorOptions) {
+  const menuContainerRef = useRef(null)
+
+  const { editor } = useBlockEditor(props)
+
+  if (!editor) {
+    return null
+  }
+
+  return (
+    <div
+      className="relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2"
+      ref={menuContainerRef}
+    >
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
+        <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
+        <ContentItemMenu editor={editor} />
+        <LinkMenu editor={editor} appendTo={menuContainerRef} />
+        <BubbleTextMenu editor={editor} />
+      </div>
+    </div>
+  )
+}
