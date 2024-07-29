@@ -7,6 +7,7 @@ import {
   Dropcursor,
   Emoji,
   Focus,
+  FontFamily,
   FontSize,
   Heading,
   Highlight,
@@ -27,13 +28,7 @@ import {
   emojiSuggestion,
 } from '.'
 
-interface ExtensionKitProps {
-  userId?: string
-  userName?: string
-  userColor?: string
-}
-
-export const ExtensionKit = ({}: ExtensionKitProps) => [
+export const ExtensionKit = () => [
   Document,
   Selection,
   Heading.configure({
@@ -51,6 +46,7 @@ export const ExtensionKit = ({}: ExtensionKitProps) => [
   }),
   TextStyle,
   FontSize,
+  FontFamily,
   Color,
   TrailingNode,
   Link.configure({

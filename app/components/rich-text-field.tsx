@@ -1,11 +1,11 @@
 import Color from '@tiptap/extension-color'
+import TextStyle from '@tiptap/extension-text-style'
 import { type Editor, EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import TextStyle from '@tiptap/extension-text-style'
 
-import { Bold, Heading2, Italic, List, ListOrdered } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '#app/utils/misc.js'
+import { Icon } from './ui/icon'
 import { Toggle } from './ui/toggle'
 
 export function RichToolbar({ editor }: { editor: Editor | null }) {
@@ -19,7 +19,7 @@ export function RichToolbar({ editor }: { editor: Editor | null }) {
           editor.chain().focus().toggleHeading({ level: 2 })
         }
       >
-        <Heading2 className="h-4 w-4" />
+        <Icon name={'heading-2'} className="h-4 w-4" />
       </Toggle>
 
       <Toggle
@@ -27,7 +27,7 @@ export function RichToolbar({ editor }: { editor: Editor | null }) {
         pressed={editor.isActive('bold')}
         onPressedChange={() => editor.chain().focus().toggleBold()}
       >
-        <Bold className="h-4 w-4" />
+        <Icon name={'bold'} className="h-4 w-4" />
       </Toggle>
 
       <Toggle
@@ -35,7 +35,7 @@ export function RichToolbar({ editor }: { editor: Editor | null }) {
         pressed={editor.isActive('italic')}
         onPressedChange={() => editor.chain().focus().toggleItalic()}
       >
-        <Italic className="h-4 w-4" />
+        <Icon name={'italic'} className="h-4 w-4" />
       </Toggle>
 
       <Toggle
@@ -43,7 +43,7 @@ export function RichToolbar({ editor }: { editor: Editor | null }) {
         pressed={editor.isActive('bulletList')}
         onPressedChange={() => editor.chain().focus().toggleBulletList()}
       >
-        <List className="h-4 w-4" />
+        <Icon name={'list'} className="h-4 w-4" />
       </Toggle>
 
       <Toggle
@@ -51,7 +51,7 @@ export function RichToolbar({ editor }: { editor: Editor | null }) {
         pressed={editor.isActive('orderedList')}
         onPressedChange={() => editor.chain().focus().toggleOrderedList()}
       >
-        <ListOrdered className="h-4 w-4" />
+        <Icon name={'list-ordered'} className="h-4 w-4" />
       </Toggle>
     </div>
   )

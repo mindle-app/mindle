@@ -17,6 +17,7 @@ export { Paragraph } from '@tiptap/extension-paragraph'
 export { CodeBlock } from '@tiptap/extension-code-block'
 export { BulletList } from '@tiptap/extension-bullet-list'
 export { OrderedList } from '@tiptap/extension-ordered-list'
+export { FontFamily } from '@tiptap/extension-font-family'
 
 export { Selection } from './Selection'
 export { HorizontalRule } from './HorizontalRule'
