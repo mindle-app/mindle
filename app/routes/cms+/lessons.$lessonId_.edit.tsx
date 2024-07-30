@@ -28,6 +28,8 @@ import { prisma } from '#app/utils/db.server.js'
 import {
   ImageChooser,
   ImageFieldsetSchema,
+  imageHasFile,
+  imageHasId,
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
@@ -81,6 +83,31 @@ export async function action({ request }: ActionFunctionArgs) {
           message: 'Subchapter not found',
         })
       }
+    }).transform(async ({ image, ...data }) => {
+      return {
+        ...data,
+        imageUpdate: imageHasId(image)
+          ? imageHasFile(image)
+            ? {
+                id: image.id,
+                altText: image.altText,
+                contentType: image.file.type,
+                blob: Buffer.from(await image.file.arrayBuffer()),
+              }
+            : {
+                id: image.id,
+                altText: image.altText,
+              }
+          : null,
+        newImage:
+          !imageHasId(image) && imageHasFile(image)
+            ? {
+                altText: image.altText,
+                contentType: image.file.type,
+                blob: Buffer.from(await image.file.arrayBuffer()),
+              }
+            : null,
+      }
     }),
     async: true,
   })
@@ -91,8 +118,17 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { id, name, order, width, height, displayId, description } =
-    submission.value
+  const {
+    id,
+    imageUpdate,
+    newImage,
+    name,
+    order,
+    width,
+    height,
+    displayId,
+    description,
+  } = submission.value
 
   const { id: updatedId } = await prisma.lesson.update({
     select: { id: true },
@@ -104,6 +140,10 @@ export async function action({ request }: ActionFunctionArgs) {
       height,
       displayId,
       description,
+      image: {
+        ...(imageUpdate ? { update: imageUpdate } : {}),
+        ...(newImage ? { create: newImage } : {}),
+      },
     },
   })
 
