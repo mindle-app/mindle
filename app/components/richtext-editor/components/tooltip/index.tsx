@@ -1,5 +1,3 @@
-'use client'
-
 import Tippy from '@tippyjs/react/headless'
 import { useCallback } from 'react'
 

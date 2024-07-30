@@ -1,5 +1,3 @@
-'use client'
-
 import { type Editor as CoreEditor } from '@tiptap/core'
 import { type TableOfContentsStorage } from '@tiptap-pro/extension-table-of-contents'
 import { memo, useEffect, useState } from 'react'
