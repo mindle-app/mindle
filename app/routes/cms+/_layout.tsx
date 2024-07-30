@@ -1,5 +1,6 @@
 import { type HeadersFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, NavLink, Outlet } from '@remix-run/react'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.js'
 import { Logo } from '#app/components/logo'
 
 import { Button } from '#app/components/ui/button.js'
@@ -7,7 +8,6 @@ import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc.tsx'
 import { requireUserWithRole } from '#app/utils/permissions.server.js'
 import { useOptionalUser } from '#app/utils/user.js'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserWithRole(request, 'admin')
@@ -31,7 +31,7 @@ export function NavHeader() {
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
         )}
       >
-        <Link to={'/cms'}>
+        <Link to={'/'}>
           <Logo className={'h-14 w-14 fill-foreground'} />
         </Link>
 
@@ -58,6 +58,9 @@ const items = [
   { name: 'Subjects', to: '/cms/subjects' },
   { name: 'Chapters', to: '/cms/chapters' },
   { name: 'Subchapters', to: '/cms/subchapters' },
+  { name: 'Study Materials', to: '/cms/study-materials' },
+  { name: 'Essays', to: '/cms/essays' },
+  { name: 'Users', to: '/cms/users' },
 ]
 
 export default function CmsLayout() {
@@ -66,7 +69,7 @@ export default function CmsLayout() {
       <NavHeader />
       <div className="flex w-full flex-grow pt-5">
         <aside className="border-r p-2">
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col items-start gap-4">
             {items.map((i) => (
               <NavLink key={i.name} className={linkClasses} to={i.to}>
                 {i.name}
