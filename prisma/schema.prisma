@@ -395,7 +395,6 @@ model QuizAnswer {
 model StudyMaterial {
   id        String  @id @default(cuid())
   title     String
-  author    String?
   type      String // e.g "LITERARY_WORK", "MATH_CONCEPT", "PROGRAMMING_TOPIC" etc
   subjectId Int
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -404,8 +403,40 @@ model StudyMaterial {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  author    Author?  @relation(fields: [authorId], references: [id])
+  authorId  String?
 
   @@map("study_material")
+}
+
+model Author {
+  id    String       @id @default(cuid())
+  name  String
+  bio   String?
+  image AuthorImage?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  essays         Essay[]
+  studyMaterials StudyMaterial[]
+
+  @@map("author")
+}
+
+model AuthorImage {
+  id          String  @id @default(cuid())
+  altText     String?
+  contentType String
+  blob        Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId String @unique
+
+  @@map("author_image")
 }
 
 model Essay {
@@ -419,6 +450,8 @@ model Essay {
 
   paragraphs EssayParagraph[]
   lessons    Lesson[] // used to generate the mindmap
+  author     Author?          @relation(fields: [authorId], references: [id])
+  authorId   String?
 
   @@map("essay")
 }

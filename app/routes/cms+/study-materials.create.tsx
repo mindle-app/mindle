@@ -1,3 +1,5 @@
+import { createId as cuid } from '@paralleldrive/cuid2'
+
 import {
   FormProvider,
   getFormProps,
@@ -5,12 +7,7 @@ import {
   useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import {
-  type ActionFunctionArgs,
-  json,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-} from '@remix-run/node'
+import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
@@ -18,24 +15,23 @@ import { Button } from '#app/components/ui/button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
-import { ImageChooser, MAX_UPLOAD_SIZE } from '#app/utils/image.js'
-import { getSubjectImgSrc, useIsPending } from '#app/utils/misc.js'
+import { useIsPending } from '#app/utils/misc.js'
 import { StudyMaterialTypeSchema } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const StudyMaterialCreateSchema = z.object({
   title: z.string().min(1),
-  author: z.string().min(1).optional(),
+  author: z.object({
+    name: z.string().min(1),
+    id: z.string().optional(),
+    bio: z.string().min(1).optional(),
+  }),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
 })
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await parseMultipartFormData(
-    request,
-    createMemoryUploadHandler({ maxPartSize: MAX_UPLOAD_SIZE }),
-  )
-
+  const formData = await request.formData()
   const submission = await parseWithZod(formData, {
     schema: StudyMaterialCreateSchema.superRefine(async (data, ctx) => {
       const studyMaterial = await prisma.studyMaterial.findFirst({
@@ -69,26 +65,40 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { title, author, subjectId } = submission.value
+  const { type, title, subjectId, author } = submission.value
 
-  const createdStudyMaterial = await prisma.studyMaterial.create({
+  let authorId = author.id
+  if (!authorId) {
+    const { id } = await prisma.author.create({
+      select: { id: true },
+      data: {
+        id: cuid(),
+        name: author.name,
+        bio: author.bio,
+      },
+    })
+    authorId = id
+  }
+
+  await prisma.studyMaterial.create({
     data: {
+      type,
       title,
-      author,
       subjectId,
+      authorId,
     },
   })
 
-  return redirectWithToast(`/cms/subjects/${createdStudyMaterial.id}`, {
+  return redirectWithToast(`/cms/study-materials/`, {
     type: 'success',
-    title: 'StudyMaterial updated',
-    description: 'The studyMaterial has been updated successfully',
+    title: 'StudyMaterial created',
+    description: 'The studyMaterial has been created successfully',
   })
 }
 
 export default function StudyMaterialCMS() {
   const [form, fields] = useForm({
-    id: 'studyMaterial-editor',
+    id: 'study-material-editor',
     constraint: getZodConstraint(StudyMaterialCreateSchema),
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: StudyMaterialCreateSchema })
@@ -132,15 +142,13 @@ export default function StudyMaterialCMS() {
 
             <div className="flex gap-4">
               <Field
-                labelProps={{ children: 'Name' }}
+                labelProps={{ children: 'Title' }}
                 inputProps={{
                   autoFocus: true,
-                  ...getInputProps(fields.name, { type: 'text' }),
+                  ...getInputProps(fields.title, { type: 'text' }),
                 }}
-                errors={fields.name.errors}
+                errors={fields.title.errors}
               />
-
-              <ImageChooser meta={fields.image} getImgSrc={getSubjectImgSrc} />
             </div>
           </Form>
         </FormProvider>
