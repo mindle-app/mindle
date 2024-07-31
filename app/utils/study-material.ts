@@ -7,3 +7,9 @@ export const StudyMaterialTypeSchema = z.enum([
 ])
 
 export type StudyMaterialType = z.infer<typeof StudyMaterialTypeSchema>
+
+export const StudyMaterialTypes: StudyMaterialType[] = [
+  'LITERARY_WORK',
+  'MATH_CONCEPT',
+  'PROGRAMMING_TOPIC',
+]

@@ -5,6 +5,9 @@ import { useSpinDelay } from 'spin-delay'
 import { extendTailwindMerge } from 'tailwind-merge'
 import { extendedTheme } from './extended-theme.ts'
 
+export function makeGetEntityImgSrc(entity: string) {
+  return (imageId: string) => `/resources/${entity}/${imageId}`
+}
 export function getUserImgSrc(imageId?: string | null) {
   return imageId ? `/resources/user-images/${imageId}` : '/img/user.png'
 }
@@ -23,6 +26,8 @@ export function getSubjectImgSrc(imageId: string) {
 export function getNoteImgSrc(imageId: string) {
   return `/resources/note-images/${imageId}`
 }
+
+export const getAuthorImgSrc = makeGetEntityImgSrc('author-image')
 
 export function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error

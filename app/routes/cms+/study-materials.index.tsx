@@ -3,13 +3,13 @@ import { Link, redirect, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
+import { Icon } from '#app/components/ui/icon.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDelayedIsPending } from '#app/utils/misc.js'
-import { Icon } from '#app/components/ui/icon.js'
 
 const StudyMaterialResult = z.array(
   z.object({
-    id: z.number(),
+    id: z.string(),
     title: z.string(),
   }),
 )
@@ -75,6 +75,7 @@ export default function StudyMaterialCms() {
                   to={`/cms/study-materials/create`}
                   className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
                 >
+                  <Icon name={'plus'} className="mr-4 h-6 w-6" />
                   Create Study Material
                 </Link>
               </li>

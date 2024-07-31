@@ -8,7 +8,6 @@ import {
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
-import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
 import { Field, SelectField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
@@ -22,37 +21,50 @@ import {
   StudyMaterialTypes,
 } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { AuthorSelectField } from './study-materials.$studyMaterialId'
+import { loader as studyMaterialLoader } from './study-materials.$studyMaterialId.tsx'
 
-const StudyMaterialCreateSchema = z.object({
+const StudyMaterialEditSchema = z.object({
   title: z.string().min(1),
   authorId: z.string().optional(),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
+  id: z.string().min(1),
 })
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
   const submission = await parseWithZod(formData, {
-    schema: StudyMaterialCreateSchema.superRefine(async (data, ctx) => {
+    schema: StudyMaterialEditSchema.superRefine(async (data, ctx) => {
+      console.log(data)
       const studyMaterial = await prisma.studyMaterial.findFirst({
         select: { id: true },
-        where: { title: data.title },
+        where: { id: data.id },
       })
       const subject = await prisma.subject.findFirst({
         select: { id: true },
         where: { id: data.subjectId },
       })
+      if (data.authorId) {
+        const author = await prisma.author.findFirst({
+          where: { id: data.authorId },
+        })
+        if (!author) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Author not found',
+          })
+        }
+      }
       if (!subject) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Subject not found',
         })
       }
-      if (studyMaterial) {
+      if (!studyMaterial) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Study Material with this name already exists',
+          message: 'Study Material not found',
         })
       }
     }),
@@ -66,42 +78,36 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { type, title, subjectId, authorId } = submission.value
+  const { type, id, title, subjectId, authorId } = submission.value
 
-  await prisma.studyMaterial.create({
+  const { id: updatedId } = await prisma.studyMaterial.update({
+    select: { id: true },
     data: {
       type,
       title,
       subjectId,
       authorId,
     },
+    where: { id },
   })
 
-  return redirectWithToast(`/cms/study-materials/`, {
+  return redirectWithToast(`/cms/study-materials/${updatedId}`, {
     type: 'success',
     title: 'StudyMaterial created',
     description: 'The studyMaterial has been created successfully',
   })
 }
 
-export async function loader() {
-  const s = prisma.subject.findMany({
-    select: { id: true, name: true },
-  })
-  const a = prisma.author.findMany({
-    select: { id: true, name: true },
-  })
-
-  return json(await promiseHash({ authors: a, subjects: s }))
-}
+export const loader = studyMaterialLoader
 
 export default function StudyMaterialCMS() {
-  const { subjects, authors } = useLoaderData<typeof loader>()
+  const { subjects, authors, studyMaterial } = useLoaderData<typeof loader>()
   const [form, fields] = useForm({
     id: 'study-material-editor',
-    constraint: getZodConstraint(StudyMaterialCreateSchema),
+    constraint: getZodConstraint(StudyMaterialEditSchema),
+    defaultValue: studyMaterial,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: StudyMaterialCreateSchema })
+      return parseWithZod(formData, { schema: StudyMaterialEditSchema })
     },
     shouldRevalidate: 'onBlur',
   })
@@ -118,7 +124,7 @@ export default function StudyMaterialCMS() {
             encType="multipart/form-data"
           >
             <div className="flex items-center gap-2">
-              <p className="text-2xl">New Study Material</p>
+              <p className="text-2xl">StudyMaterial</p>
               <div className="flex w-full gap-1">
                 <Button variant="destructive" {...form.reset.getButtonProps()}>
                   Reset
@@ -149,7 +155,7 @@ export default function StudyMaterialCMS() {
                 }}
                 errors={fields.title.errors}
               />
-
+              <input {...getInputProps(fields.id, { type: 'hidden' })} />
               <SelectField
                 errors={fields.authorId.errors}
                 meta={fields.authorId}

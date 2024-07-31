@@ -1,7 +1,24 @@
-import { useInputControl } from '@conform-to/react'
+import { type FieldMetadata, useInputControl } from '@conform-to/react'
+import {
+  type SelectItemProps,
+  type SelectProps,
+  type SelectTriggerProps,
+  type SelectValueProps,
+} from '@radix-ui/react-select'
 import { REGEXP_ONLY_DIGITS_AND_CHARS, type OTPInputProps } from 'input-otp'
 import React, { useId } from 'react'
+import { cn } from '#app/utils/misc.js'
+import { Button } from './ui/button.tsx'
 import { Checkbox, type CheckboxProps } from './ui/checkbox.tsx'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from './ui/command.tsx'
+import { Icon } from './ui/icon.tsx'
 import {
   InputOTP,
   InputOTPGroup,
@@ -10,6 +27,14 @@ import {
 } from './ui/input-otp.tsx'
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select.tsx'
 import { Textarea } from './ui/textarea.tsx'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
@@ -197,6 +222,165 @@ export function CheckboxField({
       <div className="px-4 pb-3 pt-1">
         {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
       </div>
+    </div>
+  )
+}
+
+export type SelectOption = {
+  value: string | number
+  label: string
+}
+
+type SelectFieldProps<V> = {
+  meta: FieldMetadata<V>
+  selectProps?: Omit<SelectProps, 'value' | 'name'> & { id?: string }
+  options: SelectOption[]
+  selectTriggerProps?: Omit<SelectTriggerProps, 'children'>
+  selectValueProps?: SelectValueProps
+  selectItemProps?: Omit<SelectItemProps, 'value' | 'children'>
+  labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
+  errors?: ListOfErrors
+}
+
+export function SelectField<V>({
+  meta,
+  options,
+  labelProps,
+  selectProps = {},
+  selectItemProps = {},
+  selectTriggerProps = {},
+  selectValueProps = {},
+  errors,
+}: SelectFieldProps<V>) {
+  const control = useInputControl(meta as FieldMetadata<string>)
+  const fallbackId = useId()
+  const id = meta.name ?? fallbackId
+  const errorId = meta.errors?.length ? `${id}-error` : undefined
+
+  return (
+    <div>
+      <Label htmlFor={meta.name} {...labelProps} />
+      <Select
+        {...selectProps}
+        name={meta.name}
+        value={control.value}
+        onValueChange={(value) => {
+          control.change(value)
+        }}
+        onOpenChange={(open) => {
+          if (!open) {
+            control.blur()
+          }
+        }}
+        aria-invalid={errorId ? true : undefined}
+        aria-describedby={errorId}
+      >
+        <SelectTrigger {...selectTriggerProps} id={meta.name}>
+          <SelectValue {...selectValueProps} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem
+              key={o.value}
+              value={String(o.value)}
+              {...selectItemProps}
+            >
+              {o.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div className="px-4 pb-3 pt-1">
+        {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
+      </div>
+    </div>
+  )
+}
+
+type ComboboxOption = {
+  value: string
+  label: string
+}
+
+type ComboboxProps<V> = {
+  meta: FieldMetadata<V>
+  options: ComboboxOption[]
+  selectValueProps?: SelectValueProps
+  labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
+  errors?: ListOfErrors
+  renderNoResults?: () => React.ReactNode
+  searchPlaceholder?: string
+}
+
+export function ComboboxField<V>({
+  meta,
+  searchPlaceholder,
+  options,
+  renderNoResults,
+}: ComboboxProps<V>) {
+  const control = useInputControl(meta as FieldMetadata<string>)
+  return (
+    <div>
+      <Label htmlFor={meta.name} />
+      <Popover
+        onOpenChange={(open) => {
+          if (!open) {
+            control.blur()
+          }
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            className={cn(
+              'w-[200px] justify-between',
+              !control.value && 'text-muted-foreground',
+            )}
+          >
+            {control.value
+              ? options.find((o) => o.value === control.value)?.label
+              : 'Select author'}
+            <Icon
+              name={'chevrons-up-down'}
+              className="ml-2 h-4 w-4 shrink-0 opacity-50"
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder={searchPlaceholder ?? 'Search...'} />
+            <CommandList>
+              {typeof renderNoResults === 'function' ? (
+                renderNoResults()
+              ) : (
+                <CommandEmpty>No results</CommandEmpty>
+              )}
+              <CommandGroup>
+                {options.map((a) => (
+                  <CommandItem
+                    disabled={false}
+                    value={a.value}
+                    key={a.value}
+                    onSelect={() => {
+                      control.change(a.value)
+                    }}
+                  >
+                    <Icon
+                      name={'check'}
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        a.value === control.value ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    {a.value}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }
