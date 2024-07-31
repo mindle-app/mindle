@@ -1,10 +1,9 @@
-import { createId as cuid } from '@paralleldrive/cuid2'
-
 import {
   FormProvider,
   getFormProps,
   getInputProps,
   useForm,
+  unstable_useControl as useControl,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
@@ -12,20 +11,31 @@ import { Form, Outlet } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '#app/components/ui/command.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { Label } from '#app/components/ui/label.js'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#app/components/ui/popover.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
-import { useIsPending } from '#app/utils/misc.js'
+import { cn, useIsPending } from '#app/utils/misc.js'
 import { StudyMaterialTypeSchema } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const StudyMaterialCreateSchema = z.object({
   title: z.string().min(1),
-  author: z.object({
-    name: z.string().min(1),
-    id: z.string().optional(),
-    bio: z.string().min(1).optional(),
-  }),
+  authorId: z.string().optional(),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
 })
@@ -65,20 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { type, title, subjectId, author } = submission.value
-
-  let authorId = author.id
-  if (!authorId) {
-    const { id } = await prisma.author.create({
-      select: { id: true },
-      data: {
-        id: cuid(),
-        name: author.name,
-        bio: author.bio,
-      },
-    })
-    authorId = id
-  }
+  const { type, title, subjectId, authorId } = submission.value
 
   await prisma.studyMaterial.create({
     data: {
@@ -96,6 +93,13 @@ export async function action({ request }: ActionFunctionArgs) {
   })
 }
 
+const authors = [
+  { label: 'Ion Creanga', value: '1' },
+  { label: 'Mihai Eminescu', value: '2' },
+  { label: 'Florin Piersic', value: '3' },
+  { label: 'Liviu Rebreanu', value: '4' },
+] as const
+
 export default function StudyMaterialCMS() {
   const [form, fields] = useForm({
     id: 'study-material-editor',
@@ -106,6 +110,8 @@ export default function StudyMaterialCMS() {
     shouldRevalidate: 'onBlur',
   })
   const isPending = useIsPending()
+
+  const authorControl = useControl(fields.authorId)
 
   return (
     <div className="flex h-full w-full flex-col md:flex-row">
@@ -134,7 +140,7 @@ export default function StudyMaterialCMS() {
               </div>
             </div>
             {/*
-					This hidden submit button is here to ensure that when the user hits
+					This hidden submit button is hpere to ensure that when the user hits
 					"enter" on an input field, the primary form function is submitted
 					rather than the first button in the form (which is delete/add image).
 				      */}
@@ -149,6 +155,78 @@ export default function StudyMaterialCMS() {
                 }}
                 errors={fields.title.errors}
               />
+              <input
+                ref={authorControl.register}
+                {...getInputProps(fields.authorId, { type: 'hidden' })}
+              />
+              <div className="jutify-center mt-[5px] flex flex-col gap-1">
+                <Label>Author</Label>
+                <Popover
+                  onOpenChange={(open) => {
+                    if (open) {
+                      authorControl.focus()
+                    } else {
+                      authorControl.blur()
+                    }
+                  }}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        'w-[200px] justify-between',
+                        !fields.authorId.value && 'text-muted-foreground',
+                      )}
+                    >
+                      {authorControl.value
+                        ? authors.find((a) => a.value === authorControl.value)
+                            ?.label
+                        : 'Select author'}
+                      <Icon
+                        name={'chevrons-up-down'}
+                        className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search author..." />
+                      <CommandList>
+                        <CommandEmpty>No author found.</CommandEmpty>
+                        <CommandGroup>
+                          {authors.map((a) => (
+                            <CommandItem
+                              disabled={false}
+                              value={a.label}
+                              key={a.value}
+                              onSelect={() => {
+                                authorControl.change(a.value)
+                                console.log('Select')
+                              }}
+                              onClick={() => {
+                                console.log('Clocked')
+                                authorControl.change(a.value)
+                              }}
+                            >
+                              <Icon
+                                name={'check'}
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  a.value === authorControl.value
+                                    ? 'opacity-100'
+                                    : 'opacity-0',
+                                )}
+                              />
+                              {a.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </Form>
         </FormProvider>
