@@ -225,7 +225,7 @@ model Chapter {
   name          String
   nextChapterId Int?   @unique()
   subjectId     Int
-  order  Int?
+  order         Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -395,7 +395,7 @@ model QuizAnswer {
 model StudyMaterial {
   id        String  @id @default(cuid())
   title     String
-  author    String
+  author    String?
   type      String // e.g "LITERARY_WORK", "MATH_CONCEPT", "PROGRAMMING_TOPIC" etc
   subjectId Int
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -424,12 +424,13 @@ model Essay {
 }
 
 model EssayParagraph {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   content     String
   explanation String
+  note        String?
   order       Int
   essayId     String
-  essay       Essay  @relation(fields: [essayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  essay       Essay   @relation(fields: [essayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   lessons Lesson[] // used to generate the mindmap
 

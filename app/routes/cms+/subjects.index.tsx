@@ -5,6 +5,7 @@ import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, getSubjectImgSrc, useDelayedIsPending } from '#app/utils/misc.js'
+import { Icon } from '#app/components/ui/icon.js'
 
 const SubjectSearchResult = z.array(
   z.object({
@@ -50,9 +51,9 @@ export default function SubjectCms() {
 
   return (
     <div className="container flex flex-col gap-6">
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-4">
         <h1 className="text-xl">Mindle Subjects</h1>
-        <div className="w-1/2">
+        <div className="max-w-md">
           <SearchBar
             action="/cms/subjects"
             status={data.status}
@@ -62,20 +63,31 @@ export default function SubjectCms() {
         </div>
       </div>
 
-      <main>
+      <main className="max-w-md">
         {data.status === 'idle' ? (
           data.subjects.length ? (
             <ul
-              className={cn(
-                'flex w-full flex-wrap items-center justify-start gap-4 delay-200',
-                { 'opacity-50': isPending },
-              )}
+              className={cn('flex flex-col gap-4 delay-200', {
+                'opacity-50': isPending,
+              })}
             >
+              <li>
+                <Link
+                  to={`/cms/subjects/create`}
+                  className="flex h-16 items-center justify-start rounded-lg bg-muted px-5 py-3"
+                >
+                  <Icon name={'plus'} className="h-16 w-16 rounded-full" />
+
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-body-md">
+                    Create New Subject
+                  </span>
+                </Link>
+              </li>
               {data.subjects.map((subject) => (
                 <li key={subject.id}>
                   <Link
                     to={`/cms/subjects/${subject.id}`}
-                    className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
+                    className="flex h-16 items-center justify-start rounded-lg bg-muted px-5 py-3"
                   >
                     {subject.imageId ? (
                       <img
@@ -85,7 +97,7 @@ export default function SubjectCms() {
                       />
                     ) : null}
                     {subject.name ? (
-                      <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-body-md">
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-body-md">
                         {subject.name}
                       </span>
                     ) : null}

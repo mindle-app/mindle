@@ -5,6 +5,7 @@ import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDelayedIsPending } from '#app/utils/misc.js'
+import { Icon } from '#app/components/ui/icon.js'
 
 const StudyMaterialResult = z.array(
   z.object({
@@ -49,7 +50,7 @@ export default function StudyMaterialCms() {
   return (
     <div className="container flex flex-col gap-6">
       <div className="flex flex-col">
-        <h1 className="text-xl">Mindle StudyMaterials</h1>
+        <h1 className="text-xl">Mindle Study Materials</h1>
         <div className="w-1/2">
           <SearchBar
             action="/cms/study-materials"
@@ -60,7 +61,7 @@ export default function StudyMaterialCms() {
         </div>
       </div>
 
-      <main>
+      <main className="max-w-md">
         {data.status === 'idle' ? (
           data.studyMaterials.length ? (
             <ul
@@ -69,6 +70,14 @@ export default function StudyMaterialCms() {
                 { 'opacity-50': isPending },
               )}
             >
+              <li key={'create-study-material'}>
+                <Link
+                  to={`/cms/study-materials/create`}
+                  className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
+                >
+                  Create Study Material
+                </Link>
+              </li>
               {data.studyMaterials.map((studyMaterial) => (
                 <li key={studyMaterial.id}>
                   <Link
@@ -85,7 +94,16 @@ export default function StudyMaterialCms() {
               ))}
             </ul>
           ) : (
-            <p>No study materials found</p>
+            <div>
+              <p className="pb-4 text-lg">No study materials found</p>
+              <Link
+                to={`/cms/study-materials/create`}
+                className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
+              >
+                <Icon name={'plus'} className="mr-4 h-6 w-6" />
+                Create Study Material
+              </Link>
+            </div>
           )
         ) : data.status === 'error' ? (
           <ErrorList errors={['There was an error parsing the results']} />

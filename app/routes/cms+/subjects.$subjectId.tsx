@@ -45,6 +45,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     include: {
       image: true,
       chapters: { orderBy: { order: 'asc' }, include: { image: true } },
+      studyMaterials: true,
     },
   })
   invariantResponse(subject, 'Subject not found', { status: 404 })
@@ -194,8 +195,12 @@ export default function SubjectCMS() {
         </div>
         <ChapterList />
       </div>
-
-      <Outlet />
+      <div className="flex h-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-4">
+        <div className="flex items-center gap-2">
+          <p className="text-2xl">Study Materials</p>
+        </div>
+        <StudyMaterialList />
+      </div>
     </div>
   )
 }
@@ -230,6 +235,40 @@ function ChapterList() {
             </TableCell>
             <TableCell>{c.name}</TableCell>
             <TableCell>{c.order}</TableCell>
+            <TableCell className="text-right">
+              <Link to={`/cms/chapters/${c.id}/edit`}>
+                <Button variant="link">Edit</Button>
+              </Link>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
+
+function StudyMaterialList() {
+  const { subject } = useLoaderData<typeof loader>()
+  const { studyMaterials } = subject
+  return (
+    <Table>
+      <TableCaption>List of study materials</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>ID</TableHead>
+
+          <TableHead className="w-[100px]">Name</TableHead>
+
+          <TableHead>Order</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {studyMaterials.map((c) => (
+          <TableRow key={c.id}>
+            <TableCell className="w-[100px]">{c.id} </TableCell>
+
+            <TableCell>{c.title}</TableCell>
             <TableCell className="text-right">
               <Link to={`/cms/chapters/${c.id}/edit`}>
                 <Button variant="link">Edit</Button>
