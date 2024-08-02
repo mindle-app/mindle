@@ -13,6 +13,7 @@ import { Field, SelectField, TextareaField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 
 import { Icon } from '#app/components/ui/icon.js'
+import { Label } from '#app/components/ui/label.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
@@ -210,44 +211,62 @@ export default function EssayCMS() {
                 selectValueProps={{ placeholder: 'Select study material' }}
               />
             </div>
-            <div className="flex w-full flex-col gap-2">
-              <p className="text-xl">Paragraphs</p>
+            <div>
+              <Label>Paragraphs</Label>
 
-              {paragraphs.map((p) => {
-                const paragraph = p.getFieldset()
-                return (
-                  <div className="flex" key={paragraph.id.value}>
-                    <input
-                      {...getInputProps(paragraph.id, { type: 'hidden' })}
-                    />
-                    <div className="flex gap-1">
-                      <TextareaField
-                        labelProps={{ children: 'Paragraph' }}
-                        textareaProps={{
-                          ...getTextareaProps(paragraph.content, {}),
-                          className: 'min-w-[500px]',
-                        }}
-                        errors={paragraph.content.errors}
+              <ul className="flex flex-col gap-4 pt-4">
+                {paragraphs.map((p, index) => {
+                  const paragraph = p.getFieldset()
+                  return (
+                    <li className="relative" key={p.key}>
+                      <button
+                        className="absolute right-0 top-0 text-destructive"
+                        {...form.remove.getButtonProps({
+                          name: fields.paragraphs.name,
+                          index,
+                        })}
+                      >
+                        <span aria-hidden>
+                          <Icon name="cross-1" />
+                        </span>{' '}
+                        <span className="sr-only">
+                          Remove paragraph {index + 1}
+                        </span>
+                      </button>
+                      <input
+                        {...getInputProps(paragraph.id, { type: 'hidden' })}
                       />
-                      <TextareaField
-                        labelProps={{ children: 'Explanation' }}
-                        textareaProps={{
-                          ...getTextareaProps(paragraph.explanation, {}),
-                          className: 'min-w-[400px]',
-                        }}
-                        errors={paragraph.explanation.errors}
-                      />
-                      <Field
-                        labelProps={{ children: 'Order' }}
-                        inputProps={{
-                          ...getInputProps(paragraph.order, { type: 'number' }),
-                        }}
-                        errors={paragraph.order.errors}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+                      <div className="flex gap-1">
+                        <TextareaField
+                          labelProps={{ children: 'Paragraph' }}
+                          textareaProps={{
+                            ...getTextareaProps(paragraph.content, {}),
+                            className: 'min-w-[500px]',
+                          }}
+                          errors={paragraph.content.errors}
+                        />
+                        <TextareaField
+                          labelProps={{ children: 'Explanation' }}
+                          textareaProps={{
+                            ...getTextareaProps(paragraph.explanation, {}),
+                            className: 'min-w-[400px]',
+                          }}
+                          errors={paragraph.explanation.errors}
+                        />
+                        <Field
+                          labelProps={{ children: 'Order' }}
+                          inputProps={{
+                            ...getInputProps(paragraph.order, {
+                              type: 'number',
+                            }),
+                          }}
+                          errors={paragraph.order.errors}
+                        />
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
               <Button
                 className="mt-3"
                 {...form.insert.getButtonProps({

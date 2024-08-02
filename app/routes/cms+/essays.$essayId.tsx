@@ -37,7 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const essay = prisma.essay.findFirst({
     where: { id: String(params.essayId) },
-    include: { paragraphs: true },
+    include: { paragraphs: { orderBy: { order: 'asc' } } },
   })
 
   const a = prisma.author.findMany({
