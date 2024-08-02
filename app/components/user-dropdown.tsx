@@ -47,7 +47,7 @@ export function UserDropdown({
           {isAdmin ? (
             <DropdownMenuItem asChild>
               <Link prefetch="intent" to={`/cms`}>
-                <Icon className="text-body-md" name="mindle-head">
+                <Icon className="text-body-md" name="file-lock">
                   CMS
                 </Icon>
               </Link>
@@ -55,7 +55,7 @@ export function UserDropdown({
           ) : null}
           <DropdownMenuItem asChild>
             <Link prefetch="intent" to={`/dashboard`}>
-              <Icon className="text-body-md" name="check">
+              <Icon className="text-body-md" name="layout-dashboard">
                 Dashboard
               </Icon>
             </Link>

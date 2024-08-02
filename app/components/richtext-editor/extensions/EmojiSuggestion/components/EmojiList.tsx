@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 
-import { Button } from '#app/components/richtext-editor/components/Button'
+import { Button } from '#app/components/richtext-editor/components/button'
 import { Panel } from '#app/components/ui/panel.js'
 import { type EmojiListProps } from '../types'
 
