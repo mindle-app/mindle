@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { Icon } from '#app/components/ui/icon.js'
 import { Surface } from '#app/components/ui/surface.js'
 import { Toggle } from '#app/components/ui/toggle.js'
-import { Button } from '../../Button'
+import { Button } from '../../button'
 
 export type LinkEditorPanelProps = {
   initialUrl?: string
