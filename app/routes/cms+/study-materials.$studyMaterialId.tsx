@@ -43,16 +43,20 @@ import {
   StudyMaterialTypes,
 } from '#app/utils/study-material.js'
 
+const EssaySchema = z.object({ title: z.string(), id: z.string() })
+
 const StudyMaterialCreateSchema = z.object({
   title: z.string().min(1),
   authorId: z.string().optional(),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
+  essays: z.array(EssaySchema),
 })
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const studyMaterial = prisma.studyMaterial.findFirst({
     where: { id: String(params.studyMaterialId) },
+    include: { essays: true },
   })
   const s = prisma.subject.findMany({
     select: { id: true, name: true },
@@ -83,6 +87,7 @@ export default function StudyMaterialCMS() {
     },
     shouldRevalidate: 'onBlur',
   })
+  const essays = fields.essays.getFieldList()
 
   return (
     <div className="flex h-full w-full flex-col md:flex-row">
@@ -144,6 +149,34 @@ export default function StudyMaterialCMS() {
                 selectTriggerProps={{ className: 'w-[180px]', disabled: true }}
                 selectValueProps={{ placeholder: 'Select type' }}
               />
+            </div>
+            <div className="flex flex-col">
+              <p className="text-lg">Essays</p>
+              <div className="flex flex-col pt-6">
+                {essays.map((e) => {
+                  const essay = e.getFieldset()
+                  return (
+                    <div className="flex" key={essay.id.value}>
+                      <input {...getInputProps(essay.id, { type: 'hidden' })} />
+                      <Field
+                        labelProps={{ children: 'Title' }}
+                        inputProps={{
+                          disabled: true,
+                          ...getInputProps(essay.title, {
+                            type: 'text',
+                          }),
+                        }}
+                        errors={essay.title.errors}
+                      />
+                      <LinkButton
+                        to={`/cms/essays/${essay.id.value}/edit?studyMaterialId=${studyMaterial?.id}`}
+                      >
+                        Edit
+                      </LinkButton>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </Form>
         </FormProvider>

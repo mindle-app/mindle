@@ -88,7 +88,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 export const loader = essayLoader
 
-export default function StudyMaterialCMS() {
+export default function EssayCMS() {
   const { authors, essay, studyMaterials } = useLoaderData<typeof loader>()
   const [form, fields] = useForm({
     id: 'study-material-editor',
@@ -96,7 +96,6 @@ export default function StudyMaterialCMS() {
     defaultValue: essay,
     onValidate({ formData }) {
       const result = parseWithZod(formData, { schema: EssayUpdateSchema })
-      console.log(result)
       return result
     },
     shouldRevalidate: 'onBlur',
@@ -114,7 +113,7 @@ export default function StudyMaterialCMS() {
             encType="multipart/form-data"
           >
             <div className="flex items-center gap-2">
-              <p className="text-2xl">StudyMaterial</p>
+              <p className="text-2xl">Essay</p>
               <div className="flex w-full gap-1">
                 <Button variant="destructive" {...form.reset.getButtonProps()}>
                   Reset
