@@ -23,37 +23,18 @@ import { makeMediaQueryStore } from '#app/components/media-query.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { SimpleTooltip } from '#app/components/ui/tooltip.tsx'
 import { type loader as rootLoader } from '#app/root.tsx'
+import { prisma } from '#app/utils/db.server.js'
 import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.js'
 import { ThemeSwitch } from '../resources+/theme-switch'
 
 export async function loader({}: LoaderFunctionArgs) {
-  const exercises = [
-    {
-      exerciseNumber: 1,
-      title: 'Introduction to React',
-      steps: [
-        { name: 'what-is-react', stepNumber: 1, title: 'What is React?' },
-        { name: 'create-react-app', stepNumber: 2, title: 'Create React App' },
-        { name: 'jsx', stepNumber: 3, title: 'JSX' },
-      ],
-    },
-    {
-      exerciseNumber: 2,
-      title: 'Components',
-      steps: [
-        { name: 'components', stepNumber: 1, title: 'Components' },
-        {
-          name: 'reusable-components',
-          stepNumber: 2,
-          title: 'Reusable Components',
-        },
-        { name: 'props', stepNumber: 3, title: 'Props' },
-      ],
-    },
-  ]
+  const studyMaterials = await prisma.studyMaterial.findMany({
+    where: { subjectId: 2 },
+    include: { essays: true },
+  })
 
-  return json({ exercises, workshopTitle: 'Mindle' })
+  return json({ studyMaterials, workshopTitle: 'Mindle' })
 }
 
 export const headers: HeadersFunction = ({ loaderHeaders }) => {
@@ -213,102 +194,63 @@ function MobileNavigation({
                 animate="visible"
                 className="flex flex-col"
               >
-                {data.exercises.map(({ exerciseNumber, title, steps }) => {
-                  const isActive =
-                    Number(params.exerciseNumber) === exerciseNumber
-                  const showPlayground = false
-                  const exerciseNum = exerciseNumber.toString().padStart(2, '0')
-                  return (
-                    <NavigationExerciseListItem
-                      key={exerciseNumber}
-                      exerciseNumber={exerciseNumber}
-                    >
-                      <Link
-                        prefetch="intent"
-                        to={`/${exerciseNum}`}
-                        className={clsx(
-                          'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
-                          'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                          { 'bg-foreground text-background': isActive },
-                        )}
+                {data.studyMaterials.map(
+                  ({ id: studyMaterialId, title, essays }) => {
+                    const isActive = params.studyMaterialId === studyMaterialId
+                    const showPlayground = false
+                    return (
+                      <NavigationExerciseListItem
+                        exerciseNumber={1}
+                        key={studyMaterialId}
                       >
-                        {title}
-                        {showPlayground ? ' 🛝' : null}
-                      </Link>
-                      {isActive ? (
-                        <motion.ul
-                          variants={listVariants}
-                          initial="hidden"
-                          animate="visible"
-                          className="ml-4 mt-4 flex flex-col"
+                        <Link
+                          prefetch="intent"
+                          to={`/${studyMaterialId}`}
+                          className={clsx(
+                            'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
+                            'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+                            { 'bg-foreground text-background': isActive },
+                          )}
                         >
-                          <NavigationExerciseStepListItem key={exerciseNumber}>
-                            <Link
-                              to={`/${exerciseNum}`}
-                              prefetch="intent"
-                              className={clsx(
-                                'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                {
-                                  'bg-foreground text-background':
-                                    !params.stepNumber,
-                                },
-                              )}
-                            >
-                              Intro
-                            </Link>
-                          </NavigationExerciseStepListItem>
-                          {steps
-                            .filter(Boolean)
-                            .map(({ stepNumber, title }) => {
-                              const isActive =
-                                Number(params.stepNumber) === stepNumber
-                              const step = stepNumber
-                                .toString()
-                                .padStart(2, '0')
-                              const isPlayground = false
-                              return (
-                                <NavigationExerciseStepListItem
-                                  key={stepNumber}
-                                >
-                                  <Link
-                                    to={`/${exerciseNum}/${step}`}
-                                    prefetch="intent"
-                                    className={clsx(
-                                      'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                      {
-                                        'bg-foreground text-background':
-                                          isActive,
-                                      },
-                                    )}
-                                  >
-                                    {isPlayground
-                                      ? `${step}. ${title} 🛝`
-                                      : `${step}. ${title}`}
-                                  </Link>
-                                </NavigationExerciseStepListItem>
-                              )
-                            })}
-                          <NavigationExerciseStepListItem>
-                            <NavLink
-                              to={`/${exerciseNum}/finished`}
-                              prefetch="intent"
-                              className={({ isActive }) =>
-                                clsx(
-                                  'relative whitespace-nowrap px-2 py-0.5 pr-3 text-base font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                  {
-                                    'bg-foreground text-background': isActive,
-                                  },
+                          {title}
+                          {showPlayground ? ' 🛝' : null}
+                        </Link>
+                        {isActive ? (
+                          <motion.ul
+                            variants={listVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="ml-4 mt-4 flex flex-col"
+                          >
+                            {essays
+                              .filter(Boolean)
+                              .map(({ id: essayId, title }) => {
+                                const isActive =
+                                  params.essayId === studyMaterialId
+                                return (
+                                  <NavigationExerciseStepListItem key={essayId}>
+                                    <Link
+                                      to={`/${studyMaterialId}/${essayId}`}
+                                      prefetch="intent"
+                                      className={clsx(
+                                        'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+                                        {
+                                          'bg-foreground text-background':
+                                            isActive,
+                                        },
+                                      )}
+                                    >
+                                      {title}
+                                    </Link>
+                                  </NavigationExerciseStepListItem>
                                 )
-                              }
-                            >
-                              📝 Elaboration
-                            </NavLink>
-                          </NavigationExerciseStepListItem>
-                        </motion.ul>
-                      ) : null}
-                    </NavigationExerciseListItem>
-                  )
-                })}
+                              })}
+                          </motion.ul>
+                        ) : null}
+                      </NavigationExerciseListItem>
+                    )
+                  },
+                )}
               </motion.ul>
               <div className="mt-6">
                 <NavLink
@@ -428,8 +370,8 @@ function Navigation({
   const nextExerciseRoute = '/next-exercise-todo'
   const params = useParams()
 
-  const exercise = data.exercises.find(
-    (e) => e.exerciseNumber === Number(params.exerciseNumber),
+  const studyMaterial = data.studyMaterials.find(
+    (e) => e.id === params.studyMaterialId,
   )
   const app = { title: 'TODO Mindle App', stepNumber: 1 }
 
@@ -483,102 +425,63 @@ function Navigation({
                 animate="visible"
                 className="flex flex-col"
               >
-                {data.exercises.map(({ exerciseNumber, title, steps }) => {
-                  const isActive =
-                    Number(params.exerciseNumber) === exerciseNumber
-                  const showPlayground = false
-                  const exerciseNum = exerciseNumber.toString().padStart(2, '0')
-                  return (
-                    <NavigationExerciseListItem
-                      key={exerciseNumber}
-                      exerciseNumber={exerciseNumber}
-                    >
-                      <Link
-                        prefetch="intent"
-                        to={`/study/${exerciseNum}`}
-                        className={clsx(
-                          'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
-                          'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                          { 'bg-foreground text-background': isActive },
-                        )}
+                {data.studyMaterials.map(
+                  ({ id: studyMaterialId, title, essays }) => {
+                    const isActive = params.studyMaterialId === studyMaterialId
+                    const showPlayground = false
+                    return (
+                      <NavigationExerciseListItem
+                        key={studyMaterialId}
+                        exerciseNumber={1}
                       >
-                        {title}
-                        {showPlayground ? ' 🛝' : null}
-                      </Link>
-                      {isActive ? (
-                        <motion.ul
-                          variants={listVariants}
-                          initial="hidden"
-                          animate="visible"
-                          className="ml-4 mt-4 flex flex-col"
+                        <Link
+                          prefetch="intent"
+                          to={`/study/${studyMaterialId}`}
+                          className={clsx(
+                            'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
+                            'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+                            { 'bg-foreground text-background': isActive },
+                          )}
                         >
-                          <NavigationExerciseStepListItem key={exerciseNumber}>
-                            <Link
-                              to={`/${exerciseNum}`}
-                              prefetch="intent"
-                              className={clsx(
-                                'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                {
-                                  'bg-foreground text-background':
-                                    !params.stepNumber,
-                                },
-                              )}
-                            >
-                              Intro
-                            </Link>
-                          </NavigationExerciseStepListItem>
-                          {steps
-                            .filter(Boolean)
-                            .map(({ stepNumber, title }) => {
-                              const isActive =
-                                Number(params.stepNumber) === stepNumber
-                              const step = stepNumber
-                                .toString()
-                                .padStart(2, '0')
-                              const isPlayground = false
-                              return (
-                                <NavigationExerciseStepListItem
-                                  key={stepNumber}
-                                >
-                                  <Link
-                                    to={`/${exerciseNum}/${step}`}
-                                    prefetch="intent"
-                                    className={clsx(
-                                      'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                      {
-                                        'bg-foreground text-background':
-                                          isActive,
-                                      },
-                                    )}
-                                  >
-                                    {isPlayground
-                                      ? `${step}. ${title} 🛝`
-                                      : `${step}. ${title}`}
-                                  </Link>
-                                </NavigationExerciseStepListItem>
-                              )
-                            })}
-                          <NavigationExerciseStepListItem>
-                            <NavLink
-                              to={`/${exerciseNum}/finished`}
-                              prefetch="intent"
-                              className={({ isActive }) =>
-                                clsx(
-                                  'relative whitespace-nowrap px-2 py-0.5 pr-3 text-base font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                  {
-                                    'bg-foreground text-background': isActive,
-                                  },
+                          {title}
+                          {showPlayground ? ' 🛝' : null}
+                        </Link>
+                        {isActive ? (
+                          <motion.ul
+                            variants={listVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="ml-4 mt-4 flex flex-col"
+                          >
+                            {essays
+                              .filter(Boolean)
+                              .map(({ id: essayId, title }) => {
+                                const isActive = essayId === params.essayId
+                                return (
+                                  <NavigationExerciseStepListItem key={essayId}>
+                                    <Link
+                                      prefetch="intent"
+                                      to={`/study/${studyMaterialId}/${essayId}`}
+                                      className={clsx(
+                                        'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
+                                        'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+                                        {
+                                          'bg-foreground text-background':
+                                            isActive,
+                                        },
+                                      )}
+                                    >
+                                      {title}
+                                    </Link>
+                                  </NavigationExerciseStepListItem>
                                 )
-                              }
-                            >
-                              📝 Elaboration
-                            </NavLink>
-                          </NavigationExerciseStepListItem>
-                        </motion.ul>
-                      ) : null}
-                    </NavigationExerciseListItem>
-                  )
-                })}
+                              })}
+                          </motion.ul>
+                        ) : null}
+                      </NavigationExerciseListItem>
+                    )
+                  },
+                )}
               </motion.ul>
               <div className="mt-6">
                 <NavLink
@@ -601,10 +504,10 @@ function Navigation({
           {!isMenuOpened && (
             <div className="flex flex-grow flex-col justify-center">
               <div className="orientation-sideways w-full font-mono text-sm font-medium uppercase leading-none">
-                {exercise?.title ? (
-                  <Link to={`/${exNum}`}>{exercise.title}</Link>
+                {studyMaterial?.title ? (
+                  <Link to={`/${exNum}`}>{studyMaterial.title}</Link>
                 ) : null}
-                {exercise?.title && app?.title ? ' — ' : null}
+                {studyMaterial?.title && app?.title ? ' — ' : null}
                 {app?.title ? (
                   <Link
                     to={`/${exNum}/${app.stepNumber
