@@ -72,7 +72,7 @@ export default function EssayCms() {
             >
               <li key={'create-essay'}>
                 <Link
-                  to={`/cms/essays/create`}
+                  to={`/cms/essays/create/edit`}
                   className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
                 >
                   <Icon name={'plus'} className="mr-4 h-6 w-6" />
@@ -98,7 +98,7 @@ export default function EssayCms() {
             <div>
               <p className="pb-4 text-lg">No study materials found</p>
               <Link
-                to={`/cms/essays/create`}
+                to={`/cms/essays/create/edit`}
                 className="flex h-20 items-center justify-start rounded-lg bg-muted px-5 py-3"
               >
                 <Icon name={'plus'} className="mr-4 h-6 w-6" />
