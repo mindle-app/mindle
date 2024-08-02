@@ -2,28 +2,35 @@ import {
   FormProvider,
   getFormProps,
   getInputProps,
+  getTextareaProps,
   useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { Field, SelectField } from '#app/components/forms.js'
+import { Field, SelectField, TextareaField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 
+import { Icon } from '#app/components/ui/icon.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
 import { useIsPending } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { loader as essayLoader } from './essays.$essayId.tsx'
+import { loader as essayLoader, ParagraphSchema } from './essays.$essayId.tsx'
 
 const EssayUpdateSchema = z.object({
   title: z.string().min(1),
   authorId: z.string().optional(),
   studyMaterialId: z.string().min(1),
   id: z.string().min(1).optional(),
+  paragraphs: z.array(ParagraphSchema),
 })
+
+function paragraphHasId(p: z.infer<typeof ParagraphSchema>) {
+  return p.id !== undefined
+}
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const initialStudyMaterialId = new URL(request.url).searchParams.get(
@@ -55,6 +62,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
           message: 'Essay not found',
         })
       }
+    }).transform(({ paragraphs, ...data }) => {
+      return {
+        ...data,
+        paragraphUpdates: paragraphs.filter((p) => paragraphHasId(p)),
+        newParagraphs: paragraphs.filter((p) => !paragraphHasId(p)),
+      }
     }),
     async: true,
   })
@@ -66,7 +79,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
     )
   }
 
-  const { id: essayId, title, authorId, studyMaterialId } = submission.value
+  const {
+    id: essayId,
+    title,
+    authorId,
+    studyMaterialId,
+    paragraphUpdates,
+    newParagraphs,
+  } = submission.value
 
   const { id: updatedId } = await prisma.essay.upsert({
     select: { id: true },
@@ -74,11 +94,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
       title,
       authorId,
       studyMaterialId,
+      paragraphs: {
+        deleteMany: {
+          id: { notIn: paragraphUpdates.map((p) => p.id).filter(Boolean) },
+        },
+        updateMany: paragraphUpdates.map((u) => ({
+          where: { id: u.id },
+          data: u,
+        })),
+        create: newParagraphs,
+      },
     },
     create: {
       title,
       authorId,
       studyMaterialId,
+      paragraphs: { create: newParagraphs },
     },
     where: { id: essayId ?? '__new_essay__' },
   })
@@ -110,6 +141,8 @@ export default function EssayCMS() {
     shouldRevalidate: 'onBlur',
   })
   const isPending = useIsPending()
+
+  const paragraphs = fields.paragraphs.getFieldList()
 
   return (
     <div className="flex h-full w-full flex-col md:flex-row">
@@ -176,6 +209,56 @@ export default function EssayCMS() {
                 selectTriggerProps={{ className: 'w-[180px]' }}
                 selectValueProps={{ placeholder: 'Select study material' }}
               />
+            </div>
+            <div className="flex w-full flex-col gap-2">
+              <p className="text-xl">Paragraphs</p>
+
+              {paragraphs.map((p) => {
+                const paragraph = p.getFieldset()
+                return (
+                  <div className="flex" key={paragraph.id.value}>
+                    <input
+                      {...getInputProps(paragraph.id, { type: 'hidden' })}
+                    />
+                    <div className="flex gap-1">
+                      <TextareaField
+                        labelProps={{ children: 'Paragraph' }}
+                        textareaProps={{
+                          ...getTextareaProps(paragraph.content, {}),
+                          className: 'min-w-[500px]',
+                        }}
+                        errors={paragraph.content.errors}
+                      />
+                      <TextareaField
+                        labelProps={{ children: 'Explanation' }}
+                        textareaProps={{
+                          ...getTextareaProps(paragraph.explanation, {}),
+                          className: 'min-w-[400px]',
+                        }}
+                        errors={paragraph.explanation.errors}
+                      />
+                      <Field
+                        labelProps={{ children: 'Order' }}
+                        inputProps={{
+                          ...getInputProps(paragraph.order, { type: 'number' }),
+                        }}
+                        errors={paragraph.order.errors}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+              <Button
+                className="mt-3"
+                {...form.insert.getButtonProps({
+                  name: fields.paragraphs.name,
+                })}
+              >
+                <span aria-hidden>
+                  <Icon name="plus">Paragraph</Icon>
+                </span>{' '}
+                <span className="sr-only">Add paragraph</span>
+              </Button>
             </div>
           </Form>
         </FormProvider>

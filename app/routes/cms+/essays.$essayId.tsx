@@ -1,10 +1,9 @@
 import {
-  type FieldMetadata,
   FormProvider,
   getFormProps,
   getInputProps,
   useForm,
-  unstable_useControl as useControl,
+  getTextareaProps,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
@@ -12,32 +11,23 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import { Field, SelectField } from '#app/components/forms.js'
-import { Button } from '#app/components/ui/button.js'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#app/components/ui/command.js'
-import { Icon } from '#app/components/ui/icon.js'
-import { Input } from '#app/components/ui/input.js'
-import { Label } from '#app/components/ui/label.js'
+import { Field, SelectField, TextareaField } from '#app/components/forms.js'
+
 import { LinkButton } from '#app/components/ui/link-button.js'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '#app/components/ui/popover.js'
 
 import { prisma } from '#app/utils/db.server.js'
-import { cn } from '#app/utils/misc.js'
+
+export const ParagraphSchema = z.object({
+  id: z.string().min(1).optional(),
+  content: z.string().min(1),
+  explanation: z.string(),
+  order: z.number().positive(),
+})
 
 const EssaySchema = z.object({
   title: z.string().min(1),
   authorId: z.string().optional(),
+  paragraphs: z.array(ParagraphSchema),
 })
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -47,6 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const essay = prisma.essay.findFirst({
     where: { id: String(params.essayId) },
+    include: { paragraphs: true },
   })
 
   const a = prisma.author.findMany({
@@ -84,6 +75,8 @@ export default function EssayCMS() {
     },
     shouldRevalidate: 'onBlur',
   })
+
+  const paragraphs = fields.paragraphs.getFieldList()
 
   return (
     <div className="flex h-full w-full flex-col md:flex-row">
@@ -135,98 +128,53 @@ export default function EssayCMS() {
                 selectValueProps={{ placeholder: 'Select author' }}
               />
             </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-xl">Paragraphs</p>
+              {paragraphs.map((p) => {
+                const paragraph = p.getFieldset()
+                return (
+                  <div className="flex" key={paragraph.id.value}>
+                    <input
+                      {...getInputProps(paragraph.id, { type: 'hidden' })}
+                    />
+                    <div className="flex gap-1">
+                      <TextareaField
+                        labelProps={{ children: 'Paragraph' }}
+                        textareaProps={{
+                          disabled: true,
+                          ...getTextareaProps(paragraph.content, {}),
+                          className: 'min-w-[500px]',
+                        }}
+                        errors={paragraph.content.errors}
+                      />
+                      <TextareaField
+                        labelProps={{ children: 'Explanation' }}
+                        textareaProps={{
+                          disabled: true,
+                          ...getTextareaProps(paragraph.explanation, {}),
+                          className: 'min-w-[400px]',
+                        }}
+                        errors={paragraph.explanation.errors}
+                      />
+                      <Field
+                        labelProps={{ children: 'Order' }}
+                        inputProps={{
+                          disabled: true,
+                          ...getInputProps(paragraph.order, {
+                            type: 'text',
+                          }),
+                        }}
+                        errors={paragraph.order.errors}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </Form>
         </FormProvider>
       </div>
       <Outlet />
-    </div>
-  )
-}
-
-export function AuthorSelectField({
-  meta,
-  preview,
-}: {
-  meta: FieldMetadata<string | null>
-  preview?: boolean
-}) {
-  const control = useControl(meta)
-
-  const { authors } = useLoaderData<typeof loader>()
-
-  return (
-    <div className="jutify-center mt-[5px] flex flex-col gap-1">
-      <Label>Author</Label>
-      {preview ? (
-        <Input disabled value={control.value ?? 'No author'} />
-      ) : (
-        <Popover
-          onOpenChange={(open) => {
-            if (open) {
-              control.focus()
-            } else {
-              control.blur()
-            }
-          }}
-        >
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              role="combobox"
-              className={cn(
-                'w-[200px] justify-between border',
-                !control.value && 'text-muted-foreground',
-              )}
-            >
-              {control.value
-                ? authors.find((a) => a.id === control.value)?.name
-                : 'Select author'}
-              <Icon
-                name={'chevrons-up-down'}
-                className="ml-2 h-4 w-4 shrink-0 opacity-50"
-              />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search author..." />
-              <CommandList>
-                <CommandEmpty>
-                  No author found.
-                  <LinkButton to={'/cms/author/create/edit'}>
-                    <Icon name={'plus'} className="h-4 w-4" />
-                    Create Author
-                  </LinkButton>
-                </CommandEmpty>
-                <CommandGroup>
-                  {authors.map((a) => (
-                    <CommandItem
-                      disabled={false}
-                      value={a.id}
-                      key={a.id}
-                      onSelect={() => {
-                        control.change(a.id)
-                      }}
-                      onClick={() => {
-                        control.change(a.id)
-                      }}
-                    >
-                      <Icon
-                        name={'check'}
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          a.id === control.value ? 'opacity-100' : 'opacity-0',
-                        )}
-                      />
-                      {a.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
     </div>
   )
 }

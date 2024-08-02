@@ -460,7 +460,7 @@ model EssayParagraph {
   id          String  @id @default(cuid())
   content     String
   explanation String
-  note        String?
+  note        String? // used to show useful info like the grading scheme for some essays 
   order       Int
   essayId     String
   essay       Essay   @relation(fields: [essayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
