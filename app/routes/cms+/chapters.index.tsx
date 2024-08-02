@@ -22,6 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const like = `%${searchTerm ?? ''}%`
   const rawUsers = await prisma.$queryRaw`
+
 		SELECT chapter.id, chapter.name, chapter_image.id AS imageId
 		FROM chapter
 		LEFT JOIN chapter_image ON chapter.id = chapter_image.chapterId

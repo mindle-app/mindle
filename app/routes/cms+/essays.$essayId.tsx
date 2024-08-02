@@ -40,7 +40,11 @@ const EssaySchema = z.object({
   authorId: z.string().optional(),
 })
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const studyMaterialId = new URL(request.url).searchParams.get(
+    'studyMaterialId',
+  )
+
   const essay = prisma.essay.findFirst({
     where: { id: String(params.essayId) },
   })
@@ -60,7 +64,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     invariantResponse(response.essay, 'Essay not found', {
       status: 404,
     })
-  return json(response)
+  return json({
+    ...response,
+    essay: {
+      ...response.essay,
+      ...(studyMaterialId ? { studyMaterialId } : {}),
+    },
+  })
 }
 
 export default function EssayCMS() {
@@ -105,7 +115,7 @@ export default function EssayCMS() {
               <SelectField
                 errors={fields.authorId.errors}
                 meta={fields.authorId}
-                labelProps={{ children: 'Author' }}
+                labelProps={{ children: 'Author (optional)' }}
                 options={authors.map((a) => ({
                   label: a.name,
                   value: a.id,

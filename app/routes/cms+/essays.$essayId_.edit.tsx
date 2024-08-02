@@ -26,6 +26,10 @@ const EssayUpdateSchema = z.object({
 })
 
 export async function action({ request, params }: ActionFunctionArgs) {
+  const initialStudyMaterialId = new URL(request.url).searchParams.get(
+    'studyMaterialId',
+  )
+
   const formData = await request.formData()
   const submission = await parseWithZod(formData, {
     schema: EssayUpdateSchema.superRefine(async (data, ctx) => {
@@ -79,11 +83,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
     where: { id: essayId ?? '__new_essay__' },
   })
 
-  return redirectWithToast(`/cms/essays/${updatedId}`, {
-    type: 'success',
-    title: 'Essay created',
-    description: 'The essay has been created/updated successfully',
-  })
+  return redirectWithToast(
+    initialStudyMaterialId
+      ? `/cms/study-materials/${initialStudyMaterialId}`
+      : `/cms/essays/${updatedId}`,
+    {
+      type: 'success',
+      title: 'Essay created',
+      description: 'The essay has been created/updated successfully',
+    },
+  )
 }
 
 export const loader = essayLoader
@@ -148,7 +157,7 @@ export default function EssayCMS() {
               <SelectField
                 errors={fields.authorId.errors}
                 meta={fields.authorId}
-                labelProps={{ children: 'Author' }}
+                labelProps={{ children: 'Author (optional)' }}
                 options={authors.map((a) => ({
                   label: a.name,
                   value: a.id,

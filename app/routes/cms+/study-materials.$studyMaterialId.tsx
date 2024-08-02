@@ -153,6 +153,13 @@ export default function StudyMaterialCMS() {
             <div className="flex flex-col">
               <p className="text-lg">Essays</p>
               <div className="flex flex-col pt-6">
+                <LinkButton
+                  to={`/cms/essays/create/edit?studyMaterialId=${studyMaterial?.id}`}
+                  buttonProps={{ className: 'mb-10', variant: 'outline' }}
+                >
+                  Create Essay
+                  <Icon name={'arrow-right'} className="ml-4 h-6 w-6" />
+                </LinkButton>
                 {essays.map((e) => {
                   const essay = e.getFieldset()
                   return (
