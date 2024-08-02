@@ -53,7 +53,7 @@ export default function Dashboard() {
     <>
       <div className="grid h-full gap-base-padding lg:grid-cols-[5fr_3fr]">
         <div className="flex flex-col gap-base-padding">
-          <h1 className="font-coHeadlineBold text-2xl leading-none text-black md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
+          <h1 className="font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
             {chapter.name}
           </h1>
           <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
