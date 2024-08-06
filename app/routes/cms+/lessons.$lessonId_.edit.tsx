@@ -18,7 +18,7 @@ import {
 import { Form, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { z } from 'zod'
-import { Field } from '#app/components/forms.js'
+import { Field, RichTextField } from '#app/components/forms.js'
 import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
@@ -258,16 +258,6 @@ export default function LessonCMS() {
               />
             </div>
           </Form>
-          <div className="w-full">
-            <Label>Description</Label>
-            <BlockEditor
-              key={`desc-${resetCounter}`}
-              onFocus={descControl.focus}
-              onBlur={descControl.blur}
-              content={descControl.value}
-              onUpdate={({ editor }) => descControl.change(editor.getHTML())}
-            />
-          </div>
         </FormProvider>
       </div>
     </div>

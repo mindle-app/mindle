@@ -2,14 +2,24 @@ import {
   FormProvider,
   getFormProps,
   getInputProps,
-  getTextareaProps,
   useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type ActionFunctionArgs, json } from '@remix-run/node'
+import {
+  type ActionFunctionArgs,
+  json,
+  type LinksFunction,
+} from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { Field, SelectField, TextareaField } from '#app/components/forms.js'
+import { floatingToolbarClassName } from '#app/components/floating-toolbar.js'
+import {
+  ErrorList,
+  Field,
+  RichTextField,
+  SelectField,
+} from '#app/components/forms.js'
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 
 import { Icon } from '#app/components/ui/icon.js'
@@ -21,6 +31,10 @@ import { useIsPending } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 import { loader as essayLoader, ParagraphSchema } from './essays.$essayId.tsx'
 
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
+
 const EssayUpdateSchema = z.object({
   title: z.string().min(1),
   authorId: z.string().optional(),
@@ -31,6 +45,10 @@ const EssayUpdateSchema = z.object({
 
 function paragraphHasId(p: z.infer<typeof ParagraphSchema>) {
   return p.id !== undefined
+}
+
+function hasDuplicates(numbers: number[]) {
+  return new Set(numbers).size !== numbers.length
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -61,6 +79,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Essay not found',
+          n,
         })
       }
     }).transform(({ paragraphs, ...data }) => {
@@ -136,7 +155,17 @@ export default function EssayCMS() {
     constraint: getZodConstraint(EssayUpdateSchema),
     defaultValue: essay,
     onValidate({ formData }) {
-      const result = parseWithZod(formData, { schema: EssayUpdateSchema })
+      const result = parseWithZod(formData, {
+        schema: EssayUpdateSchema.superRefine(({ paragraphs }, ctx) => {
+          const paragraphOrders = paragraphs.map((p) => p.order)
+          if (hasDuplicates(paragraphOrders)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'Paragraphs should have distinct orders',
+            })
+          }
+        }),
+      })
       return result
     },
     shouldRevalidate: 'onBlur',
@@ -157,19 +186,6 @@ export default function EssayCMS() {
           >
             <div className="flex items-center gap-2">
               <p className="text-2xl">Essay</p>
-              <div className="flex w-full gap-1">
-                <Button variant="destructive" {...form.reset.getButtonProps()}>
-                  Reset
-                </Button>
-                <StatusButton
-                  form={form.id}
-                  type="submit"
-                  disabled={isPending}
-                  status={isPending ? 'pending' : 'idle'}
-                >
-                  Save
-                </StatusButton>
-              </div>
             </div>
             {/*
 					This hidden submit button is hpere to ensure that when the user hits
@@ -220,7 +236,7 @@ export default function EssayCMS() {
                   return (
                     <li className="relative" key={p.key}>
                       <button
-                        className="absolute right-0 top-0 text-destructive"
+                        className="absolute right-1 top-1 text-destructive"
                         {...form.remove.getButtonProps({
                           name: fields.paragraphs.name,
                           index,
@@ -236,24 +252,10 @@ export default function EssayCMS() {
                       <input
                         {...getInputProps(paragraph.id, { type: 'hidden' })}
                       />
-                      <div className="flex gap-1">
-                        <TextareaField
-                          labelProps={{ children: 'Paragraph' }}
-                          textareaProps={{
-                            ...getTextareaProps(paragraph.content, {}),
-                            className: 'min-w-[500px]',
-                          }}
-                          errors={paragraph.content.errors}
-                        />
-                        <TextareaField
-                          labelProps={{ children: 'Explanation' }}
-                          textareaProps={{
-                            ...getTextareaProps(paragraph.explanation, {}),
-                            className: 'min-w-[400px]',
-                          }}
-                          errors={paragraph.explanation.errors}
-                        />
+
+                      <div className="flex w-full flex-col gap-1 rounded border pl-10">
                         <Field
+                          className="max-w-[100px]"
                           labelProps={{ children: 'Order' }}
                           inputProps={{
                             ...getInputProps(paragraph.order, {
@@ -262,13 +264,26 @@ export default function EssayCMS() {
                           }}
                           errors={paragraph.order.errors}
                         />
+                        <RichTextField
+                          editorProps={{ className: 'w-full min-w-[800px] ' }}
+                          labelProps={{ children: 'Content' }}
+                          meta={paragraph.content}
+                          errors={paragraph.content.errors}
+                        />
+                        <RichTextField
+                          editorProps={{ className: 'w-full mt-4 ' }}
+                          labelProps={{ children: 'Explanation' }}
+                          meta={paragraph.explanation}
+                          errors={paragraph.explanation.errors}
+                        />
                       </div>
                     </li>
                   )
                 })}
               </ul>
+              <ErrorList id={form.errorId} errors={form.errors} />
               <Button
-                className="mt-3"
+                className="mb-20 mt-4"
                 {...form.insert.getButtonProps({
                   name: fields.paragraphs.name,
                 })}
@@ -280,6 +295,19 @@ export default function EssayCMS() {
               </Button>
             </div>
           </Form>
+          <div className={floatingToolbarClassName}>
+            <Button variant="destructive" {...form.reset.getButtonProps()}>
+              Reset
+            </Button>
+            <StatusButton
+              form={form.id}
+              type="submit"
+              disabled={isPending}
+              status={isPending ? 'pending' : 'idle'}
+            >
+              Save
+            </StatusButton>
+          </div>
         </FormProvider>
       </div>
       <Outlet />

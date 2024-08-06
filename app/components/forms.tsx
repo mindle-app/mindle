@@ -8,6 +8,7 @@ import {
 import { REGEXP_ONLY_DIGITS_AND_CHARS, type OTPInputProps } from 'input-otp'
 import React, { useId } from 'react'
 import { cn } from '#app/utils/misc.js'
+import { BlockEditor } from './richtext-editor/components/block-editor/BlockEditor.tsx'
 import { Button } from './ui/button.tsx'
 import { Checkbox, type CheckboxProps } from './ui/checkbox.tsx'
 import {
@@ -36,6 +37,7 @@ import {
   SelectValue,
 } from './ui/select.tsx'
 import { Textarea } from './ui/textarea.tsx'
+import { UseEditorOptions } from '@tiptap/react'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
@@ -387,6 +389,39 @@ export function ComboboxField<V>({
           </Command>
         </PopoverContent>
       </Popover>
+      <div className="px-4 pb-3 pt-1">
+        {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
+      </div>
+    </div>
+  )
+}
+
+type RichTextFieldProps = {
+  meta: FieldMetadata<string>
+  labelProps?: React.LabelHTMLAttributes<HTMLLabelElement>
+  errors?: ListOfErrors
+  editorProps?: UseEditorOptions & { className?: string }
+}
+export function RichTextField({
+  meta,
+  labelProps = {},
+  errors,
+  editorProps = {},
+}: RichTextFieldProps) {
+  const control = useInputControl(meta as FieldMetadata<string>)
+  const fallbackId = useId()
+  const id = meta.name ?? fallbackId
+  const errorId = meta.errors?.length ? `${id}-error` : undefined
+  return (
+    <div>
+      <Label htmlFor={meta.name} {...labelProps} />
+      <BlockEditor
+        onFocus={control.focus}
+        onBlur={control.blur}
+        content={control.value}
+        onUpdate={({ editor }) => control.change(editor.getHTML())}
+        {...editorProps}
+      />
       <div className="px-4 pb-3 pt-1">
         {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
       </div>

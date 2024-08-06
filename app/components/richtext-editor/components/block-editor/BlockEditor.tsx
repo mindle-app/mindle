@@ -31,7 +31,10 @@ export const PageEditor = (props: UseEditorOptions) => {
   )
 }
 
-export function BlockEditor(props: UseEditorOptions) {
+export function BlockEditor({
+  className,
+  ...props
+}: UseEditorOptions & { className?: string }) {
   const menuContainerRef = useRef(null)
 
   const { editor } = useBlockEditor(props)
@@ -42,7 +45,10 @@ export function BlockEditor(props: UseEditorOptions) {
 
   return (
     <div
-      className="relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2"
+      className={cn(
+        'relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2',
+        className,
+      )}
       ref={menuContainerRef}
     >
       <div className="flex h-full flex-1 flex-col overflow-hidden">

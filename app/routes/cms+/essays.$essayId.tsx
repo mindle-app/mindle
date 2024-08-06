@@ -17,10 +17,21 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
 
+function stripHtmlTags(html: string) {
+  return html.replace(/<[^>]*>/g, '')
+}
+
 export const ParagraphSchema = z.object({
   id: z.string().min(1).optional(),
-  content: z.string().min(1),
-  explanation: z.string(),
+  content: z
+    .string()
+    .min(1)
+    .refine((c) => !!stripHtmlTags(c).length, {
+      message: 'This field is required',
+    }),
+  explanation: z.string().refine((c) => !!stripHtmlTags(c).length, {
+    message: 'This field is required',
+  }),
   order: z.number().positive(),
 })
 
