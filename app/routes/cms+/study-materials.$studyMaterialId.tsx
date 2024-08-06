@@ -5,6 +5,7 @@ import {
   getInputProps,
   useForm,
   unstable_useControl as useControl,
+  getTextareaProps,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
@@ -16,7 +17,7 @@ import {
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import { Field, SelectField } from '#app/components/forms.js'
+import { Field, SelectField, TextareaField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 import {
   Command,
@@ -115,6 +116,15 @@ export default function StudyMaterialCMS() {
                   }),
                 }}
                 errors={fields.title.errors}
+              />
+              <TextareaField
+                labelProps={{ children: 'Description' }}
+                textareaProps={{
+                  autoFocus: true,
+                  disabled: true,
+                  ...getTextareaProps(fields.description, {}),
+                }}
+                errors={fields.description.errors}
               />
               <SelectField
                 errors={fields.authorId.errors}

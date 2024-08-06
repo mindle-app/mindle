@@ -2,6 +2,7 @@ import {
   FormProvider,
   getFormProps,
   getInputProps,
+  getTextareaProps,
   useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
@@ -9,9 +10,15 @@ import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import { ComboboxField, Field, SelectField } from '#app/components/forms.js'
+import {
+  ComboboxField,
+  Field,
+  SelectField,
+  TextareaField,
+} from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 
+import { Icon } from '#app/components/ui/icon.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
@@ -22,10 +29,10 @@ import {
   StudyMaterialTypes,
 } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { Icon } from '#app/components/ui/icon.js'
 
 const StudyMaterialCreateSchema = z.object({
   title: z.string().min(1),
+  description: z.string().min(10).optional(),
   authorId: z.string().optional(),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
@@ -66,12 +73,13 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { type, title, subjectId, authorId } = submission.value
+  const { type, title, subjectId, description, authorId } = submission.value
 
   await prisma.studyMaterial.create({
     data: {
       type,
       title,
+      description,
       subjectId,
       authorId,
     },
@@ -148,6 +156,15 @@ export default function StudyMaterialCMS() {
                   ...getInputProps(fields.title, { type: 'text' }),
                 }}
                 errors={fields.title.errors}
+              />
+
+              <TextareaField
+                labelProps={{ children: 'Description' }}
+                textareaProps={{
+                  autoFocus: true,
+                  ...getTextareaProps(fields.description, {}),
+                }}
+                errors={fields.description.errors}
               />
 
               <ComboboxField

@@ -2,13 +2,19 @@ import {
   FormProvider,
   getFormProps,
   getInputProps,
+  getTextareaProps,
   useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { ComboboxField, Field, SelectField } from '#app/components/forms.js'
+import {
+  ComboboxField,
+  Field,
+  SelectField,
+  TextareaField,
+} from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 
 import { Icon } from '#app/components/ui/icon.js'
@@ -16,16 +22,18 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
-import { useIsPending } from '#app/utils/misc.js'
+import { cn, useIsPending } from '#app/utils/misc.js'
 import {
   StudyMaterialTypeSchema,
   StudyMaterialTypes,
 } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 import { loader as studyMaterialLoader } from './study-materials.$studyMaterialId.tsx'
+import { floatingToolbarClassName } from '#app/components/floating-toolbar.js'
 
 const StudyMaterialEditSchema = z.object({
   title: z.string().min(1),
+  description: z.string().min(10).optional(),
   authorId: z.string().optional(),
   subjectId: z.number().positive(),
   type: StudyMaterialTypeSchema,
@@ -36,7 +44,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
   const submission = await parseWithZod(formData, {
     schema: StudyMaterialEditSchema.superRefine(async (data, ctx) => {
-      console.log(data)
       const studyMaterial = await prisma.studyMaterial.findFirst({
         select: { id: true },
         where: { id: data.id },
@@ -79,13 +86,14 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { type, id, title, subjectId, authorId } = submission.value
+  const { type, id, title, description, subjectId, authorId } = submission.value
 
   const { id: updatedId } = await prisma.studyMaterial.update({
     select: { id: true },
     data: {
       type,
       title,
+      description,
       subjectId,
       authorId,
     },
@@ -126,19 +134,6 @@ export default function StudyMaterialCMS() {
           >
             <div className="flex items-center gap-2">
               <p className="text-2xl">StudyMaterial</p>
-              <div className="flex w-full gap-1">
-                <Button variant="destructive" {...form.reset.getButtonProps()}>
-                  Reset
-                </Button>
-                <StatusButton
-                  form={form.id}
-                  type="submit"
-                  disabled={isPending}
-                  status={isPending ? 'pending' : 'idle'}
-                >
-                  Save
-                </StatusButton>
-              </div>
             </div>
             {/*
 					This hidden submit button is hpere to ensure that when the user hits
@@ -155,6 +150,14 @@ export default function StudyMaterialCMS() {
                   ...getInputProps(fields.title, { type: 'text' }),
                 }}
                 errors={fields.title.errors}
+              />
+              <TextareaField
+                labelProps={{ children: 'Description' }}
+                textareaProps={{
+                  autoFocus: true,
+                  ...getTextareaProps(fields.description, {}),
+                }}
+                errors={fields.description.errors}
               />
               <input {...getInputProps(fields.id, { type: 'hidden' })} />
               <ComboboxField
@@ -202,6 +205,19 @@ export default function StudyMaterialCMS() {
               />
             </div>
           </Form>
+          <div className={cn(floatingToolbarClassName, 'bottom-10')}>
+            <Button variant="destructive" {...form.reset.getButtonProps()}>
+              Reset
+            </Button>
+            <StatusButton
+              form={form.id}
+              type="submit"
+              disabled={isPending}
+              status={isPending ? 'pending' : 'idle'}
+            >
+              Save
+            </StatusButton>
+          </div>
         </FormProvider>
       </div>
       <Outlet />
