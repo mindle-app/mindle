@@ -39,6 +39,14 @@ export function getErrorMessage(error: unknown) {
   ) {
     return error.message
   }
+  if (
+    error &&
+    typeof error === 'object' &&
+    'data' in error &&
+    typeof error.data === 'string'
+  ) {
+    return error.data
+  }
   console.error('Unable to get error message for error', error)
   return 'Unknown Error'
 }
