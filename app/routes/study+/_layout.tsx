@@ -178,7 +178,7 @@ function MobileNavigation({
           })}
         >
           <NavToggle
-            title={'Mindle TODO'}
+            title={'Mindle'}
             isMenuOpened={isMenuOpened}
             setMenuOpened={setMenuOpened}
           />
@@ -373,7 +373,6 @@ function Navigation({
   const studyMaterial = data.studyMaterials.find(
     (e) => e.id === params.studyMaterialId,
   )
-  const app = { title: 'TODO Mindle App', stepNumber: 1 }
 
   // container
   const menuControls = useAnimationControls()
@@ -428,7 +427,6 @@ function Navigation({
                 {data.studyMaterials.map(
                   ({ id: studyMaterialId, title, essays }) => {
                     const isActive = params.studyMaterialId === studyMaterialId
-                    const showPlayground = false
                     return (
                       <NavigationExerciseListItem
                         key={studyMaterialId}
@@ -444,7 +442,6 @@ function Navigation({
                           )}
                         >
                           {title}
-                          {showPlayground ? ' 🛝' : null}
                         </Link>
                         {isActive ? (
                           <motion.ul
@@ -503,19 +500,9 @@ function Navigation({
           )}
           {!isMenuOpened && (
             <div className="flex flex-grow flex-col justify-center">
-              <div className="orientation-sideways w-full font-mono text-sm font-medium uppercase leading-none">
+              <div className="orientation-sideways w-full font-coHeadline text-sm font-medium">
                 {studyMaterial?.title ? (
                   <Link to={`/${exNum}`}>{studyMaterial.title}</Link>
-                ) : null}
-                {studyMaterial?.title && app?.title ? ' — ' : null}
-                {app?.title ? (
-                  <Link
-                    to={`/${exNum}/${app.stepNumber
-                      .toString()
-                      .padStart(2, '0')}`}
-                  >
-                    {app.title}
-                  </Link>
                 ) : null}
               </div>
             </div>

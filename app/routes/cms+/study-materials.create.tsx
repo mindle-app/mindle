@@ -22,7 +22,6 @@ import {
   StudyMaterialTypes,
 } from '#app/utils/study-material.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
-import { AuthorSelectField } from './study-materials.$studyMaterialId'
 
 const StudyMaterialCreateSchema = z.object({
   title: z.string().min(1),

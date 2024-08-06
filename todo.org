@@ -1,8 +1,16 @@
 #+title: Mindle TO DO
 #+author: Ovi Stoica
 
-* Big Picture
+* Left until October launch
 
-** TODO Add google login back
+** TODO Ecran in care poti citi esee si verifica limba romana
 
-** TODO
+** TODO Landing page facut cum era inainte
+
+** TODO Dashboard care sa cuprinda si limba romana si biologia
+
+** TODO Payment system integration cu subscriptie lunara sau yearly
+
+** TODO Pop-up care arata sa te duci la Quizz-uri
+
+** TODO Quizz-urile sa fie salvate corect in memorie

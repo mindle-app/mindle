@@ -3,3 +3,11 @@
     writing-mode: vertical-rl;
     @apply rotate-180;
 }
+
+.clip-path-button-outer {
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 88% 100%, 0 100%);
+}
+
+.clip-path-button {
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 88.5% 100%, 0 100%);
+}
