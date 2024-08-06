@@ -46,7 +46,7 @@ export default function StudyMaterial() {
             <h1 className="font-coHeadlineBold text-2xl">
               {studyMaterial.title}
             </h1>
-            <p>{studyMaterial.des}</p>
+            <p>{studyMaterial.description}</p>
             <h2 className="font-coHeadline text-xl">Esee:</h2>
 
             <div className="flex flex-col">

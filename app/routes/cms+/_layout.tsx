@@ -61,6 +61,7 @@ const items = [
   { name: 'Study Materials', to: '/cms/study-materials' },
   { name: 'Essays', to: '/cms/essays' },
   { name: 'Users', to: '/cms/users' },
+  { name: 'Authors', to: '/cms/authors' },
 ]
 
 export default function CmsLayout() {

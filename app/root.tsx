@@ -218,8 +218,6 @@ function AppWithProviders() {
 
 export default withSentry(AppWithProviders)
 
-4
-
 export function ErrorBoundary() {
   // the nonce doesn't rely on the loader so we can access that
   const nonce = useNonce()

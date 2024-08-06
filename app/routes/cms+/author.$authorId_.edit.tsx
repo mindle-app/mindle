@@ -57,6 +57,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
+  const redirectTo =
+    new URL(request.url).searchParams.get('redirectTo') ?? '/cms'
   const isCreate = params.authorId === 'create'
   const formData = await parseMultipartFormData(
     request,
@@ -140,7 +142,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     },
   })
 
-  return redirectWithToast(`/cms/authors/${updatedAuthor.id}`, {
+  return redirectWithToast(redirectTo, {
     type: 'success',
     title: `Author ${isCreate ? 'Created' : 'Updated'}`,
     description: 'The operation has been succesful',

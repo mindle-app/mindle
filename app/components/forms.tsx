@@ -317,11 +317,16 @@ export function ComboboxField<V>({
   searchPlaceholder,
   options,
   renderNoResults,
+  labelProps,
+  errors,
 }: ComboboxProps<V>) {
   const control = useInputControl(meta as FieldMetadata<string>)
+  const fallbackId = useId()
+  const id = meta.name ?? fallbackId
+  const errorId = meta.errors?.length ? `${id}-error` : undefined
   return (
     <div>
-      <Label htmlFor={meta.name} />
+      <Label htmlFor={meta.name} {...labelProps} />
       <Popover
         onOpenChange={(open) => {
           if (!open) {
@@ -331,10 +336,11 @@ export function ComboboxField<V>({
       >
         <PopoverTrigger asChild>
           <Button
+            aria-invalid={errorId ? true : undefined}
             variant="outline"
             role="combobox"
             className={cn(
-              'w-[200px] justify-between',
+              'flex w-[200px] justify-between',
               !control.value && 'text-muted-foreground',
             )}
           >
@@ -351,11 +357,11 @@ export function ComboboxField<V>({
           <Command>
             <CommandInput placeholder={searchPlaceholder ?? 'Search...'} />
             <CommandList>
-              {typeof renderNoResults === 'function' ? (
-                renderNoResults()
-              ) : (
-                <CommandEmpty>No results</CommandEmpty>
-              )}
+              <CommandEmpty>
+                {typeof renderNoResults === 'function'
+                  ? renderNoResults()
+                  : ' No results'}
+              </CommandEmpty>
               <CommandGroup>
                 {options.map((a) => (
                   <CommandItem
@@ -373,7 +379,7 @@ export function ComboboxField<V>({
                         a.value === control.value ? 'opacity-100' : 'opacity-0',
                       )}
                     />
-                    {a.value}
+                    {a.label}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -381,6 +387,9 @@ export function ComboboxField<V>({
           </Command>
         </PopoverContent>
       </Popover>
+      <div className="px-4 pb-3 pt-1">
+        {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
+      </div>
     </div>
   )
 }

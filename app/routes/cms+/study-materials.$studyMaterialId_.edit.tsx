@@ -3,15 +3,16 @@ import {
   getFormProps,
   getInputProps,
   useForm,
-  unstable_useControl as useControl,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { Field, SelectField } from '#app/components/forms.js'
+import { ComboboxField, Field, SelectField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 
+import { Icon } from '#app/components/ui/icon.js'
+import { LinkButton } from '#app/components/ui/link-button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
@@ -156,17 +157,27 @@ export default function StudyMaterialCMS() {
                 errors={fields.title.errors}
               />
               <input {...getInputProps(fields.id, { type: 'hidden' })} />
-              <SelectField
+              <ComboboxField
                 errors={fields.authorId.errors}
-                meta={fields.authorId}
                 labelProps={{ children: 'Author' }}
+                meta={fields.authorId}
+                renderNoResults={() => (
+                  <div className="flex w-full flex-col items-center justify-center gap-2 p-2">
+                    No authors found{' '}
+                    <LinkButton
+                      to={`/cms/author/create/edit?redirectTo=/cms/study-materials/${studyMaterial?.id}/edit`}
+                    >
+                      Create <Icon name={'plus'} />
+                    </LinkButton>
+                  </div>
+                )}
+                searchPlaceholder="Search authors"
                 options={authors.map((a) => ({
                   label: a.name,
                   value: a.id,
                 }))}
-                selectTriggerProps={{ className: 'w-[180px]' }}
-                selectValueProps={{ placeholder: 'Select author' }}
               />
+
               <SelectField
                 errors={fields.type.errors}
                 meta={fields.type}
