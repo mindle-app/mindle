@@ -17,10 +17,10 @@ import { z } from 'zod'
 import { Field, RichTextField, SelectField } from '#app/components/forms.js'
 
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
+import { Label } from '#app/components/ui/label.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
-import { Label } from '#app/components/ui/label.js'
 
 function stripHtmlTags(html: string) {
   return html.replace(/<[^>]*>/g, '')

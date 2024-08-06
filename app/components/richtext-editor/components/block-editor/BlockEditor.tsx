@@ -75,10 +75,7 @@ export function PreviewHTML({
 
   return (
     <div
-      className={cn(
-        'relative flex h-full w-full flex-col justify-center rounded-lg border bg-card p-2',
-        className,
-      )}
+      className={cn('relative flex flex-col justify-center p-2', className)}
       ref={menuContainerRef}
     >
       <div className="flex h-full flex-1 flex-col overflow-hidden">

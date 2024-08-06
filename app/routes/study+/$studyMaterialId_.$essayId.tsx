@@ -1,11 +1,17 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { ElementScrollRestoration } from '@epic-web/restore-scroll'
 import { TabsList, Tabs, TabsContent, TabsTrigger } from '@radix-ui/react-tabs'
-import { type LoaderFunctionArgs } from '@remix-run/node'
+import { type LinksFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { json, Link, useLoaderData, useSearchParams } from '@remix-run/react'
+import { PreviewHTML } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
+import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
 
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
 const tabs = ['explicatie', 'recall', 'mindmap', 'chat'] as const
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -49,6 +55,12 @@ export default function StudyMaterial() {
   const { essay, titleBits } = useLoaderData<typeof loader>()
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('preview') ?? tabs[0]
+  const selectedParagraphId = searchParams.get('selectedParagraph')
+  const explanation = selectedParagraphId
+    ? essay.paragraphs.find((p) => p.id === selectedParagraphId)?.explanation
+    : null
+
+  console.log(explanation)
 
   return (
     <div className="flex h-full max-w-full flex-grow flex-col">
@@ -75,10 +87,27 @@ export default function StudyMaterial() {
             key={essay.id}
             className="shadow-on-scrollbox scrollbar-thin scrollbar-thumb-scrollbar h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto p-2 sm:p-10 sm:pt-8"
           >
-            <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
+            <div className="flex items-center gap-1">
+              <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
+              <LinkButton to={`/cms/essays/${essay.id}/edit`}>Edit</LinkButton>
+            </div>
             {essay.paragraphs.map((p) => (
-              <Link to={``} key={p.id}>
-                <p className="hover:bg-muted/50">{p.content}</p>
+              <Link
+                id={`${p.id}-paragraph`}
+                preventScrollReset
+                prefetch="intent"
+                to={`?${withParam(searchParams, 'selectedParagraph', p.id)}`}
+                key={p.id}
+              >
+                <div
+                  dangerouslySetInnerHTML={{ __html: p.content }}
+                  key={p.id}
+                  // content={p.content}
+                  className={cn(
+                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-muted',
+                    { 'bg-muted/50': selectedParagraphId === p.id },
+                  )}
+                />
               </Link>
             ))}
           </article>
@@ -122,7 +151,20 @@ export default function StudyMaterial() {
             <TabsContent
               value="explicatie"
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
-            ></TabsContent>
+            >
+              {explanation ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: explanation }}
+                  key={explanation}
+                  className={cn(
+                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors',
+                  )}
+                  content={explanation}
+                />
+              ) : (
+                'Selecteaza un paragraf'
+              )}
+            </TabsContent>
             <TabsContent
               value="recall"
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
