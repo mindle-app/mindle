@@ -393,11 +393,12 @@ model QuizAnswer {
 }
 
 model StudyMaterial {
-  id        String  @id @default(cuid())
-  title     String
-  type      String // e.g "LITERARY_WORK", "MATH_CONCEPT", "PROGRAMMING_TOPIC" etc
-  subjectId Int
-  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id          String  @id @default(cuid())
+  title       String
+  type        String // e.g "LITERARY_WORK", "MATH_CONCEPT", "PROGRAMMING_TOPIC" etc
+  subjectId   Int
+  description String?
+  subject     Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   essays Essay[]
 
