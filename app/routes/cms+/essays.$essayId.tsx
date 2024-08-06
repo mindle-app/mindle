@@ -3,22 +3,31 @@ import {
   getFormProps,
   getInputProps,
   useForm,
-  getTextareaProps,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
+import {
+  json,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
 import { Form, Outlet, useLoaderData } from '@remix-run/react'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import { Field, SelectField, TextareaField } from '#app/components/forms.js'
+import { Field, RichTextField, SelectField } from '#app/components/forms.js'
 
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { LinkButton } from '#app/components/ui/link-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
+import { Label } from '#app/components/ui/label.js'
 
 function stripHtmlTags(html: string) {
   return html.replace(/<[^>]*>/g, '')
+}
+
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
 }
 
 export const ParagraphSchema = z.object({
@@ -139,48 +148,54 @@ export default function EssayCMS() {
                 selectValueProps={{ placeholder: 'Select author' }}
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-xl">Paragraphs</p>
-              {paragraphs.map((p) => {
-                const paragraph = p.getFieldset()
-                return (
-                  <div className="flex" key={paragraph.id.value}>
-                    <input
-                      {...getInputProps(paragraph.id, { type: 'hidden' })}
-                    />
-                    <div className="flex gap-1">
-                      <TextareaField
-                        labelProps={{ children: 'Paragraph' }}
-                        textareaProps={{
-                          disabled: true,
-                          ...getTextareaProps(paragraph.content, {}),
-                          className: 'min-w-[500px]',
-                        }}
-                        errors={paragraph.content.errors}
+
+            <div>
+              <Label>Paragraphs</Label>
+
+              <ul className="flex flex-col gap-4 pt-4">
+                {paragraphs.map((p) => {
+                  const paragraph = p.getFieldset()
+                  return (
+                    <li className="relative" key={p.key}>
+                      <input
+                        {...getInputProps(paragraph.id, { type: 'hidden' })}
                       />
-                      <TextareaField
-                        labelProps={{ children: 'Explanation' }}
-                        textareaProps={{
-                          disabled: true,
-                          ...getTextareaProps(paragraph.explanation, {}),
-                          className: 'min-w-[400px]',
-                        }}
-                        errors={paragraph.explanation.errors}
-                      />
-                      <Field
-                        labelProps={{ children: 'Order' }}
-                        inputProps={{
-                          disabled: true,
-                          ...getInputProps(paragraph.order, {
-                            type: 'text',
-                          }),
-                        }}
-                        errors={paragraph.order.errors}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+
+                      <div className="flex w-full flex-col gap-1 rounded border pl-10">
+                        <Field
+                          className="max-w-[100px]"
+                          labelProps={{ children: 'Order' }}
+                          inputProps={{
+                            disabled: true,
+                            ...getInputProps(paragraph.order, {
+                              type: 'number',
+                            }),
+                          }}
+                          errors={paragraph.order.errors}
+                        />
+                        <RichTextField
+                          disabled={true}
+                          editorProps={{
+                            editable: false,
+                          }}
+                          labelProps={{ children: 'Content' }}
+                          meta={paragraph.content}
+                          errors={paragraph.content.errors}
+                        />
+                        <RichTextField
+                          disabled={true}
+                          editorProps={{
+                            className: 'w-full mt-4 ',
+                          }}
+                          labelProps={{ children: 'Explanation' }}
+                          meta={paragraph.explanation}
+                          errors={paragraph.explanation.errors}
+                        />
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
           </Form>
         </FormProvider>

@@ -5,10 +5,14 @@ import {
   type SelectTriggerProps,
   type SelectValueProps,
 } from '@radix-ui/react-select'
+import { type UseEditorOptions } from '@tiptap/react'
 import { REGEXP_ONLY_DIGITS_AND_CHARS, type OTPInputProps } from 'input-otp'
 import React, { useId } from 'react'
 import { cn } from '#app/utils/misc.js'
-import { BlockEditor } from './richtext-editor/components/block-editor/BlockEditor.tsx'
+import {
+  BlockEditor,
+  PreviewHTML,
+} from './richtext-editor/components/block-editor/BlockEditor.tsx'
 import { Button } from './ui/button.tsx'
 import { Checkbox, type CheckboxProps } from './ui/checkbox.tsx'
 import {
@@ -37,7 +41,6 @@ import {
   SelectValue,
 } from './ui/select.tsx'
 import { Textarea } from './ui/textarea.tsx'
-import { UseEditorOptions } from '@tiptap/react'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
@@ -401,26 +404,35 @@ type RichTextFieldProps = {
   labelProps?: React.LabelHTMLAttributes<HTMLLabelElement>
   errors?: ListOfErrors
   editorProps?: UseEditorOptions & { className?: string }
+  disabled?: boolean
 }
 export function RichTextField({
   meta,
   labelProps = {},
   errors,
   editorProps = {},
+  disabled = false,
 }: RichTextFieldProps) {
   const control = useInputControl(meta as FieldMetadata<string>)
   const fallbackId = useId()
   const id = meta.name ?? fallbackId
   const errorId = meta.errors?.length ? `${id}-error` : undefined
+  // For some reason, this is the only way to disable the left side
+  // operation buttons when the input is disabled
+  const Editor = !disabled ? BlockEditor : PreviewHTML
   return (
     <div>
       <Label htmlFor={meta.name} {...labelProps} />
-      <BlockEditor
+      <Editor
         onFocus={control.focus}
         onBlur={control.blur}
         content={control.value}
         onUpdate={({ editor }) => control.change(editor.getHTML())}
         {...editorProps}
+        {...(disabled ? { editable: false } : {})}
+        className={cn(editorProps.className, {
+          'bg-card/50 text-card-foreground/80': disabled,
+        })}
       />
       <div className="px-4 pb-3 pt-1">
         {errorId ? <ErrorList id={errorId} errors={errors} /> : null}
