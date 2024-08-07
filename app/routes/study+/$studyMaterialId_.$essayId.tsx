@@ -3,8 +3,11 @@ import { ElementScrollRestoration } from '@epic-web/restore-scroll'
 import { TabsList, Tabs, TabsContent, TabsTrigger } from '@radix-ui/react-tabs'
 import { type LinksFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { json, Link, useLoaderData, useSearchParams } from '@remix-run/react'
-import { PreviewHTML } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
+import dayjs from 'dayjs'
+import { useCallback, useEffect, useState } from 'react'
+import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/index.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
+import { Button } from '#app/components/ui/button.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
@@ -51,17 +54,56 @@ function withParam(
   return newSearchParams
 }
 
+function useTimeLeft(
+  endTime: string | Date | dayjs.Dayjs | null,
+  opts?: { onTimerEnd?: () => void },
+) {
+  const [timeLeft, setTimeLeft] = useState({
+    seconds: 0,
+    minutes: 0,
+    hours: 0,
+  })
+
+  useEffect(() => {
+    if (!endTime) return
+
+    const timer = setInterval(() => {
+      const now = dayjs()
+      const end = dayjs(endTime)
+      const diff = end.diff(now, 'second')
+
+      if (diff <= 0) {
+        clearInterval(timer)
+        setTimeLeft({ seconds: 0, minutes: 0, hours: 0 })
+        opts?.onTimerEnd?.()
+      } else {
+        const hours = Math.floor(diff / 3600)
+        const minutes = Math.floor((diff % 3600) / 60)
+        const seconds = diff % 60
+
+        setTimeLeft({ seconds, minutes, hours })
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [endTime, opts])
+
+  return timeLeft
+}
+
 export default function StudyMaterial() {
   const { essay, titleBits } = useLoaderData<typeof loader>()
+  const [timerEnd, setTimerEnd] = useState<dayjs.Dayjs | null>(null)
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('preview') ?? tabs[0]
   const selectedParagraphId = searchParams.get('selectedParagraph')
   const explanation = selectedParagraphId
     ? essay.paragraphs.find((p) => p.id === selectedParagraphId)?.explanation
     : null
+  const [recallContent, setRecallContent] = useState('')
+  const onTimerEnd = useCallback(() => setTimerEnd(null), [])
 
-  console.log(explanation)
-
+  const { seconds, minutes } = useTimeLeft(timerEnd, { onTimerEnd })
   return (
     <div className="flex h-full max-w-full flex-grow flex-col">
       <main className="flex flex-grow flex-col sm:grid sm:h-full sm:min-h-[800px] sm:grid-cols-1 sm:grid-rows-2 md:min-h-[unset] lg:grid-cols-2 lg:grid-rows-1">
@@ -85,8 +127,11 @@ export default function StudyMaterial() {
           <article
             id={essay.id}
             key={essay.id}
-            className="shadow-on-scrollbox scrollbar-thin scrollbar-thumb-scrollbar h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto p-2 sm:p-10 sm:pt-8"
+            className="shadow-on-scrollbox scrollbar-thin scrollbar-thumb-scrollbar relative h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto p-2 sm:p-10 sm:pt-8"
           >
+            {timerEnd ? (
+              <div className="absolute bottom-0 left-0 right-0 top-0 z-50 backdrop-blur-md" />
+            ) : null}
             <div className="flex items-center gap-1">
               <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
               <LinkButton to={`/cms/essays/${essay.id}/edit`}>Edit</LinkButton>
@@ -102,10 +147,11 @@ export default function StudyMaterial() {
                 <div
                   dangerouslySetInnerHTML={{ __html: p.content }}
                   key={p.id}
-                  // content={p.content}
                   className={cn(
                     'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-muted',
-                    { 'bg-muted/50': selectedParagraphId === p.id },
+                    {
+                      'bg-muted/50': selectedParagraphId === p.id,
+                    },
                   )}
                 />
               </Link>
@@ -168,7 +214,26 @@ export default function StudyMaterial() {
             <TabsContent
               value="recall"
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
-            ></TabsContent>
+            >
+              {timerEnd ? (
+                <div className="flex h-full w-full flex-col items-center">
+                  <p>
+                    {minutes}:{seconds}
+                  </p>
+                  <BlockEditor
+                    content={recallContent}
+                    onBlur={({ editor }) => {
+                      setRecallContent(editor.getHTML())
+                    }}
+                    className="border-none bg-background text-foreground"
+                  />
+                </div>
+              ) : (
+                <Button onClick={() => setTimerEnd(dayjs().add(5, 'minute'))}>
+                  Incepe recall
+                </Button>
+              )}
+            </TabsContent>
             <TabsContent
               value="mindmap"
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
