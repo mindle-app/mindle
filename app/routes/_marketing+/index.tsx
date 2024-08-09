@@ -1,18 +1,13 @@
 import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, redirect } from '@remix-run/react'
-import { Button } from '#app/components/ui/button'
-import { Card } from '#app/components/ui/card'
-import { Icon } from '#app/components/ui/icon'
-import { getUserId } from '#app/utils/auth.server.js'
-import { type IconName } from '@/icon-name'
-import { SVGProps } from 'react'
-import { LandingHeader } from './_layout'
-import test from 'node:test'
+import Autoplay from 'embla-carousel-autoplay'
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from '#app/components/ui/avatar.js'
+import { Button } from '#app/components/ui/button'
+import { Card } from '#app/components/ui/card'
 import {
   Carousel,
   CarouselContent,
@@ -20,9 +15,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '#app/components/ui/carousel.js'
-import Autoplay from 'embla-carousel-autoplay'
-import { cn } from '#app/utils/misc.js'
+import { Icon } from '#app/components/ui/icon'
 import { Slider } from '#app/components/ui/slider.js'
+import { getUserId } from '#app/utils/auth.server.js'
+import { cn } from '#app/utils/misc.js'
+import { LandingHeader } from './_layout'
+import { type IconName } from '@/icon-name'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request)
