@@ -34,7 +34,7 @@ export function SimpleTooltip({
 }) {
   if (!content) return children
   return (
-    <Tooltip>
+    <Tooltip delayDuration={500}>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent>{content}</TooltipContent>
     </Tooltip>

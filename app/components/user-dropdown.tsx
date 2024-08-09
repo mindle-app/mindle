@@ -54,23 +54,23 @@ export function UserDropdown({
             </DropdownMenuItem>
           ) : null}
           <DropdownMenuItem asChild>
-            <Link prefetch="intent" to={`/dashboard`}>
-              <Icon className="text-body-md" name="layout-dashboard">
-                Dashboard
+            <Link prefetch="intent" to={`/home`}>
+              <Icon className="text-body-md" name="house">
+                Acasă
               </Icon>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link prefetch="intent" to={`/users/${user.username}`}>
               <Icon className="text-body-md" name="avatar">
-                Profile
+                Profilul tău
               </Icon>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link prefetch="intent" to={`/users/${user.username}/notes`}>
               <Icon className="text-body-md" name="pencil-2">
-                Notes
+                Notițe
               </Icon>
             </Link>
           </DropdownMenuItem>

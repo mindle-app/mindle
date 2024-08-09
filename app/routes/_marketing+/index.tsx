@@ -1,10 +1,19 @@
-import { type MetaFunction } from '@remix-run/node'
-import { Link } from '@remix-run/react'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { Link, redirect } from '@remix-run/react'
 import { Button } from '#app/components/ui/button'
 import { Card } from '#app/components/ui/card'
 import { Icon } from '#app/components/ui/icon'
+import { getUserId } from '#app/utils/auth.server.js'
 import { useOptionalUser } from '#app/utils/user'
 import { type IconName } from '@/icon-name'
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const userId = await getUserId(request)
+  if (userId) {
+    throw redirect('/home')
+  }
+  return null
+}
 
 export const meta: MetaFunction = () => [{ title: 'Mindle' }]
 

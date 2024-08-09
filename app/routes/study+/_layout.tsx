@@ -480,22 +480,6 @@ function Navigation({
                   },
                 )}
               </motion.ul>
-              <div className="mt-6">
-                <NavLink
-                  to="/finished"
-                  className={({ isActive }) =>
-                    clsx(
-                      'relative whitespace-nowrap text-lg font-bold outline-none hover:underline focus:underline',
-                      {
-                        'bg-black text-white after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""]':
-                          isActive,
-                      },
-                    )
-                  }
-                >
-                  📝 Workshop Feedback
-                </NavLink>
-              </div>
             </motion.div>
           )}
           {!isMenuOpened && (
@@ -509,7 +493,31 @@ function Navigation({
           )}
 
           {user ? (
-            <SimpleTooltip content={isMenuOpened ? null : 'Your account'}>
+            <SimpleTooltip content={isMenuOpened ? null : 'Acasă'}>
+              <Link
+                to={'/home'}
+                prefetch="intent"
+                className={cn(
+                  'flex h-14 w-full items-center space-x-3 border-t px-4 py-4 pl-[18px] no-underline hover:underline',
+                )}
+              >
+                <Icon name="house" className="flex-shrink-0" size="md" />
+                {isMenuOpened ? (
+                  <motion.div
+                    className="flex items-center whitespace-nowrap"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    Acasă
+                  </motion.div>
+                ) : (
+                  <span className="sr-only">Acasă</span>
+                )}
+              </Link>
+            </SimpleTooltip>
+          ) : null}
+          {user ? (
+            <SimpleTooltip content={isMenuOpened ? null : 'Contul tău'}>
               <Link
                 className="flex h-14 w-full items-center justify-start space-x-3 border-t px-4 py-4 text-center no-underline hover:underline"
                 to="/account"
@@ -533,41 +541,15 @@ function Navigation({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    Your Account
+                    Contul tău
                   </motion.div>
                 ) : (
-                  <span className="sr-only">Your account</span>
+                  <span className="sr-only">Contul tău</span>
                 )}
               </Link>
             </SimpleTooltip>
           ) : null}
-          {user && nextExerciseRoute ? (
-            <SimpleTooltip
-              content={isMenuOpened ? null : 'Continue to next lesson'}
-            >
-              <Link
-                to={nextExerciseRoute}
-                prefetch="intent"
-                className={clsx(
-                  'flex h-14 w-full items-center space-x-3 border-t px-4 py-4 pl-[18px] no-underline hover:underline',
-                )}
-                state={{ from: 'continue next lesson button' }}
-              >
-                <Icon name="fast-forward" className="flex-shrink-0" size="md" />
-                {isMenuOpened ? (
-                  <motion.div
-                    className="flex items-center whitespace-nowrap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    Continue to next lesson
-                  </motion.div>
-                ) : (
-                  <span className="sr-only">Continue to next lesson</span>
-                )}
-              </Link>
-            </SimpleTooltip>
-          ) : null}
+
           <div className="mb-4 w-full self-start border-t pl-3 pt-[15px]">
             <ThemeSwitch
               userPreference={rootData?.requestInfo.userPrefs.theme}
