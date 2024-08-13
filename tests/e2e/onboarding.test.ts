@@ -101,13 +101,13 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
   await expect(page).toHaveURL(`/home`)
 
   await page.getByRole('link', { name: onboardingData.name }).click()
-  await page.getByRole('menuitem', { name: /profile/i }).click()
+  await page.getByRole('menuitem', { name: /profilul tău/i }).click()
 
   await expect(page).toHaveURL(`/users/${onboardingData.username}`)
 
   await page.getByRole('link', { name: onboardingData.name }).click()
   await page.getByRole('menuitem', { name: /logout/i }).click()
-  await expect(page).toHaveURL(`/home`)
+  await expect(page).toHaveURL(`/`)
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
