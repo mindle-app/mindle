@@ -1,7 +1,10 @@
 import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Form, Link, redirect } from '@remix-run/react'
 import Autoplay from 'embla-carousel-autoplay'
-import { ReactNode, Suspense, useEffect, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { SweatyBrain } from '#app/components/illustrations/sweaty-brain.js'
+import { makeMediaQueryStore } from '#app/components/media-query.js'
 import {
   Avatar,
   AvatarFallback,
@@ -24,7 +27,6 @@ import { getUserId } from '#app/utils/auth.server.js'
 import { cn } from '#app/utils/misc.js'
 import { LandingHeader } from './_layout'
 import { type IconName } from '@/icon-name'
-import { makeMediaQueryStore } from '#app/components/media-query.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request)
@@ -45,8 +47,8 @@ const JoinSliderField = ({
   onValueChange,
   ignoreMin,
 }: JoinSliderFieldProps) => {
-  const [minutesPerDay, setMinutesPerDay] = useState(-1)
-  const [days, setDays] = useState(-1)
+  const [minutesPerDay, setMinutesPerDay] = useState(60)
+  const [days, setDays] = useState(3)
   const totalTimeNeeded = 6000 //in minutes
   const totalTimePerWeek = minutesPerDay * days
   const daysNeeded = Math.ceil(totalTimeNeeded / totalTimePerWeek)
@@ -73,6 +75,7 @@ const JoinSliderField = ({
               name="days"
               min={1}
               max={7}
+              value={[days]}
               className="mt-4 w-full bg-muted"
               onValueChange={(value) => {
                 if (value[0]) {
@@ -100,6 +103,7 @@ const JoinSliderField = ({
               min={30}
               max={240}
               step={30}
+              value={[minutesPerDay]}
               className="mt-4"
               onValueChange={(value) => {
                 if (value[0]) {
@@ -152,7 +156,7 @@ export const meta: MetaFunction = () => [
 
 function Hero() {
   return (
-    <div className="relative flex w-full flex-col justify-center overflow-hidden bg-repeat py-8 md:flex-row md:justify-between md:py-12">
+    <div className="relative flex w-full flex-col justify-center overflow-hidden bg-repeat py-8 text-primary-foreground md:flex-row md:justify-between md:py-12">
       <div className="flex text-center md:container">
         <div className="flex flex-col items-center gap-4 lg:flex-row">
           <div className="flex w-full flex-1 flex-col gap-4 text-center md:justify-center lg:text-start">
@@ -163,7 +167,7 @@ function Hero() {
             <h1 className="animate-slide-left font-coHeadlineBold text-4xl [animation-delay:0.2s] [animation-fill-mode:backwards] sm:text-5xl">
               Invață ușor și structurat pentru bac
             </h1>
-            <div className="w-full animate-slide-left [animation-delay:0.6s] [animation-fill-mode:backwards] lg:mt-8 xl:pr-64">
+            <div className="w-full animate-slide-left [animation-delay:0.4s] [animation-fill-mode:backwards] lg:mt-8 xl:pr-64">
               <Button variant={'secondary'} size={'wide'} asChild>
                 <Link to={'/login'}>Alătură-te lui Mindle</Link>
               </Button>
@@ -279,6 +283,110 @@ function ClientOnly({ children }: { children: ReactNode }) {
   return shouldRender ? children : null
 }
 
+function SlideIn({
+  children,
+  direction = 'left',
+}: {
+  children: ReactNode
+  direction?: 'left' | 'right'
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, amount: 0.5 })
+  const isRight = direction === 'right'
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: isRight ? -100 : 100 }}
+      animate={
+        isInView
+          ? { opacity: 1, x: 0 }
+          : { opacity: 0, x: isRight ? -100 : 100 }
+      }
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function FeatureCard({
+  text,
+  icon,
+  picture,
+  index,
+}: {
+  text: string
+  icon: IconName
+  picture: string
+  index: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, amount: 0.5 })
+  const isOdd = index % 2 !== 0
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: isOdd ? -100 : 100 }}
+      animate={
+        isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: isOdd ? -100 : 100 }
+      }
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      key={`feature-${text}`}
+      className={cn(
+        'flex flex-col items-center gap-10 md:p-10 lg:flex-row',
+        {},
+      )}
+    >
+      <div>
+        <Card className="flex max-w-xs flex-col items-center justify-center gap-6 rounded-xl py-6 md:px-6">
+          <Icon name={icon as IconName} className="h-12 w-12" />
+          <p className="text-center font-coHeadline text-lg">{text}</p>
+        </Card>
+      </div>
+      <img
+        src={picture}
+        className={cn(
+          'max-w-xs rounded-xl sm:max-w-sm md:max-w-lg lg:max-w-xl xl:max-w-2xl',
+          {
+            'lg:-order-1': index % 2 !== 0,
+          },
+        )}
+      />
+    </motion.div>
+  )
+}
+
+const problems: { text: ReactNode; icon: IconName }[] = [
+  {
+    text: (
+      <p>
+        Materia e <span className="text-primary">stufoasă</span> și{' '}
+        <span className="text-primary">greu de invățat</span>
+      </p>
+    ),
+    icon: 'book-open-text',
+  },
+  {
+    icon: 'stop-watch-check-lines',
+    text: (
+      <p>
+        <span className="text-primary">Puțin timp</span> disponibil{' '}
+        <span className="text-primary">de învățat</span>
+      </p>
+    ),
+  },
+  {
+    icon: 'man-question',
+    text: (
+      <p>
+        Lecțiile învățate se{' '}
+        <span className="text-primary">uită foarte repede</span>
+      </p>
+    ),
+  },
+]
+
 export default function Index() {
   return (
     <div className="grid h-full w-full font-poppins">
@@ -295,7 +403,7 @@ export default function Index() {
         </div>
       </section>
       <section className="container mt-5 w-full md:p-9">
-        <div className="flex animate-slide-top flex-wrap justify-evenly gap-6 rounded-xl border bg-card py-8 [animation-delay:0.4s] [animation-fill-mode:backwards]">
+        <div className="flex animate-slide-top flex-wrap justify-evenly gap-6 rounded-xl border bg-card py-8 [animation-delay:0.6s] [animation-fill-mode:backwards]">
           {subjects.map((s) => {
             return (
               <div key={s.name} className="flex items-center gap-1">
@@ -316,6 +424,38 @@ export default function Index() {
           </ClientOnly>
         </div>
       </section>
+      <SlideIn>
+        <section className="container flex w-full flex-col items-center justify-center gap-3 pt-16">
+          <SweatyBrain />
+
+          <p className="text-center font-coHeadlineBold text-3xl lg:text-4xl">
+            Învățatul din manual a fost întotdeauna dificil
+          </p>
+          <div className="flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:p-8">
+            <div className="flex gap-3 md:p-8">
+              {problems.map((p) => (
+                <Card
+                  key={`${p.icon}-problem`}
+                  className="flex max-w-[10rem] flex-col flex-wrap items-center justify-center gap-8 p-2 text-center"
+                >
+                  <Icon name={p.icon} className="h-12 w-12 text-primary" />
+                  {p.text}
+                </Card>
+              ))}
+            </div>
+            <div className="-order-1 flex justify-center gap-3 md:order-1">
+              <img
+                className="max-w-[12rem] rounded-xl"
+                src={'/img/problems/manual-page-1.png'}
+              />
+              <img
+                className="hidden max-w-[12rem] rounded-xl md:block"
+                src={'/img/problems/manual-page-2.png'}
+              />
+            </div>
+          </div>
+        </section>
+      </SlideIn>
       <LandingSection
         icon="mindle-head"
         title="Sunt aici sa te ajut:"
@@ -337,29 +477,14 @@ export default function Index() {
                 icon: 'book-open-text',
                 picture: '/img/features/imparte-materia.png',
               },
-            ].map((item, index) => (
-              <div
-                key={`feature-${item.text}`}
-                className="flex flex-col items-center gap-10 md:p-10 lg:flex-row"
-              >
-                <div>
-                  <Card className="flex max-w-xs flex-col items-center justify-center gap-6 rounded-xl py-6 md:px-6">
-                    <Icon name={item.icon as IconName} className="h-12 w-12" />
-                    <p className="text-center font-coHeadline text-lg">
-                      {item.text}
-                    </p>
-                  </Card>
-                </div>
-                <img
-                  src={item.picture}
-                  className={cn(
-                    'max-w-xs rounded-xl sm:max-w-sm md:max-w-lg lg:max-w-xl xl:max-w-2xl',
-                    {
-                      'animate-slide-right lg:-order-1': index % 2 !== 0,
-                    },
-                  )}
-                />
-              </div>
+            ].map(({ text, picture, icon }, index) => (
+              <FeatureCard
+                key={text}
+                text={text}
+                picture={picture}
+                icon={icon as IconName}
+                index={index}
+              />
             ))}
           </Card>
         }
