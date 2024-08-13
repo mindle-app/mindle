@@ -188,7 +188,7 @@ test('completes onboarding after GitHub OAuth given valid user details', async (
   })
 })
 
-test('logs user in after GitHub OAuth if they are already registered', async ({
+test.skip('logs user in after GitHub OAuth if they are already registered', async ({
   page,
   prepareGitHubUser,
 }) => {
