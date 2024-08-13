@@ -98,7 +98,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 
   await page.getByRole('button', { name: /Create an account/i }).click()
 
-  await expect(page).toHaveURL(`/`)
+  await expect(page).toHaveURL(`/home`)
 
   await page.getByRole('link', { name: onboardingData.name }).click()
   await page.getByRole('menuitem', { name: /profile/i }).click()
@@ -107,7 +107,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 
   await page.getByRole('link', { name: onboardingData.name }).click()
   await page.getByRole('menuitem', { name: /logout/i }).click()
-  await expect(page).toHaveURL(`/`)
+  await expect(page).toHaveURL(`/home`)
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
@@ -221,7 +221,7 @@ test('logs user in after GitHub OAuth if they are already registered', async ({
   await page.goto('/signup')
   await page.getByRole('button', { name: /signup with github/i }).click()
 
-  await expect(page).toHaveURL(`/`)
+  await expect(page).toHaveURL(`/home`)
   await expect(
     page.getByText(
       new RegExp(
@@ -332,7 +332,7 @@ test('login as existing user', async ({ page, insertNewUser }) => {
   await page.getByRole('textbox', { name: /username/i }).fill(user.username)
   await page.getByLabel(/^parola$/i).fill(password)
   await page.getByRole('button', { name: /log in/i }).click()
-  await expect(page).toHaveURL(`/`)
+  await expect(page).toHaveURL(`/home`)
 
   await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
@@ -392,7 +392,7 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
   await page.getByLabel(/^parola$/i).fill(newPassword)
   await page.getByRole('button', { name: /log in/i }).click()
 
-  await expect(page).toHaveURL(`/`)
+  await expect(page).toHaveURL(`/home`)
 
   await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
