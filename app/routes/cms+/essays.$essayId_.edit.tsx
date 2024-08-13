@@ -79,7 +79,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Essay not found',
-          n,
         })
       }
     }).transform(({ paragraphs, ...data }) => {

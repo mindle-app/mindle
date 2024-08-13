@@ -44,7 +44,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await parseMultipartFormData(
     request,
     createMemoryUploadHandler({ maxPartSize: MAX_UPLOAD_SIZE }),
-    n,
   )
 
   const submission = await parseWithZod(formData, {
