@@ -11,7 +11,7 @@ export function LandingHeader() {
     <header className={cn('z-10 w-full pt-6 text-primary-foreground')}>
       <nav
         className={cn(
-          'container flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
+          'container flex flex-wrap items-center justify-between sm:flex-nowrap md:gap-8',
         )}
       >
         <Logo className={'w-30 h-7 fill-primary-foreground'} />
@@ -31,8 +31,8 @@ export function LandingHeader() {
 
 export default function MarketingLayout() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center">
-      <main className="flex-grow">
+    <div className="max-w-screen relative flex min-h-screen w-full flex-col items-center">
+      <main>
         <Outlet />
       </main>
     </div>
