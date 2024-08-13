@@ -4,6 +4,7 @@ import { Button } from '#app/components/ui/button'
 import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc'
 import { useOptionalUser } from '#app/utils/user'
+import dayjs from 'dayjs'
 
 export function LandingHeader() {
   const user = useOptionalUser()
@@ -29,12 +30,28 @@ export function LandingHeader() {
   )
 }
 
+function Footer({ className }: { className?: string }) {
+  const year = dayjs().get('year')
+  return (
+    <footer className={cn('flex flex-col items-center gap-4', className)}>
+      <Link to={'/tos'} className="underline">
+        Termeni și condiții
+      </Link>
+      <Link to={'/privacy'} className="underline">
+        Politica de confidențialitate
+      </Link>
+      Copyright © {year} Mindle
+    </footer>
+  )
+}
+
 export default function MarketingLayout() {
   return (
     <div className="max-w-screen relative flex min-h-screen w-full flex-col items-center">
       <main>
         <Outlet />
       </main>
+      <Footer className="mt-8" />
     </div>
   )
 }

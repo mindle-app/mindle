@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Form, Link, redirect } from '@remix-run/react'
 import Autoplay from 'embla-carousel-autoplay'
-import { Suspense, useEffect, useState } from 'react'
+import { ReactNode, Suspense, useEffect, useState } from 'react'
 import {
   Avatar,
   AvatarFallback,
@@ -266,6 +266,19 @@ function TestimonialCarousel() {
   )
 }
 
+// Used to prevent hydration errors when what is rendered on server
+// differs from what is initially rendered on the client
+function ClientOnly({ children }: { children: ReactNode }) {
+  // There is a hydration error when we try
+  const [shouldRender, setShouldRender] = useState(false)
+
+  useEffect(() => {
+    setShouldRender(true)
+  }, [])
+
+  return shouldRender ? children : null
+}
+
 export default function Index() {
   return (
     <div className="grid h-full w-full font-poppins">
@@ -282,7 +295,7 @@ export default function Index() {
         </div>
       </section>
       <section className="container mt-5 w-full md:p-9">
-        <div className="flex flex-wrap justify-evenly gap-6 rounded-xl border bg-card py-8">
+        <div className="flex animate-slide-top flex-wrap justify-evenly gap-6 rounded-xl border bg-card py-8 [animation-delay:0.4s] [animation-fill-mode:backwards]">
           {subjects.map((s) => {
             return (
               <div key={s.name} className="flex items-center gap-1">
@@ -298,9 +311,9 @@ export default function Index() {
           <p className="text-4xl italic">
             Ce spun elevii care au invățat cu Mindle
           </p>
-          <Suspense>
+          <ClientOnly>
             <TestimonialCarousel />
-          </Suspense>
+          </ClientOnly>
         </div>
       </section>
       <LandingSection
@@ -342,7 +355,7 @@ export default function Index() {
                   className={cn(
                     'max-w-xs rounded-xl sm:max-w-sm md:max-w-lg lg:max-w-xl xl:max-w-2xl',
                     {
-                      'lg:-order-1': index % 2 !== 0,
+                      'animate-slide-right lg:-order-1': index % 2 !== 0,
                     },
                   )}
                 />
