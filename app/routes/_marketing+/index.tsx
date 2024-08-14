@@ -175,7 +175,7 @@ function Hero() {
           </div>
           <img
             src={'/img/mindle-hero-screenshot.png'}
-            className="border-1 max-w-xs flex-1 animate-slide-left rounded rounded-xl object-center [animation-delay:0.4s] [animation-fill-mode:backwards] sm:max-w-sm md:max-w-lg lg:w-[564px] lg:max-w-xl xl:max-w-2xl"
+            className="border-1 max-w-xs animate-slide-left rounded rounded-xl object-center [animation-delay:0.4s] [animation-fill-mode:backwards] sm:max-w-sm md:max-w-lg lg:w-[564px] lg:max-w-xl xl:max-w-2xl"
           />
         </div>
       </div>
