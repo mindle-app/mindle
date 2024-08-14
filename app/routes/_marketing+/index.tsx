@@ -286,23 +286,31 @@ function ClientOnly({ children }: { children: ReactNode }) {
 function SlideIn({
   children,
   direction = 'left',
+  className,
 }: {
   children: ReactNode
-  direction?: 'left' | 'right'
+  direction?: 'left' | 'right' | 'top'
+  className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.5 })
   const isRight = direction === 'right'
+  const isTop = direction === 'top'
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: isRight ? -100 : 100 }}
+      initial={
+        isTop ? { opacity: 0, y: 100 } : { opacity: 0, x: isRight ? -100 : 100 }
+      }
       animate={
         isInView
-          ? { opacity: 1, x: 0 }
-          : { opacity: 0, x: isRight ? -100 : 100 }
+          ? { opacity: 1, x: 0, y: 0 }
+          : isTop
+            ? { opacity: 0, y: 100 }
+            : { opacity: 0, x: isRight ? -100 : 100 }
       }
       transition={{ duration: 0.5, ease: 'easeOut' }}
+      className={className}
     >
       {children}
     </motion.div>
@@ -414,18 +422,20 @@ export default function Index() {
           })}
         </div>
       </section>
-      <section className="container mt-5 w-full">
-        <div className="flex w-full flex-col items-center justify-center rounded-xl border bg-card p-4 text-center md:p-12">
-          <p className="text-4xl italic">
-            Ce spun elevii care au invățat cu Mindle
-          </p>
-          <ClientOnly>
-            <TestimonialCarousel />
-          </ClientOnly>
-        </div>
-      </section>
-      <SlideIn>
-        <section className="container flex w-full flex-col items-center justify-center gap-3 pt-16">
+      <SlideIn direction="top">
+        <section className="container mt-5 w-full">
+          <div className="flex w-full flex-col items-center justify-center rounded-xl border bg-card p-4 text-center md:p-12">
+            <p className="text-4xl italic">
+              Ce spun elevii care au invățat cu Mindle
+            </p>
+            <ClientOnly>
+              <TestimonialCarousel />
+            </ClientOnly>
+          </div>
+        </section>
+      </SlideIn>
+      <SlideIn direction={'top'} className="container">
+        <section className="flex flex-col items-center justify-center gap-3 pt-16">
           <SweatyBrain />
 
           <p className="text-center font-coHeadlineBold text-3xl lg:text-4xl">
