@@ -11,6 +11,7 @@ import { Button } from '#app/components/ui/button.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
+import { withParam } from '#app/utils/search-params.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -38,20 +39,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 
   return json({ essay, titleBits })
-}
-
-function withParam(
-  searchParams: URLSearchParams,
-  key: string,
-  value: string | null,
-) {
-  const newSearchParams = new URLSearchParams(searchParams)
-  if (value === null) {
-    newSearchParams.delete(key)
-  } else {
-    newSearchParams.set(key, value)
-  }
-  return newSearchParams
 }
 
 function useTimeLeft(
