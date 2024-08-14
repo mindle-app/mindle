@@ -22,7 +22,6 @@ import {
 import { Icon } from '#app/components/ui/icon'
 import { Input } from '#app/components/ui/input.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
-import { Slider } from '#app/components/ui/slider.js'
 import { getUserId } from '#app/utils/auth.server.js'
 import { cn } from '#app/utils/misc.js'
 import { LandingHeader } from './_layout'
@@ -134,7 +133,7 @@ const JoinSliderField = ({
         <div className="mt-8 flex w-full justify-center">
           <LinkButton
             buttonProps={{ variant: 'default', size: 'wide' }}
-            to={'/join'}
+            to={'/welcome'}
           >
             Creează-ți cont
           </LinkButton>
@@ -164,7 +163,7 @@ function Hero() {
             </h1>
             <div className="w-full animate-slide-left [animation-delay:0.4s] [animation-fill-mode:backwards] lg:mt-8 xl:pr-64">
               <Button variant={'secondary'} size={'wide'} asChild>
-                <Link to={'/login'}>Alătură-te lui Mindle</Link>
+                <Link to={'/welcome'}>Alătură-te lui Mindle</Link>
               </Button>
             </div>
           </div>
