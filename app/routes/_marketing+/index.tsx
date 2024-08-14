@@ -70,18 +70,15 @@ const JoinSliderField = ({
         <div className="mb-10">
           <label htmlFor="days" className="block text-xl font-medium">
             {ignoreMin ? '' : '1.'} Câte zile pe săptămână vrei să înveți?
-            <Slider
-              id={'days'}
+            <input
+              type="range"
+              id="days"
               name="days"
-              min={1}
-              max={7}
-              value={[days]}
-              className="mt-4 w-full bg-muted"
-              onValueChange={(value) => {
-                if (value[0]) {
-                  setMinutesPerDay(value[0])
-                }
-              }}
+              min="1"
+              max="7"
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-[#FCDECF] accent-[#F15B10]"
             />
           </label>
 
@@ -98,18 +95,16 @@ const JoinSliderField = ({
         <div className="mb-10">
           <label htmlFor="minutes" className="block text-xl font-medium">
             {ignoreMin ? '' : '2.'} Câte minute pe zi vrei să înveți?
-            <Slider
-              name={'minutes'}
+            <input
+              type="range"
+              id="minutes"
+              name="minutes"
               min={30}
               max={240}
               step={30}
-              value={[minutesPerDay]}
-              className="mt-4"
-              onValueChange={(value) => {
-                if (value[0]) {
-                  setDays(value[0])
-                }
-              }}
+              value={minutesPerDay}
+              onChange={(e) => setMinutesPerDay(Number(e.target.value))}
+              className="mt-4 h-1 w-full cursor-pointer appearance-none rounded-lg bg-[#FCDECF] accent-[#F15B10]"
             />
           </label>
 
