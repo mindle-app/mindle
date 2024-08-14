@@ -2,7 +2,7 @@ import { Link, useSearchParams } from '@remix-run/react'
 import { z } from 'zod'
 import { cn } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
-import { getStep, questions } from './_layout'
+import { getStep, questions } from '#app/utils/welcome-form.js'
 
 export default function WelcomeForm() {
   const [searchParams] = useSearchParams()

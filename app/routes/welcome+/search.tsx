@@ -16,7 +16,7 @@ import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
-import { getStep, questions } from './_layout.tsx'
+import { getStep, questions } from '#app/utils/welcome-form.js'
 
 const RawHighscoolSchema = z.array(
   z.object({ id: z.string(), name: z.string() }),

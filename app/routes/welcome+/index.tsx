@@ -1,11 +1,10 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/react'
-import { questions } from './_layout'
+import { getStep, questions } from '#app/utils/welcome-form.js'
 
 export function loader({ request }: LoaderFunctionArgs) {
   const searchParams = new URL(request.url).searchParams
-  const step = searchParams.get('step') ?? '1'
+  const step = getStep(searchParams)
   const type = questions[step]?.type
-  const strSearchParams = request.url.split('?')[1]
-  return redirect(`/welcome/${type}?${strSearchParams ?? ''}`)
+  return redirect(`/welcome/${type}?${searchParams}`)
 }

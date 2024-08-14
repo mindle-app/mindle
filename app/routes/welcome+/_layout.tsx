@@ -5,68 +5,7 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 import { Progress } from '#app/components/ui/progress.js'
 import { cn } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
-
-export function getStep(sp: URLSearchParams) {
-  return sp.get('step') ?? '1'
-}
-
-export type WelcomeFormQuestion =
-  | {
-      type: 'single' | 'multi'
-      question: string
-      options: { text: string; icon?: string }[]
-    }
-  | { question: string; type: 'search'; loaderKey: 'highschools' }
-
-export const questions: Record<string, WelcomeFormQuestion> = {
-  '1': {
-    question: 'Care este obiectivul tău?',
-    options: [
-      {
-        text: 'Să termin materia cât mai repede ca să mă focusez pe admitere',
-        icon: '🏃‍♂️',
-      },
-      { text: 'Să iau notă maximă in bac', icon: '🏆' },
-      { text: 'Să promovez examenul cât mai ușor', icon: '🎓' },
-    ],
-    type: 'single',
-  },
-  '2': {
-    question: 'La ce dai bacul?',
-    type: 'multi',
-    options: [
-      { icon: '📖', text: ' Limba și literatura română' },
-      { icon: '➕', text: ' Matematica M1' },
-      { icon: '➖', text: ' Matematica M2' },
-      { icon: '⚛️', text: ' Fizică' },
-      { icon: '🧪', text: ' Chimie' },
-      { icon: '🧬', text: ' Biologie' },
-      { icon: '💻', text: ' Informatică' },
-      { icon: '🌍', text: ' Geografie' },
-      { icon: '⁉️️', text: ' Logică și argumentare' },
-      { icon: '🧠', text: ' Psihologie' },
-      { icon: '💰', text: ' Economie' },
-      { icon: '🏢', text: ' Sociologie' },
-      { icon: '📚', text: ' Filosofie' },
-      { icon: '🤔', text: '	încă nu sunt sigur/ă ' },
-    ],
-  },
-  '3': {
-    question: 'La ce liceu ești?',
-    type: 'search',
-    loaderKey: 'highschools',
-  },
-  '4': {
-    question: 'Care este cea mai buna perioadă de învățat pentru tine?',
-    options: [
-      { icon: '🌙', text: 'Seara' },
-      { icon: '🌅', text: 'Dimineața' },
-      { icon: '🌞', text: 'După-masa' },
-      { icon: '📆', text: 'In weekend' },
-    ],
-    type: 'single',
-  },
-}
+import { getStep, questions } from '#app/utils/welcome-form.js'
 
 function MessageBubble({
   question,
@@ -110,7 +49,7 @@ export default function WelcomeForm() {
               >
                 <Icon name={'chevron-left'} className="text-foreground" />
               </Link>
-              <Progress value={(stepNum / 4) * 100} className="h-2" />
+              <Progress value={(stepNum / 5) * 100} className="h-2" />
             </div>
             <section className="flex items-center gap-2">
               <MindleHead className="flex-shrink-0" />
@@ -122,7 +61,11 @@ export default function WelcomeForm() {
           </div>
           <div className="flex h-full w-full items-center justify-center">
             <LinkButton
-              to={`/welcome?${withParam(searchParams, 'step', String(Number(step) + 1))}`}
+              to={
+                step !== '5'
+                  ? `/welcome?${withParam(searchParams, 'step', String(Number(step) + 1))}`
+                  : `/welcome/submit?${searchParams}`
+              }
               buttonProps={{
                 variant: 'default',
                 size: 'wide',

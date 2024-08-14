@@ -1,11 +1,11 @@
 import { Link, useSearchParams } from '@remix-run/react'
 import { cn } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
-import { questions } from './_layout.tsx'
+import { getStep, questions } from '#app/utils/welcome-form.js'
 
 export default function SingleOption() {
   const [searchParams] = useSearchParams()
-  const step = searchParams.get('step') ?? '1'
+  const step = getStep(searchParams)
   const question = questions[step]
   if (question?.type !== 'single') {
     return null
