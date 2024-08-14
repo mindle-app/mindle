@@ -14,7 +14,7 @@ export type WelcomeFormQuestion =
   | {
       type: 'single' | 'multi'
       question: string
-      options: string[]
+      options: { text: string; icon?: string }[]
     }
   | { question: string; type: 'search'; loaderKey: 'highschools' }
 
@@ -22,9 +22,12 @@ export const questions: Record<string, WelcomeFormQuestion> = {
   '1': {
     question: 'Care este obiectivul tău?',
     options: [
-      'Să termin materia cât mai repede ca să mă focusez pe admitere',
-      'Să iau notă maximă in bac',
-      'Să promovez examenul cât mai ușor',
+      {
+        text: 'Să termin materia cât mai repede ca să mă focusez pe admitere',
+        icon: '🏃‍♂️',
+      },
+      { text: 'Să iau notă maximă in bac', icon: '🏆' },
+      { text: 'Să promovez examenul cât mai ușor', icon: '🎓' },
     ],
     type: 'single',
   },
@@ -32,15 +35,20 @@ export const questions: Record<string, WelcomeFormQuestion> = {
     question: 'La ce dai bacul?',
     type: 'multi',
     options: [
-      'Biologie',
-      'Limba Română',
-      'Matematica',
-      'Informatică',
-      'Istorie',
-      'Logică',
-      'Fizică',
-      'Chimie',
-      'Incă nu sunt sigur/ă',
+      { icon: '📖', text: ' Limba și literatura română' },
+      { icon: '➕', text: ' Matematica M1' },
+      { icon: '➖', text: ' Matematica M2' },
+      { icon: '⚛️', text: ' Fizică' },
+      { icon: '🧪', text: ' Chimie' },
+      { icon: '🧬', text: ' Biologie' },
+      { icon: '💻', text: ' Informatică' },
+      { icon: '🌍', text: ' Geografie' },
+      { icon: '⁉️️', text: ' Logică și argumentare' },
+      { icon: '🧠', text: ' Psihologie' },
+      { icon: '💰', text: ' Economie' },
+      { icon: '🏢', text: ' Sociologie' },
+      { icon: '📚', text: ' Filosofie' },
+      { icon: '🤔', text: '	încă nu sunt sigur/ă ' },
     ],
   },
   '3': {
@@ -50,7 +58,12 @@ export const questions: Record<string, WelcomeFormQuestion> = {
   },
   '4': {
     question: 'Care este cea mai buna perioadă de învățat pentru tine?',
-    options: ['Seara', 'Dimineața', 'După-masa', 'In weekend'],
+    options: [
+      { icon: '🌙', text: 'Seara' },
+      { icon: '🌅', text: 'Dimineața' },
+      { icon: '🌞', text: 'După-masa' },
+      { icon: '📆', text: 'In weekend' },
+    ],
     type: 'single',
   },
 }

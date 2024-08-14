@@ -25,27 +25,28 @@ export default function WelcomeForm() {
     <>
       {(options ?? []).map((option) => {
         const nextSet = new Set(parsedMultiAnswer)
-        let isSelected = nextSet.has(option)
+        let isSelected = nextSet.has(option.text)
         let nextValue: string
         if (isSelected) {
-          nextSet.delete(option)
+          nextSet.delete(option.text)
         } else {
-          nextSet.add(option)
+          nextSet.add(option.text)
         }
 
         nextValue = JSON.stringify([...nextSet])
         return (
           <Link
-            key={option}
+            key={option.text}
             to={`/welcome?${withParam(searchParams, `q${step}`, nextValue)}`}
             className={cn(
-              'rounded-xl border bg-card p-4 text-lg hover:border-primary/60',
+              'flex items-center gap-4 rounded-xl border bg-card p-4 text-lg hover:border-primary/60',
               {
                 'border-primary bg-primary/10 text-primary': isSelected,
               },
             )}
           >
-            {option}
+            <span className="text-3xl">{option.icon}</span>
+            <span>{option.text}</span>
           </Link>
         )
       })}

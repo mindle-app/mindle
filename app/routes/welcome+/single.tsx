@@ -16,19 +16,20 @@ export default function SingleOption() {
   return (
     <>
       {(options ?? []).map((option) => {
-        let isSelected = userAnswer === option
+        let isSelected = userAnswer === option.text
         return (
           <Link
-            key={option}
-            to={`?${withParam(searchParams, `q${step}`, option)}`}
+            key={option.text}
+            to={`?${withParam(searchParams, `q${step}`, option.text)}`}
             className={cn(
-              'rounded-xl border bg-card p-4 text-lg hover:border-primary/60',
+              'flex items-center gap-4 rounded-xl border bg-card p-4 text-lg hover:border-primary/60',
               {
                 'border-primary bg-primary/10 text-primary': isSelected,
               },
             )}
           >
-            {option}
+            <span className="text-3xl">{option.icon}</span>
+            <span>{option.text}</span>
           </Link>
         )
       })}
