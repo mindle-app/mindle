@@ -348,3 +348,30 @@ export function getQuizzes() {
   const { tests, questions, answers } = QuizSchema.parse(quizzes)
   return { tests, questions, answers }
 }
+
+const CommaStringNumber = z
+  .string()
+  .transform((s) => Number(s.replace(',', '.')))
+const PercentStringNumber = z
+  .string()
+  .optional()
+  .transform((s) => {
+    const stringPercent = s?.replace('%', '').replace(',', '.')
+    if (!stringPercent) return undefined
+    const percent = Number(stringPercent)
+    return isNaN(percent) ? undefined : percent
+  })
+const HighschoolSchema = z.array(
+  z.object({
+    'Nume liceu': z.string(),
+    'Medie Bac 2024': CommaStringNumber,
+    'Medie Admitere 2024': CommaStringNumber,
+    'Rata de promovare 2024': PercentStringNumber,
+    'Elevi Bac 2024': z.number(),
+  }),
+)
+
+export function getHighschools() {
+  const rawHighschools = require('./fixtures/data/licee2024.json')
+  return HighschoolSchema.parse(rawHighschools)
+}

@@ -12,6 +12,7 @@ import {
   getBiologyChapters,
   getBiologyImage,
   getChapterImages,
+  getHighschools,
   getNoteImages,
   getQuizzes,
   getUserImages,
@@ -364,6 +365,18 @@ async function seed() {
     })),
   })
   console.timeEnd(`📝 Created quizzes...`)
+
+  const highschools = getHighschools()
+  await prisma.highschool.createMany({
+    data: highschools.map((h) => ({
+      admissionAverage2024: h['Medie Admitere 2024'],
+      baccalaureateAverage2024: h['Medie Bac 2024'],
+      baccalaureateStudents2024: h['Elevi Bac 2024'],
+      name: h['Nume liceu'],
+      promotionRate: h['Rata de promovare 2024'],
+    })),
+  })
+
   console.timeEnd(`🌱 Database has been seeded
 `)
 }

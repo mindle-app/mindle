@@ -561,3 +561,16 @@ model UserQuizAnswer {
   @@index([userId])
   @@map("user_quiz_answer")
 }
+
+model Highschool {
+  id String @id @default(cuid())
+
+  name                      String
+  promotionRate             Float?
+  baccalaureateAverage2024  Float
+  admissionAverage2024      Float
+  baccalaureateStudents2024 Int
+
+  @@index([name])
+  @@map("highschool")
+}
