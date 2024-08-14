@@ -431,7 +431,7 @@ export default function Index() {
           <p className="text-center font-coHeadlineBold text-3xl lg:text-4xl">
             Învățatul din manual a fost întotdeauna dificil
           </p>
-          <div className="flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:p-8">
+          <div className="flex flex-col gap-3 rounded-xl border p-4 md:flex-row lg:p-8">
             <div className="flex gap-3 md:p-8">
               {problems.map((p) => (
                 <Card
@@ -449,7 +449,7 @@ export default function Index() {
                 src={'/img/problems/manual-page-1.png'}
               />
               <img
-                className="hidden max-w-[12rem] rounded-xl md:block"
+                className="hidden max-w-[12rem] rounded-xl lg:block"
                 src={'/img/problems/manual-page-2.png'}
               />
             </div>
