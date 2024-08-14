@@ -78,7 +78,7 @@ const JoinSliderField = ({
               max="7"
               value={days}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-[#FCDECF] accent-[#F15B10]"
+              className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-primary/20 accent-primary"
             />
           </label>
 
@@ -104,7 +104,7 @@ const JoinSliderField = ({
               step={30}
               value={minutesPerDay}
               onChange={(e) => setMinutesPerDay(Number(e.target.value))}
-              className="mt-4 h-1 w-full cursor-pointer appearance-none rounded-lg bg-[#FCDECF] accent-[#F15B10]"
+              className="mt-4 h-1 w-full cursor-pointer appearance-none rounded-lg bg-primary/20 accent-primary"
             />
           </label>
 
