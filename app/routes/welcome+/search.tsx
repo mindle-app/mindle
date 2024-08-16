@@ -22,6 +22,27 @@ const RawHighscoolSchema = z.array(
   z.object({ id: z.string(), name: z.string() }),
 )
 
+function normalizeRomanianName(name: string) {
+  const diacriticMap: Record<string, string | undefined> = {
+    ă: 'a',
+    î: 'i',
+    ț: 't',
+    â: 'a',
+    ș: 's',
+    Ă: 'A',
+    Î: 'I',
+    Ț: 'T',
+    Â: 'A',
+    Ș: 'S',
+  }
+
+  return name
+    .toLowerCase()
+    .split('')
+    .map((char) => diacriticMap[char] ?? char)
+    .join('')
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const searchParams = new URL(request.url).searchParams
   const step = getStep(searchParams)
@@ -29,13 +50,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   invariant(question?.type === 'search', 'Invalid question type')
   const searchTerm = searchParams.get('search')
+  const normalizedSearchTerm = normalizeRomanianName(searchTerm ?? '')
 
   const like = `%${searchTerm ?? ''}%`
+  const normalizedLike = `%${normalizedSearchTerm}%`
 
   const rawHighschools = await prisma.$queryRaw`
   SELECT h.id, h.name
   FROM highschool h
-  WHERE h.name LIKE ${like}
+  WHERE h.name LIKE ${like} OR h."normalizedName" LIKE ${normalizedLike}
   ORDER BY h.name ASC
   LIMIT 10
 `

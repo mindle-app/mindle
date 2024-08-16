@@ -566,6 +566,7 @@ model Highschool {
   id String @id @default(cuid())
 
   name                      String
+  normalizedName            String?
   promotionRate             Float?
   baccalaureateAverage2024  Float
   admissionAverage2024      Float
