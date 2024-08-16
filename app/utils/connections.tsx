@@ -8,16 +8,23 @@ export const GITHUB_PROVIDER_NAME = 'github'
 export const GOOGLE_PROVIDER_NAME = 'google'
 // to add another provider, set their name here and add it to the providerNames below
 
-export const providerNames = [GOOGLE_PROVIDER_NAME] as const
+export const providerNames = [
+  GOOGLE_PROVIDER_NAME,
+  GITHUB_PROVIDER_NAME,
+] as const
 export const ProviderNameSchema = z.enum(providerNames)
 export type ProviderName = z.infer<typeof ProviderNameSchema>
 
 export const providerLabels: Record<ProviderName, string> = {
   [GOOGLE_PROVIDER_NAME]: 'Google',
+  [GITHUB_PROVIDER_NAME]: 'Github',
 } as const
 
 export const providerIcons: Record<ProviderName, React.ReactNode> = {
   [GOOGLE_PROVIDER_NAME]: <Icon name="google-color-logo" />,
+  [GITHUB_PROVIDER_NAME]: (
+    <Icon name={'github-logo'} className="text-secondary-foreground" />
+  ),
 } as const
 
 export function ProviderConnectionForm({

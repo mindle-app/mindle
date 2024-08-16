@@ -5,7 +5,10 @@ import { afterEach, expect, test } from 'vitest'
 import { twoFAVerificationType } from '#app/routes/_app.settings+/profile.two-factor.tsx'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
 import { connectionSessionStorage } from '#app/utils/connections.server.ts'
-import { GITHUB_PROVIDER_NAME } from '#app/utils/connections.tsx'
+import {
+  GITHUB_PROVIDER_NAME,
+  GOOGLE_PROVIDER_NAME,
+} from '#app/utils/connections.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { generateTOTP } from '#app/utils/totp.server.ts'
@@ -15,6 +18,7 @@ import { server } from '#tests/mocks/index.ts'
 import { consoleError } from '#tests/setup/setup-test-env.ts'
 import { BASE_URL, convertSetCookieToCookie } from '#tests/utils.ts'
 import { loader } from './auth.$provider.callback.ts'
+import { mockGoogleProfile } from '#tests/mocks/google.js'
 
 const ROUTE_PATH = '/auth/github/callback'
 const PARAMS = { provider: 'github' }
@@ -84,17 +88,17 @@ test('when a user is logged in, it creates the connection', async () => {
 
 test(`when a user is logged in and has already connected, it doesn't do anything and just redirects the user back to the connections page`, async () => {
   const session = await setupUser()
-  const githubUser = await insertGitHubUser()
+  const googleUser = mockGoogleProfile
   await prisma.connection.create({
     data: {
-      providerName: GITHUB_PROVIDER_NAME,
+      providerName: GOOGLE_PROVIDER_NAME,
       userId: session.userId,
-      providerId: githubUser.profile.id.toString(),
+      providerId: googleUser.sub,
     },
   })
   const request = await setupRequest({
     sessionId: session.id,
-    code: githubUser.code,
+    code: User.code,
   })
   const response = await loader({ request, params: PARAMS, context: {} })
   expect(response).toHaveRedirect('/settings/profile/connections')

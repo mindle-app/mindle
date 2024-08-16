@@ -168,15 +168,17 @@ export default function SignupRoute() {
           </StatusButton>
         </Form>
         <ul className="mt-5 flex flex-col gap-5 border-t-2 border-border py-3">
-          {providerNames.map((providerName) => (
-            <li key={providerName}>
-              <ProviderConnectionForm
-                type="Signup"
-                providerName={providerName}
-                redirectTo={redirectTo}
-              />
-            </li>
-          ))}
+          {providerNames
+            .filter((p) => p !== 'github')
+            .map((providerName) => (
+              <li key={providerName}>
+                <ProviderConnectionForm
+                  type="Signup"
+                  providerName={providerName}
+                  redirectTo={redirectTo}
+                />
+              </li>
+            ))}
         </ul>
       </div>
     </div>
