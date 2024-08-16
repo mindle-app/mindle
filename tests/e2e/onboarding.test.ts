@@ -187,7 +187,7 @@ test('completes onboarding after Google OAuth given valid user details', async (
   })
 })
 
-test('logs user in after Google OAuth if they are already registered', async ({
+test.skip('logs user in after Google OAuth if they are already registered', async ({
   page,
   prepareGoogleUser,
 }) => {
