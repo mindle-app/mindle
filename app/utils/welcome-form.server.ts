@@ -16,8 +16,7 @@ export const welcomeFormSessionStorage = createCookieSessionStorage({
 
 export async function createFormAnswersHeaders(formAnswers: FormAnswersInput) {
   const session = await welcomeFormSessionStorage.getSession()
-  const answers = FormAnswersSchema.parse(formAnswers)
-  session.set(welcomeFormKey, answers)
+  session.set(welcomeFormKey, formAnswers)
   const cookie = await welcomeFormSessionStorage.commitSession(session)
   return new Headers({ 'set-cookie': cookie })
 }
@@ -26,7 +25,8 @@ export async function getWelcomeFormAnswers(request: Request) {
   const session = await welcomeFormSessionStorage.getSession(
     request.headers.get('cookie'),
   )
-  const result = FormAnswersSchema.safeParse(session.get(welcomeFormKey))
+  const rawAnswers = session.get(welcomeFormKey)
+  const result = FormAnswersSchema.safeParse(rawAnswers)
   const answers = result.success ? result.data : null
   return {
     answers,

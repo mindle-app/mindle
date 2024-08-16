@@ -125,7 +125,7 @@ export async function action({ request }: ActionFunctionArgs) {
   )
 
   return redirectWithToast(
-    safeRedirect(redirectTo),
+    safeRedirect(redirectTo ?? '/'),
     { title: 'Welcome', description: 'Thanks for signing up!' },
     { headers },
   )

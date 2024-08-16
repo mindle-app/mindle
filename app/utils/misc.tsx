@@ -324,3 +324,24 @@ export async function downloadFile(url: string, retries: number = 0) {
 export function includeOption<T>(condition: boolean, value: T | T[]) {
   return condition ? [...(Array.isArray(value) ? value : [value])] : []
 }
+
+export function normalizeRomanianName(name: string) {
+  const diacriticMap: Record<string, string | undefined> = {
+    ă: 'a',
+    î: 'i',
+    ț: 't',
+    â: 'a',
+    ș: 's',
+    Ă: 'A',
+    Î: 'I',
+    Ț: 'T',
+    Â: 'A',
+    Ș: 'S',
+  }
+
+  return name
+    .toLowerCase()
+    .split('')
+    .map((char) => diacriticMap[char] ?? char)
+    .join('')
+}

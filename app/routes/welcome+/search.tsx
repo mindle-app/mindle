@@ -14,34 +14,18 @@ import { Input } from '#app/components/ui/input.js'
 import { Label } from '#app/components/ui/label.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
-import { cn, useDebounce, useIsPending } from '#app/utils/misc.js'
+import {
+  cn,
+  normalizeRomanianName,
+  useDebounce,
+  useIsPending,
+} from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
 import { getStep, questions } from '#app/utils/welcome-form.js'
 
 const RawHighscoolSchema = z.array(
   z.object({ id: z.string(), name: z.string() }),
 )
-
-function normalizeRomanianName(name: string) {
-  const diacriticMap: Record<string, string | undefined> = {
-    ă: 'a',
-    î: 'i',
-    ț: 't',
-    â: 'a',
-    ș: 's',
-    Ă: 'A',
-    Î: 'I',
-    Ț: 'T',
-    Â: 'A',
-    Ș: 'S',
-  }
-
-  return name
-    .toLowerCase()
-    .split('')
-    .map((char) => diacriticMap[char] ?? char)
-    .join('')
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const searchParams = new URL(request.url).searchParams

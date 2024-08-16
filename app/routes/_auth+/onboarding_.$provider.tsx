@@ -38,8 +38,8 @@ import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { onboardingEmailSessionKey } from './onboarding'
 import { getWelcomeFormAnswers } from '#app/utils/welcome-form.server.js'
+import { onboardingEmailSessionKey } from './onboarding'
 
 export const providerIdKey = 'providerId'
 export const prefilledProfileKey = 'prefilledProfile'
@@ -171,7 +171,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   )
 
   return redirectWithToast(
-    safeRedirect(redirectTo),
+    safeRedirect(redirectTo ?? '/'),
     { title: 'Welcome', description: 'Thanks for signing up!' },
     { headers },
   )

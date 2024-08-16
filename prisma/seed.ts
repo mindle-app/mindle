@@ -19,6 +19,7 @@ import {
   img,
 } from '#tests/db-utils'
 import { insertGitHubUser } from '#tests/mocks/github'
+import { normalizeRomanianName } from '#app/utils/misc.js'
 
 async function seed() {
   console.log('🌱 Seeding...')
@@ -374,6 +375,8 @@ async function seed() {
       baccalaureateAverage2024: h['Medie Bac 2024'],
       baccalaureateStudents2024: h['Elevi Bac 2024'],
       name: h['Nume liceu'],
+      normalizedName: normalizeRomanianName(h['Nume liceu']),
+
       promotionRate: h['Rata de promovare 2024'],
     })),
   })

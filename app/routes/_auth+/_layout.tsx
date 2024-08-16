@@ -11,11 +11,13 @@ export function LandingHeader() {
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
         )}
       >
-        <Logo className={'w-25 h-25'} />
+        <Link to={'/'}>
+          <Logo className={'w-25 h-25'} />
+        </Link>
 
         <div className="flex items-center gap-10">
           <Button asChild variant={'default'} size="lg">
-            <Link to="/login">Log In</Link>
+            <Link to="/login">Log Isen</Link>
           </Button>
         </div>
       </nav>
