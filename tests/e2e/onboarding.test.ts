@@ -251,6 +251,7 @@ test('shows help texts on entering invalid details on onboarding page after Goog
   ).toBeVisible()
 
   const usernameInput = page.getByRole('textbox', { name: /username/i })
+  const nameInput = page.getByRole('textbox', { name: /nume/i })
 
   // notice, how button is currently in 'idle' (neutral) state and so has got no companion
   const createAccountButton = page.getByRole('button', {
@@ -318,6 +319,7 @@ test('shows help texts on entering invalid details on onboarding page after Goog
       /ești de acord cu termenii de serviciu și politica de confidențialitate/i,
     )
     .check()
+  await nameInput.fill(googleUser.name)
   await createAccountButton.click()
   await expect(createAccountButton.getByText('error')).not.toBeAttached()
 
