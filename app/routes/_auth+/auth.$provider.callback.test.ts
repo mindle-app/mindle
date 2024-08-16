@@ -84,7 +84,7 @@ test('when a user is logged in, it creates the connection', async () => {
 
 test(`when a user is logged in and has already connected, it doesn't do anything and just redirects the user back to the connections page`, async () => {
   const session = await setupUser()
-  const nppgithubUser = await insertGitHubUser()
+  const githubUser = await insertGitHubUser()
   await prisma.connection.create({
     data: {
       providerName: GITHUB_PROVIDER_NAME,
