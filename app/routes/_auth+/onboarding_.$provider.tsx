@@ -248,7 +248,7 @@ export default function OnboardingProviderRoute() {
             labelProps={{
               htmlFor: fields.agreeToTermsOfServiceAndPrivacyPolicy.id,
               children:
-                'Do you agree to our Terms of Service and Privacy Policy?',
+                'Ești de acord cu Termenii de Serviciu și Politica de Confidențialitate?',
             }}
             buttonProps={getInputProps(
               fields.agreeToTermsOfServiceAndPrivacyPolicy,
@@ -259,7 +259,7 @@ export default function OnboardingProviderRoute() {
           <CheckboxField
             labelProps={{
               htmlFor: fields.remember.id,
-              children: 'Remember me',
+              children: 'Ține-mă minte pe acest dispozitiv',
             }}
             buttonProps={getInputProps(fields.remember, { type: 'checkbox' })}
             errors={fields.remember.errors}
