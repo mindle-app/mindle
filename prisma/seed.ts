@@ -366,6 +366,7 @@ async function seed() {
   })
   console.timeEnd(`📝 Created quizzes...`)
 
+  console.time('🏫Added highschools...')
   const highschools = getHighschools()
   await prisma.highschool.createMany({
     data: highschools.map((h) => ({
@@ -376,6 +377,7 @@ async function seed() {
       promotionRate: h['Rata de promovare 2024'],
     })),
   })
+  console.timeEnd('🏫Added highschools...')
 
   console.timeEnd(`🌱 Database has been seeded
 `)
