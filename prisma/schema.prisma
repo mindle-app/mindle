@@ -11,14 +11,18 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  username String  @unique
-  name     String?
+  id               String  @id @default(cuid())
+  email            String  @unique
+  username         String  @unique
+  name             String?
+  motivation       String?
+  highschoolId     String?
+  bestLearningTime String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  highschool      Highschool?       @relation(fields: [highschoolId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   image           UserImage?
   password        Password?
   notes           Note[]
@@ -31,6 +35,7 @@ model User {
   userAnswers     UserQuizAnswer[]
   userSubjects    UserSubject[]
   userChapters    UserChapter[]
+  examSubjects    UserExamSubject[]
 
   @@map("user")
 }
@@ -199,6 +204,7 @@ model Subject {
   userSubjects   UserSubject[]
   image          SubjectImage?
   studyMaterials StudyMaterial[]
+  examTakers     UserExamSubject[]
 
   @@map("subject")
 }
@@ -218,6 +224,19 @@ model SubjectImage {
   // non-unique foreign key
   @@index([subjectId])
   @@map("subject_image")
+}
+
+model UserExamSubject {
+  subjectId Int
+  userId    String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([subjectId, userId])
+  @@index([subjectId])
+  @@index([userId])
+  @@map("user_exam_subject")
 }
 
 model Chapter {
@@ -571,6 +590,7 @@ model Highschool {
   baccalaureateAverage2024  Float
   admissionAverage2024      Float
   baccalaureateStudents2024 Int
+  students                  User[]
 
   @@index([name])
   @@map("highschool")

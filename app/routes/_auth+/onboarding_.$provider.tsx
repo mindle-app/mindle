@@ -39,6 +39,7 @@ import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { onboardingEmailSessionKey } from './onboarding'
+import { getWelcomeFormAnswers } from '#app/utils/welcome-form.server.js'
 
 export const providerIdKey = 'providerId'
 export const prefilledProfileKey = 'prefilledProfile'
@@ -115,6 +116,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const verifySession = await verifySessionStorage.getSession(
     request.headers.get('cookie'),
   )
+  const welcomeFormAnswers = await getWelcomeFormAnswers(request)
 
   const submission = await parseWithZod(formData, {
     schema: SignupFormSchema.superRefine(async (data, ctx) => {
@@ -136,6 +138,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         email,
         providerId,
         providerName,
+        welcomeFormAnswers: welcomeFormAnswers.answers,
       })
       return { ...data, session }
     }),

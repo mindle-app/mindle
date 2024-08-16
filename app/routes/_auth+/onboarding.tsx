@@ -31,6 +31,7 @@ import {
   UsernameSchema,
 } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import { getWelcomeFormAnswers } from '#app/utils/welcome-form.server.js'
 
 export const onboardingEmailSessionKey = 'onboardingEmail'
 
@@ -67,6 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const email = await requireOnboardingEmail(request)
   const formData = await request.formData()
+  const welcomeFormAnswers = await getWelcomeFormAnswers(request)
   checkHoneypot(formData)
   const submission = await parseWithZod(formData, {
     schema: (intent) =>
@@ -86,7 +88,11 @@ export async function action({ request }: ActionFunctionArgs) {
       }).transform(async (data) => {
         if (intent !== null) return { ...data, session: null }
 
-        const session = await signup({ ...data, email })
+        const session = await signup({
+          ...data,
+          email,
+          welcomeFormAnswers: welcomeFormAnswers.answers,
+        })
         return { ...data, session }
       }),
     async: true,

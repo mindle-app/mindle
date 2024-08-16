@@ -9,6 +9,7 @@ import { combineHeaders, downloadFile } from './misc.tsx'
 import { type ProviderUser } from './providers/provider.ts'
 import { authSessionStorage } from './session.server.ts'
 import { UserState } from './user.ts'
+import { type WelcomeFormAnswers } from './welcome-form.ts'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
 export const getSessionExpirationDate = () =>
@@ -146,11 +147,13 @@ export async function signup({
   username,
   password,
   name,
+  welcomeFormAnswers,
 }: {
   email: User['email']
   username: User['username']
   name: User['name']
   password: string
+  welcomeFormAnswers: WelcomeFormAnswers | null
 }) {
   const hashedPassword = await getPasswordHash(password)
 
@@ -164,6 +167,9 @@ export async function signup({
           email: email.toLowerCase(),
           username: username.toLowerCase(),
           name,
+          motivation: welcomeFormAnswers?.motivation,
+          highschoolId: welcomeFormAnswers?.highSchoolId,
+          bestLearningTime: welcomeFormAnswers?.bestLearningTime,
           roles: { connect: { name: 'user' } },
           userSubjects: {
             create: [
@@ -204,6 +210,7 @@ export async function signupWithConnection({
   providerId,
   providerName,
   imageUrl,
+  welcomeFormAnswers,
 }: {
   email: User['email']
   username: User['username']
@@ -211,6 +218,7 @@ export async function signupWithConnection({
   providerId: Connection['providerId']
   providerName: Connection['providerName']
   imageUrl?: string
+  welcomeFormAnswers: WelcomeFormAnswers | null
 }) {
   const { firstChapterId, firstSubchapterId, firstLessonId, firstSubjectId } =
     await getFirstUserContent()
@@ -223,6 +231,9 @@ export async function signupWithConnection({
           email: email.toLowerCase(),
           username: username.toLowerCase(),
           name,
+          motivation: welcomeFormAnswers?.motivation,
+          highschoolId: welcomeFormAnswers?.highSchoolId,
+          bestLearningTime: welcomeFormAnswers?.bestLearningTime,
           roles: { connect: { name: 'user' } },
           connections: { create: { providerId, providerName } },
           userSubjects: {

@@ -22,7 +22,7 @@ export async function createFormAnswersHeaders(formAnswers: FormAnswersInput) {
   return new Headers({ 'set-cookie': cookie })
 }
 
-export async function getFormAnswers(request: Request) {
+export async function getWelcomeFormAnswers(request: Request) {
   const session = await welcomeFormSessionStorage.getSession(
     request.headers.get('cookie'),
   )

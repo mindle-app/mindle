@@ -111,7 +111,7 @@ export const FormAnswersSchema = z.object({
   bestLearningTime: q4Options,
 })
 
-export type FormAnswers = z.infer<typeof FormAnswersSchema>
+export type WelcomeFormAnswers = z.infer<typeof FormAnswersSchema>
 export type FormAnswersInput = z.input<typeof FormAnswersSchema>
 export type Motivation = z.infer<typeof q1Options>
 export type LearningTIme = z.infer<typeof q4Options>
