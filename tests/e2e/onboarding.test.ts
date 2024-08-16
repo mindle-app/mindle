@@ -155,7 +155,7 @@ test('completes onboarding after Google OAuth given valid user details', async (
   await page.goto('/signup')
   await page.getByRole('button', { name: /signup cu google/i }).click()
 
-  await expect(page).toHaveURL(/\/onboarding\/goodle/)
+  await expect(page).toHaveURL(/\/onboarding\/google/)
   await expect(
     page.getByText(new RegExp(`welcome aboard ${user.email}`, 'i')),
   ).toBeVisible()
