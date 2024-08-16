@@ -161,7 +161,7 @@ test('completes onboarding after Google OAuth given valid user details', async (
   ).toBeVisible()
 
   const usernameInput = page.getByRole('textbox', { name: /username/i })
-  const nameInput = page.getByRole('textbox', { name: /^name/i })
+  const nameInput = page.getByRole('textbox', { name: /^nume/i })
   await usernameInput.fill(user.username)
   await nameInput.fill(user.name)
   const createAccountButton = page.getByRole('button', {
@@ -169,7 +169,9 @@ test('completes onboarding after Google OAuth given valid user details', async (
   })
 
   await page
-    .getByLabel(/do you agree to our terms of service and privacy policy/i)
+    .getByLabel(
+      /ești de acord cu termenii de serviciu și politica de confidențialitate/i,
+    )
     .check()
   await createAccountButton.click()
   await expect(page).toHaveURL(/signup/i)

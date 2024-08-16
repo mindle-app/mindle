@@ -4,12 +4,10 @@ import { HttpResponse, passthrough, http, type HttpHandler } from 'msw'
 
 const { json } = HttpResponse
 
-const googleEmail = faker.internet.email()
-
 export const mockGoogleProfile = {
   sub: faker.string.uuid(),
   picture: `https://lh3.googleusercontent.com/a-/${faker.string.uuid()}`,
-  email: googleEmail,
+  email: 'mindle@google.com',
   email_verified: true,
 }
 

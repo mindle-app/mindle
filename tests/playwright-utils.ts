@@ -21,6 +21,7 @@ import {
   insertGitHubUser,
 } from './mocks/github.ts'
 import { type GoogleUser, mockGoogleProfile } from './mocks/google.ts'
+import { USERNAME_MIN_LENGTH } from '#app/utils/user-validation.js'
 
 export * from './db-utils.ts'
 
@@ -144,7 +145,9 @@ export const test = base.extend<{
     await use(async () => {
       const newGoogleUser = {
         ...mockGoogleProfile,
-        username: faker.internet.userName(),
+        username: faker.string.alphanumeric({
+          length: USERNAME_MIN_LENGTH + 1,
+        }),
         name: faker.person.fullName(),
       }
       googleUser = newGoogleUser
