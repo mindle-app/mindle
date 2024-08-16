@@ -187,16 +187,16 @@ test('completes onboarding after Google OAuth given valid user details', async (
   })
 })
 
-test.skip('logs user in after GitHub OAuth if they are already registered', async ({
+test('logs user in after Google OAuth if they are already registered', async ({
   page,
-  prepareGitHubUser,
+  prepareGoogleUser,
 }) => {
-  const ghUser = await prepareGitHubUser()
+  const googleUser = await prepareGoogleUser()
 
   // let's verify we do not have user with that email in our system ...
   expect(
     await prisma.user.findUnique({
-      where: { email: normalizeEmail(ghUser.primaryEmail) },
+      where: { email: normalizeEmail(googleUser.email) },
     }),
   ).toBeNull()
   // ... and create one:
@@ -204,8 +204,8 @@ test.skip('logs user in after GitHub OAuth if they are already registered', asyn
   const user = await prisma.user.create({
     select: { id: true, name: true },
     data: {
-      email: normalizeEmail(ghUser.primaryEmail),
-      username: normalizeUsername(ghUser.profile.login),
+      email: normalizeEmail(googleUser.email),
+      username: normalizeUsername(googleUser.username),
       name,
     },
   })
@@ -213,18 +213,18 @@ test.skip('logs user in after GitHub OAuth if they are already registered', asyn
   // let's verify there is no connection between the GitHub user
   // and out app's user:
   const connection = await prisma.connection.findFirst({
-    where: { providerName: 'github', userId: user.id },
+    where: { providerName: 'google', userId: user.id },
   })
   expect(connection).toBeNull()
 
   await page.goto('/signup')
-  await page.getByRole('button', { name: /signup cu github/i }).click()
+  await page.getByRole('button', { name: /signup cu google/i }).click()
 
   await expect(page).toHaveURL(`/home`)
   await expect(
     page.getByText(
       new RegExp(
-        `your "${ghUser!.profile.login}" github account has been connected`,
+        `your "${googleUser!.username}" google account has been connected`,
         'i',
       ),
     ),
@@ -232,7 +232,7 @@ test.skip('logs user in after GitHub OAuth if they are already registered', asyn
 
   // internally, a connection (rather than a new user) has been created:
   await prisma.connection.findFirstOrThrow({
-    where: { providerName: 'github', userId: user.id },
+    where: { providerName: 'google', userId: user.id },
   })
 })
 
@@ -314,7 +314,9 @@ test('shows help texts on entering invalid details on onboarding page after Goog
 
   // we are all set up and ...
   await page
-    .getByLabel(/do you agree to our terms of service and privacy policy/i)
+    .getByLabel(
+      /ești de acord cu termenii de serviciu și politica de confidențialitate/i,
+    )
     .check()
   await createAccountButton.click()
   await expect(createAccountButton.getByText('error')).not.toBeAttached()
