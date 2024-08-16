@@ -84,11 +84,11 @@ export default function WelcomeForm() {
                 <Icon name={'chevron-right'} />
               </LinkButton>
             </div>
-            <section className="flex items-center gap-2">
+            <section className="flex animate-slide-left items-center gap-2">
               <MindleHead className="flex-shrink-0" />
               <MessageBubble className="flex-grow" question={question ?? ''} />
             </section>
-            <section id="quiz-choice" className="flex flex-col gap-6">
+            <section className="flex animate-slide-left flex-col gap-6">
               <Outlet />
             </section>
           </div>
