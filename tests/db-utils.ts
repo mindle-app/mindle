@@ -1,5 +1,7 @@
 import fs from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import path from 'node:path'
 import { faker } from '@faker-js/faker'
 import { type PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -222,9 +224,15 @@ export function mindleCMSUrl(imageId: string) {
   return `https://cms.mindle.ro/assets/${imageId}`
 }
 
+function contentTypeToExtension(contentType: string) {
+  if (contentType.includes('svg+xml')) return 'xml'
+  return contentType.split('/')[1] || 'bin'
+}
+
 export async function downloadLessonImages(
   lessons: { id: number; image: string | null; name: string }[],
 ) {
+  const outputDir = `./tests/fixtures/images/lessons`
   const promises = lessons
     .map(async (l) => {
       if (!l.image) {
@@ -232,8 +240,16 @@ export async function downloadLessonImages(
       }
       try {
         const file = await downloadFile(mindleCMSUrl(l.image))
+        const fileName = `lesson_${l.id}_${l.name.replaceAll(' ', '_').toLowerCase()}`
+        const fileExtension = file.contentType.split('/')[1] || 'bin'
+        const filePath = path.join(
+          outputDir,
+          `${fileName}.${contentTypeToExtension(file.contentType)}`,
+        )
+        await writeFile(filePath, file.blob)
+
         return { lessonId: l.id, ...file, altText: l.name }
-      } catch (e) {
+      } catch (_e) {
         return null
       }
     })
