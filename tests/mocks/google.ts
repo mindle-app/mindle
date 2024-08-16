@@ -11,6 +11,17 @@ export const mockGoogleProfile = {
   email_verified: true,
 }
 
+export function getGoogleProfile() {
+  return {
+    sub: faker.string.uuid(),
+    picture: `https://lh3.googleusercontent.com/a-/${faker.string.uuid()}`,
+    email: faker.internet.email(),
+    email_verified: true,
+  }
+}
+
+export type GoogleUser = ReturnType<typeof getGoogleProfile>
+
 const passthroughGoogle =
   !process.env.GOOGLE_CLIENT_ID.startsWith('MOCK_') && !process.env.TESTING
 export const handlers: Array<HttpHandler> = [

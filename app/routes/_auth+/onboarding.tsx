@@ -161,7 +161,7 @@ export default function OnboardingRoute() {
             Bine ai venit, {data.email}!
           </h1>
           <p className="text-body-md text-muted-foreground">
-            Te rugăm să îți completezi datele.
+            Te rug să îți completezi datele.
           </p>
         </div>
         <Spacer size="xs" />

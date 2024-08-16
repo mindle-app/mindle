@@ -17,7 +17,7 @@ export function LandingHeader() {
 
         <div className="flex items-center gap-10">
           <Button asChild variant={'default'} size="lg">
-            <Link to="/login">Log Isen</Link>
+            <Link to="/login">Log in</Link>
           </Button>
         </div>
       </nav>

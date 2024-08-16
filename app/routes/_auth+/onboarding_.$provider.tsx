@@ -204,7 +204,7 @@ export default function OnboardingProviderRoute() {
         <div className="flex flex-col gap-3 text-center">
           <h1 className="text-h1">Welcome aboard {data.email}!</h1>
           <p className="text-body-md text-muted-foreground">
-            Please enter your details.
+            Te rog să îți completezi datele.
           </p>
         </div>
         <Spacer size="xs" />
@@ -221,7 +221,7 @@ export default function OnboardingProviderRoute() {
                 className="h-24 w-24 rounded-full"
               />
               <p className="text-body-sm text-muted-foreground">
-                You can change your photo later
+                Poți schimba poza mai târziu
               </p>
               <input {...getInputProps(fields.imageUrl, { type: 'hidden' })} />
             </div>
@@ -236,7 +236,7 @@ export default function OnboardingProviderRoute() {
             errors={fields.username.errors}
           />
           <Field
-            labelProps={{ htmlFor: fields.name.id, children: 'Name' }}
+            labelProps={{ htmlFor: fields.name.id, children: 'Nume' }}
             inputProps={{
               ...getInputProps(fields.name, { type: 'text' }),
               autoComplete: 'name',

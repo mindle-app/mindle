@@ -8,21 +8,16 @@ export const GITHUB_PROVIDER_NAME = 'github'
 export const GOOGLE_PROVIDER_NAME = 'google'
 // to add another provider, set their name here and add it to the providerNames below
 
-export const providerNames = [
-  GITHUB_PROVIDER_NAME,
-  GOOGLE_PROVIDER_NAME,
-] as const
+export const providerNames = [GOOGLE_PROVIDER_NAME] as const
 export const ProviderNameSchema = z.enum(providerNames)
 export type ProviderName = z.infer<typeof ProviderNameSchema>
 
 export const providerLabels: Record<ProviderName, string> = {
-  [GITHUB_PROVIDER_NAME]: 'GitHub',
   [GOOGLE_PROVIDER_NAME]: 'Google',
 } as const
 
 export const providerIcons: Record<ProviderName, React.ReactNode> = {
-  [GITHUB_PROVIDER_NAME]: <Icon name="github-logo" />,
-  [GOOGLE_PROVIDER_NAME]: <Icon name="google-logo" />,
+  [GOOGLE_PROVIDER_NAME]: <Icon name="google-color-logo" />,
 } as const
 
 export function ProviderConnectionForm({
@@ -48,13 +43,14 @@ export function ProviderConnectionForm({
       ) : null}
       <StatusButton
         type="submit"
-        className="w-full"
+        variant={'secondary'}
+        className="w-full border"
         status={isPending ? 'pending' : 'idle'}
       >
         <span className="inline-flex items-center gap-1.5">
           {providerIcons[providerName]}
           <span>
-            {type} with {label}
+            {type} cu <span className="font-bold">{label}</span>
           </span>
         </span>
       </StatusButton>

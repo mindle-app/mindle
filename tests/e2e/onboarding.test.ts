@@ -139,34 +139,31 @@ test('onboarding with a short code', async ({ page, getOnboardingData }) => {
   await expect(page).toHaveURL(`/onboarding`)
 })
 
-test('completes onboarding after GitHub OAuth given valid user details', async ({
+test('completes onboarding after Google OAuth given valid user details', async ({
   page,
-  prepareGitHubUser,
+  prepareGoogleUser,
 }) => {
-  const ghUser = await prepareGitHubUser()
+  const user = await prepareGoogleUser()
 
   // let's verify we do not have user with that email in our system:
   expect(
     await prisma.user.findUnique({
-      where: { email: normalizeEmail(ghUser.primaryEmail) },
+      where: { email: normalizeEmail(user.email) },
     }),
   ).toBeNull()
 
   await page.goto('/signup')
-  await page.getByRole('button', { name: /signup with github/i }).click()
+  await page.getByRole('button', { name: /signup cu google/i }).click()
 
-  await expect(page).toHaveURL(/\/onboarding\/github/)
+  await expect(page).toHaveURL(/\/onboarding\/goodle/)
   await expect(
-    page.getByText(new RegExp(`welcome aboard ${ghUser.primaryEmail}`, 'i')),
+    page.getByText(new RegExp(`welcome aboard ${user.email}`, 'i')),
   ).toBeVisible()
 
-  // fields are pre-populated for the user, so we only need to accept
-  // terms of service and hit the 'crete an account' button
   const usernameInput = page.getByRole('textbox', { name: /username/i })
-  expect(usernameInput).toHaveValue(normalizeUsername(ghUser.profile.login))
-  expect(page.getByRole('textbox', { name: /^name/i })).toHaveValue(
-    ghUser.profile.name,
-  )
+  const nameInput = page.getByRole('textbox', { name: /^name/i })
+  await usernameInput.fill(user.username)
+  await nameInput.fill(user.name)
   const createAccountButton = page.getByRole('button', {
     name: /create an account/i,
   })
@@ -184,7 +181,7 @@ test('completes onboarding after GitHub OAuth given valid user details', async (
 
   // internally, a user has been created:
   await prisma.user.findUniqueOrThrow({
-    where: { email: normalizeEmail(ghUser.primaryEmail) },
+    where: { email: normalizeEmail(user.email) },
   })
 })
 
@@ -219,7 +216,7 @@ test.skip('logs user in after GitHub OAuth if they are already registered', asyn
   expect(connection).toBeNull()
 
   await page.goto('/signup')
-  await page.getByRole('button', { name: /signup with github/i }).click()
+  await page.getByRole('button', { name: /signup cu github/i }).click()
 
   await expect(page).toHaveURL(`/home`)
   await expect(
@@ -237,18 +234,18 @@ test.skip('logs user in after GitHub OAuth if they are already registered', asyn
   })
 })
 
-test('shows help texts on entering invalid details on onboarding page after GitHub OAuth', async ({
+test('shows help texts on entering invalid details on onboarding page after Google OAuth', async ({
   page,
-  prepareGitHubUser,
+  prepareGoogleUser,
 }) => {
-  const ghUser = await prepareGitHubUser()
+  const googleUser = await prepareGoogleUser()
 
   await page.goto('/signup')
-  await page.getByRole('button', { name: /signup with github/i }).click()
+  await page.getByRole('button', { name: /signup cu google/i }).click()
 
-  await expect(page).toHaveURL(/\/onboarding\/github/)
+  await expect(page).toHaveURL(/\/onboarding\/google/)
   await expect(
-    page.getByText(new RegExp(`welcome aboard ${ghUser.primaryEmail}`, 'i')),
+    page.getByText(new RegExp(`welcome aboard ${googleUser.email}`, 'i')),
   ).toBeVisible()
 
   const usernameInput = page.getByRole('textbox', { name: /username/i })
@@ -277,13 +274,13 @@ test('shows help texts on entering invalid details on onboarding page after GitH
       /you must agree to the terms of service and privacy policy/i,
     ),
   ).toBeVisible()
-  await expect(page).toHaveURL(/\/onboarding\/github/)
+  await expect(page).toHaveURL(/\/onboarding\/google/)
 
   // empty username
   await usernameInput.fill('')
   await createAccountButton.click()
   await expect(page.getByText(/username is required/i)).toBeVisible()
-  await expect(page).toHaveURL(/\/onboarding\/github/)
+  await expect(page).toHaveURL(/\/onboarding\/google/)
 
   // too short username
   await usernameInput.fill(
@@ -311,7 +308,7 @@ test('shows help texts on entering invalid details on onboarding page after GitH
   await expect(
     page.getByText(/must agree to the terms of service and privacy policy/i),
   ).toBeVisible()
-  await expect(page).toHaveURL(/\/onboarding\/github/)
+  await expect(page).toHaveURL(/\/onboarding\/google/)
 
   // we are all set up and ...
   await page

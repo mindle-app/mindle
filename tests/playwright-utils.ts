@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker'
 import { test as base } from '@playwright/test'
 import { type User as UserModel } from '@prisma/client'
 import * as setCookieParser from 'set-cookie-parser'
@@ -7,7 +8,10 @@ import {
   sessionKey,
 } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { MOCK_CODE_GITHUB_HEADER } from '#app/utils/providers/constants.js'
+import {
+  MOCK_CODE_GITHUB_HEADER,
+  MOCK_CODE_GOOGLE_HEADER,
+} from '#app/utils/providers/constants.js'
 import { normalizeEmail } from '#app/utils/providers/provider.js'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { createUser } from './db-utils.ts'
@@ -16,6 +20,7 @@ import {
   deleteGitHubUser,
   insertGitHubUser,
 } from './mocks/github.ts'
+import { type GoogleUser, mockGoogleProfile } from './mocks/google.ts'
 
 export * from './db-utils.ts'
 
@@ -67,6 +72,7 @@ export const test = base.extend<{
   insertNewUser(options?: GetOrInsertUserOptions): Promise<User>
   login(options?: GetOrInsertUserOptions): Promise<User>
   prepareGitHubUser(): Promise<GitHubUser>
+  prepareGoogleUser(): Promise<GoogleUser & { username: string; name: string }>
 }>({
   insertNewUser: async ({}, use) => {
     let userId: string | undefined = undefined
@@ -125,6 +131,35 @@ export const test = base.extend<{
     await prisma.user.delete({ where: { id: user.id } })
     await prisma.session.deleteMany({ where: { userId: user.id } })
     await deleteGitHubUser(ghUser!.primaryEmail)
+  },
+  prepareGoogleUser: async ({ page }, use, testInfo) => {
+    await page.route(/\/auth\/google(?!\/callback)/, async (route, request) => {
+      const headers = {
+        ...request.headers(),
+        [MOCK_CODE_GOOGLE_HEADER]: testInfo.testId,
+      }
+      await route.continue({ headers })
+    })
+    let googleUser: GoogleUser | null = null
+    await use(async () => {
+      const newGoogleUser = {
+        ...mockGoogleProfile,
+        username: faker.internet.userName(),
+        name: faker.person.fullName(),
+      }
+      googleUser = newGoogleUser
+      return newGoogleUser
+    })
+
+    const user = await prisma.user.findUnique({
+      select: { id: true, name: true },
+      where: { email: normalizeEmail(googleUser!.email) },
+    })
+    if (!user) {
+      return
+    }
+    await prisma.user.delete({ where: { id: user.id } })
+    await prisma.session.deleteMany({ where: { userId: user.id } })
   },
 })
 export const { expect } = test
