@@ -4,23 +4,16 @@ import { HttpResponse, passthrough, http, type HttpHandler } from 'msw'
 
 const { json } = HttpResponse
 
+const googleEmail = faker.internet.email()
+
 export const mockGoogleProfile = {
   sub: faker.string.uuid(),
   picture: `https://lh3.googleusercontent.com/a-/${faker.string.uuid()}`,
-  email: faker.internet.email(),
+  email: googleEmail,
   email_verified: true,
 }
 
-export function getGoogleProfile() {
-  return {
-    sub: faker.string.uuid(),
-    picture: `https://lh3.googleusercontent.com/a-/${faker.string.uuid()}`,
-    email: faker.internet.email(),
-    email_verified: true,
-  }
-}
-
-export type GoogleUser = ReturnType<typeof getGoogleProfile>
+export type GoogleUser = typeof mockGoogleProfile
 
 const passthroughGoogle =
   !process.env.GOOGLE_CLIENT_ID.startsWith('MOCK_') && !process.env.TESTING
