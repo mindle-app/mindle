@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { writeFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { faker } from '@faker-js/faker'
@@ -8,7 +8,6 @@ import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
 import { promiseHash } from 'remix-utils/promise'
 import { z } from 'zod'
-import { downloadFile } from '#app/utils/misc.js'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 const require = createRequire(import.meta.url)
@@ -225,8 +224,47 @@ export function mindleCMSUrl(imageId: string) {
 }
 
 function contentTypeToExtension(contentType: string) {
-  if (contentType.includes('svg+xml')) return 'xml'
+  if (contentType.includes('svg+xml')) return 'svg'
   return contentType.split('/')[1] || 'bin'
+}
+
+function extensionToContentType(extension: 'svg' | 'png') {
+  switch (extension) {
+    case 'png':
+      return 'image/png'
+    case 'svg':
+      return 'image/svg+xml'
+  }
+}
+
+async function readFileWithUnknownExtension(
+  basePath: string,
+  baseName: string,
+) {
+  try {
+    // Read the directory contents
+    const files = await readdir(basePath)
+    // Find the file that starts with the baseName
+    const fileName = files.find((file) => file.startsWith(baseName))
+
+    if (!fileName) {
+      return null
+    }
+
+    // Construct the full path
+    const fullPath = path.join(basePath, fileName)
+    const extension = fileName.split('.')[1]
+
+    // Read and return the file contents
+    const blob = await readFile(fullPath, 'binary')
+    return {
+      blob,
+      contentType: extensionToContentType(extension as 'svg' | 'png'),
+    }
+  } catch (error) {
+    console.error('Error reading file:', error)
+    throw error
+  }
 }
 
 export async function downloadLessonImages(
@@ -239,16 +277,9 @@ export async function downloadLessonImages(
         return null
       }
       try {
-        const file = await downloadFile(mindleCMSUrl(l.image))
-        const fileName = `lesson_${l.id}_${l.name.replaceAll(' ', '_').toLowerCase()}`
-        const fileExtension = file.contentType.split('/')[1] || 'bin'
-        const filePath = path.join(
-          outputDir,
-          `${fileName}.${contentTypeToExtension(file.contentType)}`,
-        )
-        await writeFile(filePath, file.blob)
-
-        return { lessonId: l.id, ...file, altText: l.name }
+        const fileName = `${l.id}`
+        const file = await readFileWithUnknownExtension(outputDir, fileName)
+        return { lessonId: l.id, ...(file ?? {}), altText: l.name }
       } catch (_e) {
         return null
       }
