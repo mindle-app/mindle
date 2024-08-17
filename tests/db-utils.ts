@@ -223,7 +223,7 @@ export function mindleCMSUrl(imageId: string) {
   return `https://cms.mindle.ro/assets/${imageId}`
 }
 
-function contentTypeToExtension(contentType: string) {
+export function contentTypeToExtension(contentType: string) {
   if (contentType.includes('svg+xml')) return 'svg'
   return contentType.split('/')[1] || 'bin'
 }
@@ -256,9 +256,9 @@ async function readFileWithUnknownExtension(
     const extension = fileName.split('.')[1]
 
     // Read and return the file contents
-    const blob = await readFile(fullPath, 'binary')
+    const file = await readFile(fullPath, 'binary')
     return {
-      blob,
+      blob: Buffer.from(file),
       contentType: extensionToContentType(extension as 'svg' | 'png'),
     }
   } catch (error) {
@@ -279,6 +279,7 @@ export async function downloadLessonImages(
       try {
         const fileName = `${l.id}`
         const file = await readFileWithUnknownExtension(outputDir, fileName)
+        if (!file) return null
         return { lessonId: l.id, ...(file ?? {}), altText: l.name }
       } catch (_e) {
         return null

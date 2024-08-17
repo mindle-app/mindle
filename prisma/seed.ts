@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { promiseHash } from 'remix-utils/promise'
 import { getFirstUserContent } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server.ts'
+import { normalizeRomanianName } from '#app/utils/misc.js'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
 import { UserState } from '#app/utils/user'
 import {
@@ -19,7 +20,6 @@ import {
   img,
 } from '#tests/db-utils'
 import { insertGitHubUser } from '#tests/mocks/github'
-import { normalizeRomanianName } from '#app/utils/misc.js'
 
 async function seed() {
   console.log('🌱 Seeding...')
