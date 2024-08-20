@@ -70,9 +70,6 @@ export async function addNewsletterSubscriber({
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
 
-  console.log(response)
-
   const text = await response.text()
-  console.log(text)
-  return text === 'true'
+  return text === '1' // Request was succesfull
 }
