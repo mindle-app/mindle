@@ -25,6 +25,8 @@ const schema = z.object({
   AMAZON_SES_SECRET_ACCESS_KEY: z.string().default('MOCK_123'),
   AMAZON_SES_REGION: AWSRegionEnum.default('eu-central-1'),
 
+  SENDY_API_KEY: z.string().default('MOCK_123'),
+
   ALLOW_INDEXING: z.enum(['true', 'false']).optional(),
 })
 
