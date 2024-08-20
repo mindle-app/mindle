@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AWSRegionEnum } from './aws'
 
 const schema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test'] as const),
@@ -17,8 +18,12 @@ const schema = z.object({
   GITHUB_CLIENT_SECRET: z.string().default('MOCK_GITHUB_CLIENT_SECRET'),
   GITHUB_TOKEN: z.string().default('MOCK_GITHUB_TOKEN'),
 
-  GOOGLE_CLIENT_ID: z.string().default('MOCK_GOOGLE_CLIENT_ID'),
-  GOOGLE_CLIENT_SECRET: z.string().default('MOCK_GOOGLE_CLIENT_SECRET'),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+
+  AMAZON_SES_ACCESS_KEY: z.string().default('MOCK_123'),
+  AMAZON_SES_SECRET_ACCESS_KEY: z.string().default('MOCK_123'),
+  AMAZON_SES_REGION: AWSRegionEnum.default('eu-central-1'),
 
   ALLOW_INDEXING: z.enum(['true', 'false']).optional(),
 })
