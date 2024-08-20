@@ -3,11 +3,13 @@ import { setupServer } from 'msw/node'
 import { handlers as githubHandlers } from './github.ts'
 import { handlers as googleHandlers } from './google.ts'
 import { handlers as resendHandlers } from './resend.ts'
+import { handlers as newsletterHandlers } from './newsletter.ts'
 
 export const server = setupServer(
   ...resendHandlers,
   ...githubHandlers,
   ...googleHandlers,
+  ...newsletterHandlers,
 )
 
 server.listen({

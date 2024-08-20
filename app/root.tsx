@@ -36,6 +36,7 @@ import { useNonce } from './utils/nonce-provider.ts'
 import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
+import { getUserInfo } from './utils/user-info.ts'
 
 export const links: LinksFunction = () => {
   return [
@@ -83,6 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
               id: true,
               name: true,
               username: true,
+              email: true,
               image: { select: { id: true } },
               roles: {
                 select: {
@@ -110,6 +112,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json(
     {
       user,
+      userInfo: user
+        ? await getUserInfo(user, { timings, request, forceFresh: true })
+        : null,
       requestInfo: {
         hints: getHints(request),
         origin: getDomainUrl(request),

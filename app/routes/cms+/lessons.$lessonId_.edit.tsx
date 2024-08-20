@@ -18,11 +18,9 @@ import {
 import { Form, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { z } from 'zod'
-import { Field, RichTextField } from '#app/components/forms.js'
-import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/BlockEditor.js'
+import { Field } from '#app/components/forms.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
-import { Label } from '#app/components/ui/label.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import {

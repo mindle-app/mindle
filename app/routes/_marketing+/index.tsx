@@ -26,6 +26,7 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 import { getUserId } from '#app/utils/auth.server.js'
 import { LandingHeader } from './_layout'
 import { type IconName } from '@/icon-name'
+import { LandingNewsletterForm } from '#app/newsletter/form.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request)
@@ -445,28 +446,15 @@ export default function Index() {
             className="absolute -z-10 h-[25vh] w-full bg-origin-content opacity-15"
             style={{ backgroundImage: 'url(/img/pattern-brand-elements.svg)' }}
           />
-          <div className="z-auto flex flex-col gap-y-8 p-8 py-14 md:flex-row">
-            <div className="w-full text-center text-primary-foreground md:text-left">
+          <div className="z-auto flex h-full flex-col justify-center gap-y-8 p-8 py-14 md:flex-row">
+            <div className="flex h-full w-full flex-col justify-center text-center text-primary-foreground md:text-left">
               <h2 className="text-4xl">Abonează-te la newsletter</h2>
               <ul className="list-disc pl-8 pt-8 text-xl text-primary-foreground">
                 <li>tips & tricks despre cum să înveți</li>
                 <li>noutăți despre materia și strictura anului școlar</li>
               </ul>
             </div>
-            <div className="flex w-full items-center gap-2">
-              <Form className="w-full" method="POST">
-                <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-card px-4 py-2">
-                  <Input
-                    autoComplete="email"
-                    name={'email'}
-                    type="email"
-                    className="border-none"
-                    placeholder="exemplu@email.ro"
-                  />
-                  <Button type={'submit'}>Subscribe</Button>
-                </div>
-              </Form>
-            </div>
+            <LandingNewsletterForm />
           </div>
         </div>
       </section>

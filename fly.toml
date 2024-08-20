@@ -13,6 +13,10 @@ auto_rollback = true
 source = "data"
 destination = "/data"
 
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+
 [[services]]
 internal_port = 8_080
 processes = [ "app" ]
