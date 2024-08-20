@@ -19,6 +19,7 @@ import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { addNewsletterSubscriber } from '#app/newsletter/newsletter.server.js'
 import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
@@ -44,6 +45,7 @@ const SignupFormSchema = z
         'You must agree to the terms of service and privacy policy',
     }),
     remember: z.boolean().optional(),
+    signUpToNewsletter: z.boolean().optional(),
     redirectTo: z.string().optional(),
   })
   .and(PasswordAndConfirmPasswordSchema)
@@ -105,7 +107,12 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { session, remember, redirectTo } = submission.value
+  const { session, remember, redirectTo, signUpToNewsletter, name } =
+    submission.value
+
+  if (signUpToNewsletter) {
+    await addNewsletterSubscriber({ name, email })
+  }
 
   const authSession = await authSessionStorage.getSession(
     request.headers.get('cookie'),
@@ -145,7 +152,10 @@ export default function OnboardingRoute() {
   const [form, fields] = useForm({
     id: 'onboarding-form',
     constraint: getZodConstraint(SignupFormSchema),
-    defaultValue: { redirectTo },
+    defaultValue: {
+      redirectTo,
+      signUpToNewsletter: true,
+    },
     lastResult: actionData?.result,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SignupFormSchema })
@@ -220,6 +230,16 @@ export default function OnboardingRoute() {
               { type: 'checkbox' },
             )}
             errors={fields.agreeToTermsOfServiceAndPrivacyPolicy.errors}
+          />
+          <CheckboxField
+            labelProps={{
+              htmlFor: fields.signUpToNewsletter.id,
+              children: 'Mă abonez la newsletter',
+            }}
+            buttonProps={{
+              ...getInputProps(fields.signUpToNewsletter, { type: 'checkbox' }),
+            }}
+            errors={fields.signUpToNewsletter.errors}
           />
           <CheckboxField
             labelProps={{

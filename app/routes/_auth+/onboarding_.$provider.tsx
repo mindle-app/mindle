@@ -40,6 +40,7 @@ import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { getWelcomeFormAnswers } from '#app/utils/welcome-form.server.js'
 import { onboardingEmailSessionKey } from './onboarding'
+import { addNewsletterSubscriber } from '#app/newsletter/newsletter.server.js'
 
 export const providerIdKey = 'providerId'
 export const prefilledProfileKey = 'prefilledProfile'
@@ -51,6 +52,7 @@ const SignupFormSchema = z.object({
   agreeToTermsOfServiceAndPrivacyPolicy: z.boolean({
     required_error: 'You must agree to the terms of service and privacy policy',
   }),
+  signUpToNewsletter: z.boolean().optional(),
   remember: z.boolean().optional(),
   redirectTo: z.string().optional(),
 })
@@ -152,7 +154,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     )
   }
 
-  const { session, remember, redirectTo } = submission.value
+  const { session, remember, signUpToNewsletter, name, redirectTo } =
+    submission.value
+
+  if (signUpToNewsletter) {
+    await addNewsletterSubscriber({ name, email })
+  }
 
   const authSession = await authSessionStorage.getSession(
     request.headers.get('cookie'),
@@ -195,6 +202,7 @@ export default function OnboardingProviderRoute() {
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SignupFormSchema })
     },
+    defaultValue: { signUpToNewsletter: true },
     shouldRevalidate: 'onBlur',
   })
 
@@ -255,6 +263,16 @@ export default function OnboardingProviderRoute() {
               { type: 'checkbox' },
             )}
             errors={fields.agreeToTermsOfServiceAndPrivacyPolicy.errors}
+          />
+          <CheckboxField
+            labelProps={{
+              htmlFor: fields.signUpToNewsletter.id,
+              children: 'Mă abonez la newsletter',
+            }}
+            buttonProps={{
+              ...getInputProps(fields.signUpToNewsletter, { type: 'checkbox' }),
+            }}
+            errors={fields.signUpToNewsletter.errors}
           />
           <CheckboxField
             labelProps={{
