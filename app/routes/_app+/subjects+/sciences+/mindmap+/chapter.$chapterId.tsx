@@ -1,6 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData, useNavigate, useParams } from '@remix-run/react'
+import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -13,7 +13,11 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 import { ProgressWithPercent } from '#app/components/ui/progress.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
-import { generateChapterMindmap, type MindmapTree } from '#app/utils/mindmap.js'
+import {
+  generateChapterMindmap,
+  getMindmapProgress,
+  type MindmapTree,
+} from '#app/utils/mindmap.js'
 import { cn } from '#app/utils/misc.js'
 import { toUserState, UserState } from '#app/utils/user.js'
 
@@ -49,12 +53,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...q,
     })),
     chapterMindmap,
+    chapterProgress: getMindmapProgress(chapterMindmap),
   })
 }
 
 export default function ChapterMindmap() {
-  const { quizzes, chapterMindmap } = useLoaderData<typeof loader>()
-  const { chapterId } = useParams()
+  const { quizzes, chapterMindmap, chapterProgress } =
+    useLoaderData<typeof loader>()
   const studyProgramActive = true // todo correct study program
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
@@ -159,7 +164,7 @@ export default function ChapterMindmap() {
             <ProgressWithPercent
               className="h-16 rounded-xl border border-active-border"
               containerClassName="flex-1"
-              value={50}
+              value={chapterProgress}
             />
           </div>
           <Mindmap

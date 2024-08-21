@@ -130,6 +130,34 @@ export async function generateSubchapterMindmap(
   return root
 }
 
+export function getMindmapProgress(m: MindmapTree) {
+  const doneChildren = children(m).filter(
+    (node) => node.attributes.state === UserState.DONE,
+  )
+  return (doneChildren.length / children(m).length) * 100
+}
+
+export async function getChapterProgress({
+  chapterId,
+  userId,
+}: {
+  chapterId: number
+  userId: string
+}) {
+  const userSubchapters = await prisma.userSubChapter.findMany({
+    select: { state: true },
+    where: { userId, subchapter: { chapterId } },
+  })
+  const doneSubchapters = userSubchapters.reduce((acc, subChapter) => {
+    if (subChapter.state === UserState.DONE) {
+      return acc + 1
+    }
+    return acc
+  }, 0)
+
+  return (doneSubchapters / userSubchapters.length) * 100
+}
+
 export async function generateChapterMindmap(
   chapterId: number,
   userId: string,

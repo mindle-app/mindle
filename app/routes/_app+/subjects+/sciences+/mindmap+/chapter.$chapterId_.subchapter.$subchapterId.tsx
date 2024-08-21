@@ -5,7 +5,7 @@ import {
   type LinksFunction,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { Link, useFetcher, useLoaderData } from '@remix-run/react'
+import { Link, useFetcher, useLoaderData, useNavigate } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -38,8 +38,12 @@ import {
   mindMapIdsToDbIds,
   completeChapterMindmap,
   type MindmapTree,
+  getMindmapProgress,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState, useUser } from '#app/utils/user.js'
+import { LinkButton } from '#app/components/ui/link-button.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { ProgressWithPercent } from '#app/components/ui/progress.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -75,6 +79,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...q,
     })),
     subchapterMindmap,
+    subchapterProgress: getMindmapProgress(subchapterMindmap),
   })
 }
 
@@ -187,7 +192,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function SubchapterMindmap() {
-  const { quizzes, subchapterMindmap } = useLoaderData<typeof loader>()
+  const { quizzes, subchapterMindmap, subchapterProgress } =
+    useLoaderData<typeof loader>()
   const studyProgramActive = true
   const completeLesson = useFetcher<typeof action>()
   const user = useUser()
@@ -320,6 +326,8 @@ export default function SubchapterMindmap() {
     [completeLesson, isAdmin, studyProgramActive],
   )
 
+  const navigate = useNavigate()
+
   return (
     <>
       <div className="grid min-h-screen grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
@@ -336,6 +344,26 @@ export default function SubchapterMindmap() {
 
         {/* Main content */}
         <main className="col-span-1 row-span-1 p-base-padding">
+          <div className="justify-even flex w-full items-center gap-8">
+            <LinkButton
+              to={'#'}
+              buttonProps={{
+                variant: 'secondary',
+                onClick: () => navigate(-1),
+                className:
+                  'flex-1 w-full rounded-xl px-16 border text-semibold h-16 text-xl border-active-border',
+                size: 'lg',
+              }}
+            >
+              <Icon name={'arrow-left'} className="mr-4" />
+              Mergi înapoi
+            </LinkButton>
+            <ProgressWithPercent
+              className="h-16 rounded-xl border border-active-border"
+              containerClassName="flex-1"
+              value={subchapterProgress}
+            />
+          </div>
           <Mindmap
             mindmap={subchapterMindmap}
             renderCustomNodeElement={renderNode}
