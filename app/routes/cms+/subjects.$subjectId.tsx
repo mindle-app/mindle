@@ -1,4 +1,4 @@
-import { useForm } from '@conform-to/react'
+import { getInputProps, useForm } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import {
@@ -10,7 +10,7 @@ import {
 } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { Field } from '#app/components/forms.js'
+import { Field, SelectField } from '#app/components/forms.js'
 import { SvgImage } from '#app/components/svg-image.js'
 import { Button } from '#app/components/ui/button.js'
 import {
@@ -31,12 +31,15 @@ import {
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getChapterImgSrc, getSubjectImgSrc } from '#app/utils/misc.js'
+import { SubjectTypes, SubjectTypeSchema } from '#app/utils/subject.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const SubjectEditorSchema = z.object({
   name: z.string().min(1),
   image: ImageFieldsetSchema,
   id: z.number(),
+  type: SubjectTypeSchema,
+  slug: z.string(),
 })
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -179,6 +182,27 @@ export default function SubjectCMS() {
                 value: subject?.name,
                 disabled: true,
               }}
+            />
+
+            <Field
+              labelProps={{ children: 'Slug' }}
+              inputProps={{
+                ...getInputProps(fields.slug, {
+                  type: 'text',
+                }),
+              }}
+              errors={fields.slug.errors}
+            />
+            <SelectField
+              errors={fields.type.errors}
+              meta={fields.type}
+              labelProps={{ children: 'Type' }}
+              options={SubjectTypes.map((st) => ({
+                label: st,
+                value: st,
+              }))}
+              selectTriggerProps={{ className: 'w-[180px]', disabled: true }}
+              selectValueProps={{ placeholder: 'Select type' }}
             />
 
             <ImageChooser

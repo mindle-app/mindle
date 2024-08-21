@@ -3,9 +3,9 @@ import { Link, redirect, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms.js'
 import { SearchBar } from '#app/components/search-bar.js'
+import { Icon } from '#app/components/ui/icon.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, getSubjectImgSrc, useDelayedIsPending } from '#app/utils/misc.js'
-import { Icon } from '#app/components/ui/icon.js'
 
 const SubjectSearchResult = z.array(
   z.object({

@@ -15,7 +15,8 @@ import {
 } from '@remix-run/node'
 import { Form, Outlet, useActionData, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
-import { Field } from '#app/components/forms.js'
+import { floatingToolbarClassName } from '#app/components/floating-toolbar.js'
+import { Field, SelectField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
@@ -27,12 +28,15 @@ import {
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getSubjectImgSrc, useIsPending } from '#app/utils/misc.js'
+import { SubjectTypes, SubjectTypeSchema } from '#app/utils/subject.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const SubjectEditorSchema = z.object({
   name: z.string().min(1),
   image: ImageFieldsetSchema,
   id: z.number(),
+  type: SubjectTypeSchema,
+  slug: z.string(),
 })
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -103,6 +107,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const {
     id: subjectId,
     name,
+    type,
+    slug,
     imageUpdate = null,
     newImage = null,
   } = submission.value
@@ -112,10 +118,14 @@ export async function action({ request }: ActionFunctionArgs) {
     where: { id: subjectId },
     create: {
       name,
+      type,
+      slug,
       ...(newImage ? { image: { create: newImage } } : {}),
     },
     update: {
       name,
+      type,
+      slug,
       image: {
         ...(imageUpdate ? { update: imageUpdate } : {}),
         ...(newImage ? { create: newImage } : {}),
@@ -144,6 +154,7 @@ export default function SubjectCMS() {
     },
     defaultValue: {
       ...subject,
+      slug: subject.name.toLocaleLowerCase().replaceAll(' ', '-'),
       image: subject?.image ?? {},
     },
     shouldRevalidate: 'onBlur',
@@ -195,9 +206,44 @@ export default function SubjectCMS() {
                 errors={fields.name.errors}
               />
 
+              <Field
+                labelProps={{ children: 'Slug' }}
+                inputProps={{
+                  ...getInputProps(fields.slug, {
+                    type: 'text',
+                  }),
+                }}
+                errors={fields.slug.errors}
+              />
+
+              <SelectField
+                errors={fields.type.errors}
+                meta={fields.type}
+                labelProps={{ children: 'Type' }}
+                options={SubjectTypes.map((st) => ({
+                  label: st,
+                  value: st,
+                }))}
+                selectTriggerProps={{ className: 'w-[180px]' }}
+                selectValueProps={{ placeholder: 'Select type' }}
+              />
+
               <ImageChooser meta={fields.image} getImgSrc={getSubjectImgSrc} />
             </div>
           </Form>
+          <div className={floatingToolbarClassName}>
+            <Button variant="destructive" {...form.reset.getButtonProps()}>
+              Reset
+            </Button>
+            <StatusButton
+              form={form.id}
+              type="submit"
+              disabled={isPending}
+              status={isPending ? 'pending' : 'idle'}
+            >
+              Save
+            </StatusButton>
+          </div>
         </FormProvider>
       </div>
       <Outlet />

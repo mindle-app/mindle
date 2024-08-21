@@ -25,19 +25,21 @@ export const headers: HeadersFunction = ({ loaderHeaders }) => {
 export function NavHeader() {
   const user = useOptionalUser()
   return (
-    <header className={cn('w-full px-8 pt-6 text-primary-foreground')}>
+    <header className={cn('w-full border-b px-8 py-6 text-primary-foreground')}>
       <nav
         className={cn(
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
         )}
       >
         <Link to={'/'}>
-          <Logo className={'h-14 w-14 fill-foreground'} />
+          <Logo className={'h-25 w-25 fill-foreground'} />
         </Link>
 
-        <div className="flex items-center gap-10">
+        <div className="flex items-center">
           {user ? (
-            <UserDropdown buttonProps={{ variant: 'outline' }} />
+            <UserDropdown
+              buttonProps={{ variant: 'outline', className: 'h-16 w-16' }}
+            />
           ) : (
             <Button asChild variant={'secondary'} size="lg">
               <Link to="/login">Log In</Link>
@@ -50,7 +52,7 @@ export function NavHeader() {
 }
 
 const linkClasses = ({ isActive }: { isActive: boolean }) =>
-  cn('rounded p-2 px-4 text-center hover:bg-muted', {
+  cn('w-full min-w-[150px] rounded p-2 hover:bg-muted', {
     'bg-accent text-primary': isActive,
   })
 
@@ -78,7 +80,9 @@ export default function CmsLayout() {
             ))}
           </nav>
         </aside>
-        <Outlet />
+        <div className="flex w-full flex-grow pl-4 pt-2">
+          <Outlet />
+        </div>
       </div>
     </div>
   )
