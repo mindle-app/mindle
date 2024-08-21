@@ -196,8 +196,8 @@ model Connection {
 model Subject {
   id   Int    @id @default(autoincrement())
   name String
-  type String? // Humanities | Sciences | Mathematics | History
-  slug String? // SEO friendly name
+  type String // Humanities | Sciences | Mathematics | History
+  slug String // SEO friendly name
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

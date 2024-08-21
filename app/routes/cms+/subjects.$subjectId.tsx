@@ -1,13 +1,7 @@
 import { getInputProps, useForm } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-} from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field, SelectField } from '#app/components/forms.js'
@@ -23,16 +17,9 @@ import {
   TableRow,
 } from '#app/components/ui/table'
 import { prisma } from '#app/utils/db.server.js'
-import {
-  ImageChooser,
-  ImageFieldsetSchema,
-  imageHasFile,
-  imageHasId,
-  MAX_UPLOAD_SIZE,
-} from '#app/utils/image.js'
+import { ImageChooser, ImageFieldsetSchema } from '#app/utils/image.js'
 import { getChapterImgSrc, getSubjectImgSrc } from '#app/utils/misc.js'
 import { SubjectTypes, SubjectTypeSchema } from '#app/utils/subject.js'
-import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const SubjectEditorSchema = z.object({
   name: z.string().min(1),
@@ -53,92 +40,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   })
   invariantResponse(subject, 'Subject not found', { status: 404 })
   return json({ subject })
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await parseMultipartFormData(
-    request,
-    createMemoryUploadHandler({ maxPartSize: MAX_UPLOAD_SIZE }),
-  )
-
-  const submission = await parseWithZod(formData, {
-    schema: SubjectEditorSchema.superRefine(async (data, ctx) => {
-      if (!data.id) return
-
-      const subject = await prisma.subject.findUnique({
-        select: { id: true },
-        where: { id: data.id },
-      })
-      if (!subject) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Note not found',
-        })
-      }
-    }).transform(async ({ image, ...data }) => {
-      return {
-        ...data,
-        imageUpdate: imageHasId(image)
-          ? imageHasFile(image)
-            ? {
-                id: image.id,
-                altText: image.altText,
-                contentType: image.file.type,
-                blob: Buffer.from(await image.file.arrayBuffer()),
-              }
-            : {
-                id: image.id,
-                altText: image.altText,
-              }
-          : null,
-        newImage:
-          !imageHasId(image) && imageHasFile(image)
-            ? {
-                altText: image.altText,
-                contentType: image.file.type,
-                blob: Buffer.from(await image.file.arrayBuffer()),
-              }
-            : null,
-      }
-    }),
-    async: true,
-  })
-
-  if (submission.status !== 'success') {
-    return json(
-      { result: submission.reply() },
-      { status: submission.status === 'error' ? 400 : 200 },
-    )
-  }
-
-  const {
-    id: subjectId,
-    name,
-    imageUpdate = null,
-    newImage = null,
-  } = submission.value
-
-  const updatedSubject = await prisma.subject.upsert({
-    include: { image: true },
-    where: { id: subjectId },
-    create: {
-      name,
-      ...(newImage ? { image: { create: newImage } } : {}),
-    },
-    update: {
-      name,
-      image: {
-        ...(imageUpdate ? { update: imageUpdate } : {}),
-        ...(newImage ? { create: newImage } : {}),
-      },
-    },
-  })
-
-  return redirectWithToast(`/cms/subjects/${updatedSubject.id}`, {
-    type: 'success',
-    title: 'Subject updated',
-    description: 'The subject has been updated successfully',
-  })
 }
 
 export default function SubjectCMS() {

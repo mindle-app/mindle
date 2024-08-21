@@ -74,6 +74,8 @@ async function seed() {
   await prisma.subject.create({
     data: {
       name: 'Biologie',
+      type: 'sciences',
+      slug: 'biologie',
       id: 1,
       image: { create: await getBiologyImage() },
     },

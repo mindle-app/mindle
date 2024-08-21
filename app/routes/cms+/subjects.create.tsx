@@ -13,7 +13,7 @@ import {
 } from '@remix-run/node'
 import { Form, Outlet } from '@remix-run/react'
 import { z } from 'zod'
-import { Field } from '#app/components/forms.js'
+import { Field, SelectField } from '#app/components/forms.js'
 import { Button } from '#app/components/ui/button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
@@ -26,11 +26,14 @@ import {
   MAX_UPLOAD_SIZE,
 } from '#app/utils/image.js'
 import { getSubjectImgSrc, useIsPending } from '#app/utils/misc.js'
+import { SubjectTypes, SubjectTypeSchema } from '#app/utils/subject.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 
 const SubjectCreateSchema = z.object({
   name: z.string().min(1),
   image: ImageFieldsetSchema,
+  type: SubjectTypeSchema,
+  slug: z.string().optional(),
 })
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -74,20 +77,27 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const { name, newImage = null } = submission.value
+  const {
+    name,
+    slug = name.toLocaleLowerCase().replaceAll(' ', '-'),
+    type,
+    newImage = null,
+  } = submission.value
 
   const createdSubject = await prisma.subject.create({
     include: { image: true },
     data: {
       name,
+      slug,
+      type,
       ...(newImage ? { image: { create: newImage } } : {}),
     },
   })
 
   return redirectWithToast(`/cms/subjects/${createdSubject.id}`, {
     type: 'success',
-    title: 'Subject updated',
-    description: 'The subject has been updated successfully',
+    title: 'Subject created',
+    description: 'The subject has been created successfully',
   })
 }
 
@@ -143,6 +153,27 @@ export default function SubjectCMS() {
                   ...getInputProps(fields.name, { type: 'text' }),
                 }}
                 errors={fields.name.errors}
+              />
+
+              <Field
+                labelProps={{ children: 'Slug' }}
+                inputProps={{
+                  ...getInputProps(fields.slug, {
+                    type: 'text',
+                  }),
+                }}
+                errors={fields.slug.errors}
+              />
+              <SelectField
+                errors={fields.type.errors}
+                meta={fields.type}
+                labelProps={{ children: 'Type' }}
+                options={SubjectTypes.map((st) => ({
+                  label: st,
+                  value: st,
+                }))}
+                selectTriggerProps={{ className: 'w-[180px]' }}
+                selectValueProps={{ placeholder: 'Select type' }}
               />
 
               <ImageChooser meta={fields.image} getImgSrc={getSubjectImgSrc} />
