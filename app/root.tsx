@@ -112,9 +112,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json(
     {
       user,
-      userInfo: user
-        ? await getUserInfo(user, { timings, request, forceFresh: true })
-        : null,
+      userInfo: user ? await getUserInfo(user, { timings, request }) : null,
       requestInfo: {
         hints: getHints(request),
         origin: getDomainUrl(request),

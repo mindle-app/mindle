@@ -1,6 +1,5 @@
 import { Form, Link, useSubmit } from '@remix-run/react'
 import { useRef } from 'react'
-import { getUserImgSrc } from '#app/utils/misc.js'
 import { useUser } from '#app/utils/user.js'
 import { Button, type ButtonProps } from './ui/button'
 import {
@@ -26,6 +25,7 @@ export function UserDropdown({
       <DropdownMenuTrigger asChild>
         <Button asChild variant="secondary" {...buttonProps}>
           <Link
+            data-testid={'user-dropdown'}
             to={`/users/${user.username}`}
             // this is for progressive enhancement
             onClick={(e) => e.preventDefault()}

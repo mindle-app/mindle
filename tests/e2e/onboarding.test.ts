@@ -100,7 +100,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 
   await expect(page).toHaveURL(`/home`)
 
-  await page.getByRole('link', { name: onboardingData.name }).click()
+  await page.getByTestId('user-dropdown').click()
   await page.getByRole('menuitem', { name: /profilul tău/i }).click()
 
   await expect(page).toHaveURL(`/users/${onboardingData.username}`)
@@ -337,7 +337,7 @@ test('login as existing user', async ({ page, insertNewUser }) => {
   await page.getByRole('button', { name: /log in/i }).click()
   await expect(page).toHaveURL(`/home`)
 
-  await expect(page.getByRole('link', { name: user.name })).toBeVisible()
+  await expect(page.getByTestId('user-dropdown')).toBeVisible()
 })
 
 test('reset password with a link', async ({ page, insertNewUser }) => {
@@ -397,7 +397,7 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
 
   await expect(page).toHaveURL(`/home`)
 
-  await expect(page.getByRole('link', { name: user.name })).toBeVisible()
+  await expect(page.getByTestId('user-dropdown')).toBeVisible()
 })
 
 test('reset password with a short code', async ({ page, insertNewUser }) => {
