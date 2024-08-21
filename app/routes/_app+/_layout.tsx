@@ -9,35 +9,33 @@ import { useOptionalUser } from '#app/utils/user'
 export function NavHeader() {
   const user = useOptionalUser()
   return (
-    <>
-      <div className="absolute -z-30 mx-auto h-20 w-screen" />
+    <header className={cn('w-full border-b px-8 py-6 text-primary-foreground')}>
+      <nav
+        className={cn(
+          'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
+        )}
+      >
+        <Link to={'/'}>
+          <Logo className={'w-25 h-25 fill-foreground'} />
+        </Link>
 
-      <header className={cn('w-full px-8 pt-6 text-primary-foreground')}>
-        <nav
-          className={cn(
-            'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
+        <div className="flex items-center gap-10">
+          {user ? (
+            <UserDropdown
+              buttonProps={{ variant: 'outline', className: 'h-16 w-16' }}
+            />
+          ) : (
+            <Button asChild variant={'secondary'} size="lg">
+              <Link to="/login">Log In</Link>
+            </Button>
           )}
-        >
-          <Link to={'/'}>
-            <Logo className={'w-25 h-25 fill-foreground'} />
-          </Link>
-
-          <div className="flex items-center gap-10">
-            {user ? (
-              <UserDropdown buttonProps={{ variant: 'outline' }} />
-            ) : (
-              <Button asChild variant={'secondary'} size="lg">
-                <Link to="/login">Log In</Link>
-              </Button>
-            )}
-          </div>
-        </nav>
-      </header>
-    </>
+        </div>
+      </nav>
+    </header>
   )
 }
 
-export default function MarketingLayout() {
+export default function AppLayout() {
   return (
     <div className="relative flex min-h-screen flex-col items-center">
       <NavHeader />
