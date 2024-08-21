@@ -1,99 +1,121 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
-
-import { StepRow } from '#app/components/step-row.js'
-import { Button } from '#app/components/ui/button.js'
+import { Link, Outlet, useLoaderData } from '@remix-run/react'
+import { SvgImage } from '#app/components/svg-image.js'
+import { Card, CardContent, CardFooter } from '#app/components/ui/card'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
+import { cn, getChapterImgSrc } from '#app/utils/misc'
+import { UserState } from '#app/utils/user'
 
-import { UserState } from '#app/utils/user.js'
-
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUserId(request)
-  const subject = await prisma.subject.findUnique({ where: {} })
+  const subject = await prisma.subject.findUnique({
+    where: { slug: params.slug },
+  })
 
-  const userChapter = await prisma.userChapter.findFirst({
+  invariantResponse(subject, 'Subject not found', { status: 404 })
+
+  const chapters = await prisma.chapter.findMany({
     where: {
-      AND: {
-        userId,
-        state: UserState.IN_PROGRESS,
-      },
+      subjectId: subject.id,
     },
     include: {
-      chapter: {
-        include: {
-          subChapters: { include: { userSubchapters: { where: { userId } } } },
-          userChapters: { where: { userId } },
-        },
-      },
+      userChapters: { where: { userId } },
+      image: { select: { id: true, altText: true } },
     },
+    orderBy: { order: 'asc' },
   })
-  invariantResponse(userChapter, 'No chapter in progress', { status: 404 })
-
-  const { chapter } = userChapter
-  const { subChapters, userChapters, ...rest } = chapter
 
   return json({
-    chapter: { ...rest, state: userChapters[0]?.state ?? UserState.LOCKED },
-    subChapters: subChapters.map(({ userSubchapters, ...s }) => ({
-      ...s,
-      state: (userSubchapters[0]?.state as UserState) ?? UserState.LOCKED,
+    subject,
+    chapters: chapters.map(({ userChapters, ...c }) => ({
+      ...c,
+      state: userChapters[0]?.state ?? UserState.LOCKED,
     })),
   })
 }
 
-export default function Dashboard() {
-  const { chapter, subChapters } = useLoaderData<typeof loader>()
-  const learnedSubChapters = subChapters.reduce((acc, subChapter) => {
-    if (subChapter.state === UserState.DONE) {
-      return acc + 1
-    }
-    return acc
-  }, 0)
+type Chapter = ReturnType<
+  typeof useLoaderData<typeof loader>
+>['chapters'][0] & { href: string }
+
+function ChapterCard({ name, state, image, href }: Chapter) {
+  const isInProgress = state === UserState.IN_PROGRESS
+  const isCompleted = state === UserState.DONE
+  const isLocked = state === UserState.LOCKED
+
+  return (
+    <Link prefetch="intent" to={href} aria-disabled={isLocked}>
+      <Card
+        className={cn(
+          'group overflow-hidden border-2 border-disabled-border shadow-none transition-all duration-300 ease-in-out',
+          {
+            'hover:border-foreground': !isLocked,
+            'border-active-border': isInProgress,
+            'cursor-not-allowed': isLocked,
+            'border-complete-border': isCompleted,
+          },
+        )}
+      >
+        <CardContent
+          className={cn(
+            `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out`,
+            {
+              'group-hover:border-foreground': !isLocked,
+              'border-disabled-border bg-disabled': isLocked,
+              'border-active-border bg-active group-hover:bg-active-foreground':
+                isInProgress,
+              'border-complete-border bg-complete group-hover:bg-complete-foreground':
+                isCompleted,
+            },
+          )}
+        >
+          <SvgImage
+            className={cn(
+              'flex h-[72px] w-[72px] items-center justify-center',
+              {
+                'fill-active-svg border-active-border': isInProgress,
+                'fill-disabled-svg border-disabled-border': isLocked,
+                'fill-complete-svg border-complete-border': isCompleted,
+              },
+            )}
+            src={getChapterImgSrc(image?.id ?? name)}
+          />
+        </CardContent>
+        <CardFooter className="w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
+          <span className="w-full text-xs 2xl:text-base">{name}</span>
+        </CardFooter>
+      </Card>
+    </Link>
+  )
+}
+
+export default function SciencesSubjectLayout() {
+  const { chapters, subject } = useLoaderData<typeof loader>()
 
   return (
     <>
-      <div className="grid h-full gap-base-padding lg:grid-cols-[5fr_3fr]">
-        <div className="flex flex-col gap-base-padding">
-          <h1 className="font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
-            {chapter.name}
-          </h1>
-          <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
-            <div className="flex h-full max-h-full w-full flex-col gap-3 rounded-sm border-2 border-solid border-border bg-card p-base-padding shadow-sm xl:rounded-md 2xl:flex-col 2xl:rounded-lg">
-              <div className="flex items-center justify-between">
-                <h2 className="font-coHeadlineBold text-2xl text-foreground">
-                  Ce urmează pe azi
-                </h2>
-                <span className="font-coHeadline text-xl text-foreground">
-                  {learnedSubChapters} / {subChapters.length} lecții învățatex
-                </span>
-              </div>
-              <div className="flex w-full flex-col gap-1 overflow-y-scroll py-1 transition-all duration-300 ease-in-out md:gap-3 2xl:gap-6 2xl:py-2">
-                {subChapters.map((subChapter, i) => {
-                  return (
-                    <StepRow
-                      href={`/mindmap/chapter/${chapter.id}`}
-                      number={subChapter.order ?? i}
-                      title={subChapter.name}
-                      key={`subchapter-row-${subChapter.id}`}
-                      state={subChapter.state}
-                    />
-                  )
-                })}
-              </div>
-            </div>
+      <div className="grid grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
+        {/* Sidebar */}
+        <aside className="col-span-1 row-span-1 border-r-2 border-border">
+          <div
+            className={`flex h-[calc(100vh-113px)] flex-col gap-4 overflow-y-scroll p-8 pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
+          >
+            {chapters.map((c) => (
+              <ChapterCard
+                key={c.name}
+                {...c}
+                href={`/subjects/sciences/${subject.slug}/${c.id}`}
+              />
+            ))}
           </div>
-        </div>
-        <div className="flex flex-col gap-base-padding">
-          <div className="flex h-[56px] flex-col justify-end lg:h-[84px] 2xl:h-[112px]">
-            <Link to={`/mindmap/${chapter?.id}`}>
-              <Button className="w-full" variant="outline">
-                Vezi mindmap-ul capitolului
-              </Button>
-            </Link>
-          </div>
-        </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="col-span-1 row-span-1 p-base-padding">
+          <Outlet />
+        </main>
       </div>
     </>
   )

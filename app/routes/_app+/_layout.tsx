@@ -15,7 +15,7 @@ export function NavHeader() {
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
         )}
       >
-        <Link to={'/'}>
+        <Link to={'/'} prefetch="intent">
           <Logo className={'w-25 h-25 fill-foreground'} />
         </Link>
 
@@ -39,7 +39,7 @@ export default function AppLayout() {
   return (
     <div className="relative flex min-h-screen flex-col items-center">
       <NavHeader />
-      <div className="w-full flex-grow pt-10">
+      <div className="w-full flex-grow">
         <Outlet />
       </div>
     </div>

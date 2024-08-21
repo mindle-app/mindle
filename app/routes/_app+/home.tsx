@@ -23,7 +23,7 @@ function SubjectCard({
   activeChapterName: string
 }) {
   return (
-    <Link to={href}>
+    <Link to={href} prefetch="intent">
       <Card className="default-transition min-w-[320px] border-2 p-12 hover:border-primary">
         <CardContent className="flex w-full flex-col items-center gap-9">
           <img className="h-32 w-32" src={imgSrc} />

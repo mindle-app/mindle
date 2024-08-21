@@ -8,14 +8,25 @@ import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
 
 import { UserState } from '#app/utils/user.js'
+import { useMemo } from 'react'
+import { Card, CardContent } from '#app/components/ui/card.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { Progress } from '#app/components/ui/progress.js'
+import { cn } from '#app/utils/misc.js'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUserId(request)
+  const subject = await prisma.subject.findUnique({
+    where: { slug: params.slug },
+  })
+
+  invariantResponse(subject, 'Subject not found', { status: 404 })
 
   const userChapter = await prisma.userChapter.findFirst({
     where: {
       userId,
       state: UserState.IN_PROGRESS,
+      chapter: { subjectId: subject.id },
     },
     include: {
       chapter: {
@@ -32,6 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { subChapters, userChapters, ...rest } = chapter
 
   return json({
+    subject,
     chapter: { ...rest, state: userChapters[0]?.state ?? UserState.LOCKED },
     subChapters: subChapters.map(({ userSubchapters, ...s }) => ({
       ...s,
@@ -40,20 +52,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
   })
 }
 
-export default function Dashboard() {
-  const { chapter, subChapters } = useLoaderData<typeof loader>()
-  const learnedSubChapters = subChapters.reduce((acc, subChapter) => {
-    if (subChapter.state === UserState.DONE) {
-      return acc + 1
-    }
-    return acc
-  }, 0)
+export default function SciencesSubjectIndex() {
+  const { chapter, subChapters, subject } = useLoaderData<typeof loader>()
+  const learnedSubChapters = useMemo(
+    () =>
+      subChapters.reduce((acc, subChapter) => {
+        if (subChapter.state === UserState.DONE) {
+          return acc + 1
+        }
+        return acc
+      }, 0),
+    [subChapters],
+  )
+  const percentDone = (learnedSubChapters / subChapters.length) * 100
 
   return (
     <>
       <div className="grid h-full gap-base-padding lg:grid-cols-[5fr_3fr]">
-        <div className="flex flex-col gap-base-padding">
-          <h1 className="font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
+        <div className="flex flex-col gap-2">
+          <Link
+            to={`/subjects/sciences/${subject.slug}`}
+            className="text-2xl font-semibold text-primary hover:underline"
+          >
+            {subject.name}
+          </Link>
+          <h1 className="pb-4 font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
             {chapter.name}
           </h1>
           <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
@@ -63,7 +86,7 @@ export default function Dashboard() {
                   Ce urmează pe azi
                 </h2>
                 <span className="font-coHeadline text-xl text-foreground">
-                  {learnedSubChapters} / {subChapters.length} lecții învățatex
+                  {learnedSubChapters} / {subChapters.length} lecții învățate
                 </span>
               </div>
               <div className="flex w-full flex-col gap-1 overflow-y-scroll py-1 transition-all duration-300 ease-in-out md:gap-3 2xl:gap-6 2xl:py-2">
@@ -90,6 +113,25 @@ export default function Dashboard() {
               </Button>
             </Link>
           </div>
+          <Card className="relative overflow-hidden">
+            <Progress
+              value={percentDone}
+              className="h-16 w-full rounded-none"
+            />
+            <div
+              className={cn(`absolute top-5 w-full text-primary-foreground`)}
+              style={{ left: `${percentDone / 2}%` }}
+            >
+              {percentDone}%
+            </div>
+            <CardContent className="flex flex-col items-center justify-center">
+              <Icon name={'checkmark-gear'} className="h-30 w-28" />
+              <h2 className="font-coHeadlineBold text-2xl">
+                {learnedSubChapters} / {subChapters.length} Subcapitole complete
+              </h2>
+              <p>{chapter.name}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>

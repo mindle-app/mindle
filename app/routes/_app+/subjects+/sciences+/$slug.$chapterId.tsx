@@ -7,6 +7,7 @@ import { Button } from '#app/components/ui/button.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { UserState } from '#app/utils/user.js'
+import { Card } from '#app/components/ui/card.js'
 
 const ParamsSchema = z.object({
   chapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -16,6 +17,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUserId(request)
   const { chapterId } = ParamsSchema.parse(params)
 
+  const subject = await prisma.subject.findUnique({
+    where: { slug: params.slug },
+  })
+
+  invariantResponse(subject, 'Subject not found', { status: 404 })
   const chapter = await prisma.chapter.findFirst({
     where: { id: chapterId },
     include: {
@@ -31,6 +37,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { subChapters, userChapters, ...rest } = chapter
 
   return json({
+    subject,
     chapter: { ...rest, state: userChapters[0]?.state ?? UserState.LOCKED },
     subChapters: subChapters.map(({ userSubchapters, ...s }) => ({
       ...s,
@@ -40,13 +47,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function ChapterPage() {
-  const { chapter, subChapters } = useLoaderData<typeof loader>()
+  const { chapter, subject, subChapters } = useLoaderData<typeof loader>()
 
   return (
     <>
       <div className="grid h-full gap-base-padding lg:grid-cols-[5fr_3fr]">
-        <div className="flex flex-col gap-base-padding">
-          <h1 className="font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
+        <div className="flex flex-col gap-2">
+          <Link
+            to={`/subjects/sciences/${subject.slug}`}
+            className="text-2xl font-semibold text-primary hover:underline"
+          >
+            {subject.name}
+          </Link>
+          <h1 className="pb-4 font-coHeadlineBold text-2xl leading-none text-foreground md:text-[32px] lg:text-3xl lg:leading-none 2xl:text-5xl 2xl:leading-[130%]">
             {chapter.name}
           </h1>
           <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
@@ -68,7 +81,7 @@ export default function ChapterPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-base-padding">
+        <div className="flex flex-col">
           <div className="flex h-[56px] flex-col justify-end lg:h-[84px] 2xl:h-[112px]">
             <Link to={`/mindmap/chapter/${chapter?.id}`}>
               <Button className="w-full" variant="outline">
