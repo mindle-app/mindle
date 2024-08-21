@@ -1,6 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData, useParams } from '@remix-run/react'
+import { Link, useLoaderData, useNavigate, useParams } from '@remix-run/react'
 import { useCallback } from 'react'
 import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { z } from 'zod'
@@ -8,6 +8,9 @@ import { ChapterElement } from '#app/components/mindmap/chapter-element.js'
 import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
 import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { QuizCard } from '#app/components/quiz-card.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { LinkButton } from '#app/components/ui/link-button.js'
+import { ProgressWithPercent } from '#app/components/ui/progress.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { generateChapterMindmap, type MindmapTree } from '#app/utils/mindmap.js'
@@ -111,17 +114,17 @@ export default function ChapterMindmap() {
         (studyProgramActive && treeDatum.attributes.state !== UserState.LOCKED)
       ) {
         return (
-          <Link
-            to={`/mindmap/chapter/${chapterId}/subchapter/${treeDatum.attributes.id}`}
-          >
+          <Link to={`subchapter/${treeDatum.attributes.id}`} prefetch="intent">
             {element}
           </Link>
         )
       }
       return element
     },
-    [chapterId, studyProgramActive],
+    [studyProgramActive],
   )
+
+  const navigate = useNavigate()
 
   return (
     <>
@@ -139,6 +142,26 @@ export default function ChapterMindmap() {
 
         {/* Main content */}
         <main className="col-span-1 row-span-1 p-base-padding">
+          <div className="justify-even flex w-full items-center gap-8">
+            <LinkButton
+              to={'#'}
+              buttonProps={{
+                variant: 'secondary',
+                onClick: () => navigate(-1),
+                className:
+                  'flex-1 w-full rounded-xl px-16 border text-semibold h-16 text-xl border-active-border',
+                size: 'lg',
+              }}
+            >
+              <Icon name={'arrow-left'} className="mr-4" />
+              Mergi înapoi
+            </LinkButton>
+            <ProgressWithPercent
+              className="h-16 rounded-xl border border-active-border"
+              containerClassName="flex-1"
+              value={50}
+            />
+          </div>
           <Mindmap
             mindmap={chapterMindmap}
             renderCustomNodeElement={renderNode}

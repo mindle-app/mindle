@@ -15,6 +15,7 @@ import { Mindmap } from '#app/components/mindmap/mindmap.js'
 import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
 import { QuizCard } from '#app/components/quiz-card.js'
 
+import { PreviewHTML } from '#app/components/richtext-editor/components/block-editor'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import {
@@ -39,7 +40,6 @@ import {
   type MindmapTree,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState, useUser } from '#app/utils/user.js'
-import { PreviewHTML } from '../components/richtext-editor/components/block-editor'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -317,7 +317,7 @@ export default function SubchapterMindmap() {
         </Button>
       )
     },
-    [completeLesson, studyProgramActive],
+    [completeLesson, isAdmin, studyProgramActive],
   )
 
   return (

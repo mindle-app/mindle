@@ -10,7 +10,7 @@ const Progress = React.forwardRef<
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      'relative h-4 w-full overflow-hidden rounded-full bg-secondary',
+      'h-4 w-full overflow-hidden rounded-full bg-secondary',
       className,
     )}
     {...props}
@@ -22,5 +22,33 @@ const Progress = React.forwardRef<
   </ProgressPrimitive.Root>
 ))
 Progress.displayName = ProgressPrimitive.Root.displayName
+
+export function ProgressWithPercent({
+  value,
+  percentClassName,
+  containerClassName,
+
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+  percentClassName?: string | undefined
+  containerClassName?: string | undefined
+}) {
+  return (
+    <div className={cn('relative w-full', containerClassName)}>
+      <Progress value={value} {...props} />
+      {value ? (
+        <div
+          className={cn(
+            `absolute top-5 w-full text-primary-foreground`,
+            percentClassName,
+          )}
+          style={{ left: `${value / 2}%` }}
+        >
+          {value}%
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 export { Progress }
