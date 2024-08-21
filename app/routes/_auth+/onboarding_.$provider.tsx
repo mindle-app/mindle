@@ -24,6 +24,7 @@ import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { addNewsletterSubscriber } from '#app/newsletter/newsletter.server.js'
 import {
   authenticator,
   sessionKey,
@@ -40,7 +41,6 @@ import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { getWelcomeFormAnswers } from '#app/utils/welcome-form.server.js'
 import { onboardingEmailSessionKey } from './onboarding'
-import { addNewsletterSubscriber } from '#app/newsletter/newsletter.server.js'
 
 export const providerIdKey = 'providerId'
 export const prefilledProfileKey = 'prefilledProfile'
