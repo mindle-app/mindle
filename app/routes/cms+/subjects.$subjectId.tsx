@@ -8,7 +8,7 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node'
-import { Link, Outlet, useLoaderData } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Field, SelectField } from '#app/components/forms.js'
 import { SvgImage } from '#app/components/svg-image.js'
@@ -48,7 +48,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     include: {
       image: true,
       chapters: { orderBy: { order: 'asc' }, include: { image: true } },
-      studyMaterials: true,
+      studyMaterials: { include: { author: { select: { name: true } } } },
     },
   })
   invariantResponse(subject, 'Subject not found', { status: 404 })
@@ -190,6 +190,7 @@ export default function SubjectCMS() {
                 ...getInputProps(fields.slug, {
                   type: 'text',
                 }),
+                disabled: true,
               }}
               errors={fields.slug.errors}
             />
@@ -282,8 +283,8 @@ function StudyMaterialList() {
           <TableHead>ID</TableHead>
 
           <TableHead className="w-[100px]">Name</TableHead>
+          <TableHead>Author</TableHead>
 
-          <TableHead>Order</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -293,8 +294,9 @@ function StudyMaterialList() {
             <TableCell className="w-[100px]">{c.id} </TableCell>
 
             <TableCell>{c.title}</TableCell>
+            <TableCell>{c.author?.name}</TableCell>
             <TableCell className="text-right">
-              <Link to={`/cms/chapters/${c.id}/edit`}>
+              <Link to={`/cms/study-materials/${c.id}/edit`}>
                 <Button variant="link">Edit</Button>
               </Link>
             </TableCell>
