@@ -1,9 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import {
-  json,
-  type HeadersFunction,
-  type LoaderFunctionArgs,
-} from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import {
   Link,
   NavLink,
@@ -35,7 +31,8 @@ import { StatusButton } from '#app/components/ui/status-button.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
-import { useUser } from '#app/utils/user.js'
+import { type IconName } from '@/icon-name'
+import { Button } from '#app/components/ui/button.js'
 
 const inputVariants = {
   visible: {
@@ -55,7 +52,6 @@ export function SearchBar({
   status,
   autoFocus = false,
   autoSubmit = false,
-  action = '/users',
   isMenuOpened,
 }: {
   status: 'idle' | 'pending' | 'success' | 'error'
@@ -69,7 +65,6 @@ export function SearchBar({
   const submit = useSubmit()
   const isSubmitting = useIsPending({
     formMethod: 'GET',
-    formAction: action,
   })
 
   const handleFormChange = useDebounce((form: HTMLFormElement) => {
@@ -79,13 +74,12 @@ export function SearchBar({
   return (
     <Form
       method="GET"
-      action={action}
-      className="mx-6 flex flex-wrap items-center justify-center gap-2"
+      className="mx-6 flex gap-2"
       onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
     >
       {isMenuOpened ? (
         <motion.div
-          className="flex-1"
+          className="flex flex-1 gap-2 rounded-xl border bg-card p-2"
           variants={inputVariants}
           initial={'hidden'}
           animate={'visible'}
@@ -96,22 +90,67 @@ export function SearchBar({
             id={id}
             defaultValue={searchParams.get('search') ?? ''}
             placeholder="Search"
-            className="w-full"
+            className="w-full border-0"
             autoFocus={autoFocus}
           />
+          <StatusButton
+            variant={'secondary'}
+            type={'submit'}
+            status={isSubmitting ? 'pending' : status}
+            className="flex items-center justify-center"
+          >
+            <Icon name="magnifying-glass-full" size="md" />
+            <span className="sr-only">Search</span>
+          </StatusButton>
         </motion.div>
       ) : null}
-      <div>
-        <StatusButton
-          type="submit"
-          status={isSubmitting ? 'pending' : status}
-          className="flex w-full items-center justify-center"
-        >
-          <Icon name="magnifying-glass" size="md" />
-          <span className="sr-only">Search</span>
-        </StatusButton>
-      </div>
+      <div></div>
     </Form>
+  )
+}
+
+function NavToggle({
+  isMenuOpened,
+  setMenuOpened,
+  menuControls,
+}: {
+  isMenuOpened: boolean
+  setMenuOpened: (value: boolean) => void
+  menuControls?: AnimationControls
+}) {
+  const toggleMenu = React.useCallback(() => {
+    void menuControls?.start(isMenuOpened ? 'close' : 'open')
+    setMenuOpened(!isMenuOpened)
+  }, [isMenuOpened, menuControls, setMenuOpened])
+
+  const latestToggleMenu = React.useRef(toggleMenu)
+  React.useEffect(() => {
+    latestToggleMenu.current = toggleMenu
+  }, [toggleMenu])
+
+  const isWide = useIsWide()
+
+  const iconOpenMenu: IconName = isWide ? 'chevrons-left' : 'chevrons-up'
+  const iconClosedMenu: IconName = isWide ? 'chevrons-right' : 'chevrons-down'
+
+  return (
+    <div
+      className={cn(
+        'relative inline-flex h-14 flex-shrink-0 items-center overflow-hidden border-r sm:w-full sm:border-r-0',
+        { 'justify-center': !isMenuOpened, 'w-full': !isWide },
+      )}
+    >
+      <button
+        className="flex h-14 w-14 items-center justify-center"
+        aria-label="Open Navigation menu"
+        onClick={toggleMenu}
+      >
+        <Icon
+          className="h-6 w-6"
+          name={isMenuOpened ? iconOpenMenu : iconClosedMenu}
+        />
+      </button>
+    </div>
   )
 }
 
@@ -131,97 +170,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 const useIsWide = makeMediaQueryStore('(min-width: 640px)', true)
 
-export default function App() {
-  const isWide = useIsWide()
-
-  const [isMenuOpened, setMenuOpened] = React.useState(false)
-
-  return (
-    <div className="flex max-h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
-      {/*
-				this isn't placed in a conditional with isWide because the server render
-				doesn't know whether it should be around or not so we just use CSS to hide it
-				if it's not supposed to show up.
-
-				We don't just use media queries for the wider screen nav because we want
-				to avoid running all the logic in there unnecessarily.
-			*/}
-      <MobileNavigation
-        isMenuOpened={isMenuOpened}
-        onMenuOpenChange={setMenuOpened}
-      />
-      <div
-        // this nonsense is here because we want the panels to be scrollable rather
-        // than having the entire page be scrollable (at least on wider screens)
-        className={cn(
-          'flex h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
-          {
-            'h-[unset]': !isWide && isMenuOpened,
-          },
-        )}
-      >
-        {isWide ? (
-          <Navigation
-            isMenuOpened={isMenuOpened}
-            onMenuOpenChange={setMenuOpened}
-          />
-        ) : null}
-        <div
-          className={cn(
-            'h-full w-full max-w-full sm:max-w-[calc(100%-56px)]',
-            isMenuOpened ? 'hidden md:block' : '',
-          )}
-        >
-          <Outlet />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0 },
-}
-function NavigationExerciseListItem({
-  children,
-}: {
-  exerciseNumber: number
-  children: React.ReactNode
-}) {
-  const progressClassName = 0
-  return (
-    <motion.li
-      variants={itemVariants}
-      className={cn(
-        // add gap of 3 to children, but using padding so the progress extends through the whole height
-        'py-[6px] first:pt-3 last:pb-3',
-        progressClassName ? `${progressClassName} before:border-t` : null,
-      )}
-    >
-      <span className="ml-2">{children}</span>
-    </motion.li>
-  )
-}
-
-function NavigationExerciseStepListItem({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <motion.li
-      variants={itemVariants}
-      className={cn(
-        // add gap of 3 to children, but using padding so the progress extends through the whole height
-        'py-[6px] first:pt-3 last:pb-3',
-      )}
-    >
-      <span className="ml-2">{children}</span>
-    </motion.li>
-  )
-}
-
 function MobileNavigation({
   isMenuOpened,
   onMenuOpenChange: setMenuOpened,
@@ -229,9 +177,6 @@ function MobileNavigation({
   isMenuOpened: boolean
   onMenuOpenChange: (change: boolean) => void
 }) {
-  const data = useLoaderData<typeof loader>()
-  const params = useParams()
-
   // items
   const listVariants = {
     visible: {
@@ -271,63 +216,7 @@ function MobileNavigation({
                 initial="hidden"
                 animate="visible"
                 className="flex flex-col"
-              >
-                {data.studyMaterials.map(
-                  ({ id: studyMaterialId, title, essays }) => {
-                    const isActive = params.studyMaterialId === studyMaterialId
-                    return (
-                      <NavigationExerciseListItem
-                        exerciseNumber={1}
-                        key={studyMaterialId}
-                      >
-                        <Link
-                          prefetch="intent"
-                          to={`${studyMaterialId}`}
-                          className={cn(
-                            'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
-                            'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                            { 'bg-foreground text-background': isActive },
-                          )}
-                        >
-                          {title}
-                        </Link>
-                        {isActive ? (
-                          <motion.ul
-                            variants={listVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="ml-4 mt-4 flex flex-col"
-                          >
-                            {essays
-                              .filter(Boolean)
-                              .map(({ id: essayId, title }) => {
-                                const isActive =
-                                  params.essayId === studyMaterialId
-                                return (
-                                  <NavigationExerciseStepListItem key={essayId}>
-                                    <Link
-                                      to={`/${studyMaterialId}/${essayId}`}
-                                      prefetch="intent"
-                                      className={cn(
-                                        'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                        {
-                                          'bg-foreground text-background':
-                                            isActive,
-                                        },
-                                      )}
-                                    >
-                                      {title}
-                                    </Link>
-                                  </NavigationExerciseStepListItem>
-                                )
-                              })}
-                          </motion.ul>
-                        ) : null}
-                      </NavigationExerciseListItem>
-                    )
-                  },
-                )}
-              </motion.ul>
+              ></motion.ul>
             </motion.div>
           )}
           <div className="flex-grow" />
@@ -384,7 +273,26 @@ function Navigation({
         variants={menuVariants}
         animate={menuControls}
       >
-        <SearchBar status={'idle'} isMenuOpened={isMenuOpened} />
+        {isMenuOpened ? (
+          <SearchBar
+            setMenuOpened={setMenuOpened}
+            status={'idle'}
+            autoFocus
+            isMenuOpened={isMenuOpened}
+            menuControls={menuControls}
+          />
+        ) : (
+          <Button
+            variant={'secondary'}
+            className="mx-6 border"
+            onClick={() => {
+              void menuControls.start('open')
+              setMenuOpened(true)
+            }}
+          >
+            <Icon name={'magnifying-glass-full'} size={'md'} />
+          </Button>
+        )}
         <div className="flex flex-grow flex-col items-center">
           {isMenuOpened && (
             <motion.div
@@ -487,42 +395,50 @@ function Navigation({
   )
 }
 
-function NavToggle({
-  isMenuOpened,
-  setMenuOpened,
-  menuControls,
-}: {
-  isMenuOpened: boolean
-  setMenuOpened: (value: boolean) => void
-  menuControls?: AnimationControls
-}) {
-  const toggleMenu = React.useCallback(() => {
-    void menuControls?.start(isMenuOpened ? 'close' : 'open')
-    setMenuOpened(!isMenuOpened)
-  }, [isMenuOpened, menuControls, setMenuOpened])
+export default function App() {
+  const isWide = useIsWide()
 
-  const latestToggleMenu = React.useRef(toggleMenu)
-  React.useEffect(() => {
-    latestToggleMenu.current = toggleMenu
-  }, [toggleMenu])
+  const [isMenuOpened, setMenuOpened] = React.useState(false)
 
   return (
-    <div
-      className={cn(
-        'relative inline-flex h-14 flex-shrink-0 items-center overflow-hidden border-r sm:w-full sm:border-r-0',
-        { 'justify-center': !isMenuOpened },
-      )}
-    >
-      <button
-        className="flex h-14 w-14 items-center justify-center"
-        aria-label="Open Navigation menu"
-        onClick={toggleMenu}
+    <div className="flex max-h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
+      {/*
+				this isn't placed in a conditional with isWide because the server render
+				doesn't know whether it should be around or not so we just use CSS to hide it
+				if it's not supposed to show up.
+
+				We don't just use media queries for the wider screen nav because we want
+				to avoid running all the logic in there unnecessarily.
+			*/}
+      <MobileNavigation
+        isMenuOpened={isMenuOpened}
+        onMenuOpenChange={setMenuOpened}
+      />
+      <div
+        // this nonsense is here because we want the panels to be scrollable rather
+        // than having the entire page be scrollable (at least on wider screens)
+        className={cn(
+          'flex h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
+          {
+            'h-[unset]': !isWide && isMenuOpened,
+          },
+        )}
       >
-        <Icon
-          className="h-6 w-6"
-          name={isMenuOpened ? 'chevrons-left' : 'chevrons-right'}
-        />
-      </button>
+        {isWide ? (
+          <Navigation
+            isMenuOpened={isMenuOpened}
+            onMenuOpenChange={setMenuOpened}
+          />
+        ) : null}
+        <div
+          className={cn(
+            'h-full w-full max-w-full sm:max-w-[calc(100%-56px)]',
+            isMenuOpened ? 'hidden md:block' : '',
+          )}
+        >
+          <Outlet />
+        </div>
+      </div>
     </div>
   )
 }
