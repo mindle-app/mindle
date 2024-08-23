@@ -129,24 +129,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json({ studyMaterials, workshopTitle: 'Mindle', subject })
 }
 
-export const headers: HeadersFunction = ({ loaderHeaders }) => {
-  const headers = {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? '',
-    Vary: 'Cookie',
-  }
-  return headers
-}
-
 const useIsWide = makeMediaQueryStore('(min-width: 640px)', true)
 
 export default function App() {
-  const user = useUser()
   const isWide = useIsWide()
 
   const [isMenuOpened, setMenuOpened] = React.useState(false)
 
   return (
-    <div className="flex flex-col">
+    <div className="flex max-h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
       {/*
 				this isn't placed in a conditional with isWide because the server render
 				doesn't know whether it should be around or not so we just use CSS to hide it
@@ -162,13 +153,12 @@ export default function App() {
       <div
         // this nonsense is here because we want the panels to be scrollable rather
         // than having the entire page be scrollable (at least on wider screens)
-        className={cn('flex flex-grow flex-col sm:flex-row', {
-          'h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100vh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]':
-            !user,
-          'h-[calc(100vh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]':
-            user,
-          'h-[unset]': !isWide && isMenuOpened,
-        })}
+        className={cn(
+          'flex h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
+          {
+            'h-[unset]': !isWide && isMenuOpened,
+          },
+        )}
       >
         {isWide ? (
           <Navigation
@@ -389,17 +379,13 @@ function Navigation({
   return (
     <nav className="hidden border-r sm:flex">
       <motion.div
+        className="flex h-full flex-col justify-between py-9"
         initial={isMenuOpened ? 'open' : 'close'}
         variants={menuVariants}
         animate={menuControls}
       >
-        <NavToggle
-          menuControls={menuControls}
-          isMenuOpened={isMenuOpened}
-          setMenuOpened={setMenuOpened}
-        />
         <SearchBar status={'idle'} isMenuOpened={isMenuOpened} />
-        <div className="flex h-full flex-col items-center justify-between">
+        <div className="flex flex-grow flex-col items-center">
           {isMenuOpened && (
             <motion.div
               style={{ width: OPENED_MENU_WIDTH }}
@@ -491,6 +477,11 @@ function Navigation({
             </div>
           )}
         </div>
+        <NavToggle
+          menuControls={menuControls}
+          isMenuOpened={isMenuOpened}
+          setMenuOpened={setMenuOpened}
+        />
       </motion.div>
     </nav>
   )
@@ -518,7 +509,8 @@ function NavToggle({
   return (
     <div
       className={cn(
-        'relative inline-flex h-14 flex-shrink-0 items-center justify-between overflow-hidden border-r sm:w-full sm:border-r-0',
+        'relative inline-flex h-14 flex-shrink-0 items-center overflow-hidden border-r sm:w-full sm:border-r-0',
+        { 'justify-center': !isMenuOpened },
       )}
     >
       <button
@@ -526,7 +518,10 @@ function NavToggle({
         aria-label="Open Navigation menu"
         onClick={toggleMenu}
       >
-        <Icon name={isMenuOpened ? 'chevrons-left' : 'chevrons-right'} />
+        <Icon
+          className="h-6 w-6"
+          name={isMenuOpened ? 'chevrons-left' : 'chevrons-right'}
+        />
       </button>
     </div>
   )
