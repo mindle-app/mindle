@@ -10,7 +10,9 @@ import {
   Outlet,
   useLoaderData,
   useParams,
-  useRouteLoaderData,
+  Form,
+  useSearchParams,
+  useSubmit,
 } from '@remix-run/react'
 import {
   motion,
@@ -18,16 +20,100 @@ import {
   type AnimationControls,
 } from 'framer-motion'
 import * as React from 'react'
+import { useId } from 'react'
 import { makeMediaQueryStore } from '#app/components/media-query.js'
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '#app/components/ui/accordion.js'
 import { Icon } from '#app/components/ui/icon.js'
-import { SimpleTooltip } from '#app/components/ui/tooltip.tsx'
-import { type loader as rootLoader } from '#app/root.tsx'
-import { ThemeSwitch } from '#app/routes/resources+/theme-switch'
+import { Input } from '#app/components/ui/input.js'
+import { StatusButton } from '#app/components/ui/status-button.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
-import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
-import { useOptionalUser, useUser } from '#app/utils/user.js'
+import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
+import { useUser } from '#app/utils/user.js'
+
+const inputVariants = {
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.05,
+      when: 'beforeChildren',
+      staggerChildren: 0.03,
+    },
+  },
+  hidden: {
+    opacity: 0,
+  },
+}
+
+export function SearchBar({
+  status,
+  autoFocus = false,
+  autoSubmit = false,
+  action = '/users',
+  isMenuOpened,
+}: {
+  status: 'idle' | 'pending' | 'success' | 'error'
+  autoFocus?: boolean
+  autoSubmit?: boolean
+  action?: string
+  isMenuOpened: boolean
+}) {
+  const id = useId()
+  const [searchParams] = useSearchParams()
+  const submit = useSubmit()
+  const isSubmitting = useIsPending({
+    formMethod: 'GET',
+    formAction: action,
+  })
+
+  const handleFormChange = useDebounce((form: HTMLFormElement) => {
+    submit(form)
+  }, 400)
+
+  return (
+    <Form
+      method="GET"
+      action={action}
+      className="mx-6 flex flex-wrap items-center justify-center gap-2"
+      onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
+    >
+      {isMenuOpened ? (
+        <motion.div
+          className="flex-1"
+          variants={inputVariants}
+          initial={'hidden'}
+          animate={'visible'}
+        >
+          <Input
+            type="search"
+            name="search"
+            id={id}
+            defaultValue={searchParams.get('search') ?? ''}
+            placeholder="Search"
+            className="w-full"
+            autoFocus={autoFocus}
+          />
+        </motion.div>
+      ) : null}
+      <div>
+        <StatusButton
+          type="submit"
+          status={isSubmitting ? 'pending' : status}
+          className="flex w-full items-center justify-center"
+        >
+          <Icon name="magnifying-glass" size="md" />
+          <span className="sr-only">Search</span>
+        </StatusButton>
+      </div>
+    </Form>
+  )
+}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await requireUserId(request)
@@ -37,10 +123,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   invariantResponse(subject, 'Subject not found', { status: 404 })
   const studyMaterials = await prisma.studyMaterial.findMany({
     where: { subjectId: subject.id },
-    include: { essays: true },
+    include: { essays: true, author: true },
   })
 
-  return json({ studyMaterials, workshopTitle: 'Mindle' })
+  return json({ studyMaterials, workshopTitle: 'Mindle', subject })
 }
 
 export const headers: HeadersFunction = ({ loaderHeaders }) => {
@@ -77,7 +163,7 @@ export default function App() {
         // this nonsense is here because we want the panels to be scrollable rather
         // than having the entire page be scrollable (at least on wider screens)
         className={cn('flex flex-grow flex-col sm:flex-row', {
-          'h-[calc(100vh-128px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100vh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]':
+          'h-[calc(100vh-113px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100vh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]':
             !user,
           'h-[calc(100vh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]':
             user,
@@ -154,9 +240,6 @@ function MobileNavigation({
   onMenuOpenChange: (change: boolean) => void
 }) {
   const data = useLoaderData<typeof loader>()
-  const rootData = useRouteLoaderData<typeof rootLoader>('root')
-  const user = useOptionalUser()
-  const nextExerciseRoute = '/next-exercise-todo'
   const params = useParams()
 
   // items
@@ -184,7 +267,6 @@ function MobileNavigation({
           })}
         >
           <NavToggle
-            title={'Mindle'}
             isMenuOpened={isMenuOpened}
             setMenuOpened={setMenuOpened}
           />
@@ -256,102 +338,9 @@ function MobileNavigation({
                   },
                 )}
               </motion.ul>
-              <div className="mt-6">
-                <NavLink
-                  to="/finished"
-                  className={({ isActive }) =>
-                    cn(
-                      'relative whitespace-nowrap text-lg font-bold outline-none hover:underline focus:underline',
-                      {
-                        'bg-black text-white after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""]':
-                          isActive,
-                      },
-                    )
-                  }
-                >
-                  📝 Workshop Feedback
-                </NavLink>
-              </div>
             </motion.div>
           )}
           <div className="flex-grow" />
-
-          {user ? (
-            <SimpleTooltip content={isMenuOpened ? null : 'Your account'}>
-              <Link
-                className={cn(
-                  'flex h-14 items-center justify-start space-x-3 px-4 py-4 text-center no-underline hover:underline',
-                  {
-                    'border-l': !isMenuOpened,
-                    'w-full border-t': isMenuOpened,
-                  },
-                )}
-                to="/account"
-              >
-                {user.image?.id ? (
-                  <img
-                    alt={user.name ?? user.username}
-                    src={getUserImgSrc(user.image.id)}
-                    className="h-full rounded-full"
-                  />
-                ) : (
-                  <Icon
-                    name="mindle-head"
-                    className="flex-shrink-0"
-                    size="lg"
-                  />
-                )}
-                {isMenuOpened ? (
-                  <motion.div
-                    className="flex items-center whitespace-nowrap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    Your Account
-                  </motion.div>
-                ) : (
-                  <span className="sr-only">Your account</span>
-                )}
-              </Link>
-            </SimpleTooltip>
-          ) : null}
-          {user && nextExerciseRoute ? (
-            <SimpleTooltip
-              content={isMenuOpened ? null : 'Continue to next lesson'}
-            >
-              <Link
-                to={nextExerciseRoute}
-                prefetch="intent"
-                className={cn(
-                  'flex h-14 w-full items-center space-x-3 border-t px-4 py-4 pl-[18px] no-underline hover:underline',
-                )}
-                state={{ from: 'continue next lesson button' }}
-              >
-                <Icon name="fast-forward" className="flex-shrink-0" size="md" />
-                {isMenuOpened ? (
-                  <motion.div
-                    className="flex items-center whitespace-nowrap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    Continue to next lesson
-                  </motion.div>
-                ) : (
-                  <span className="sr-only">Continue to next lesson</span>
-                )}
-              </Link>
-            </SimpleTooltip>
-          ) : null}
-          <div
-            className={cn('h-14 self-start p-4 pt-[15px] sm:mb-4 sm:w-full', {
-              'w-full border-t': isMenuOpened,
-              'border-l': !isMenuOpened,
-            })}
-          >
-            <ThemeSwitch
-              userPreference={rootData?.requestInfo.userPrefs.theme}
-            />
-          </div>
         </div>
       </div>
     </nav>
@@ -368,9 +357,7 @@ function Navigation({
   onMenuOpenChange: (change: boolean) => void
 }) {
   const data = useLoaderData<typeof loader>()
-  const rootData = useRouteLoaderData<typeof rootLoader>('root')
-
-  const user = useOptionalUser()
+  const { subject } = data
   const params = useParams()
 
   const studyMaterial = data.studyMaterials.find(
@@ -380,7 +367,7 @@ function Navigation({
   // container
   const menuControls = useAnimationControls()
   const menuVariants = {
-    close: { width: 56 },
+    close: { width: 104 },
     open: { width: OPENED_MENU_WIDTH },
   }
 
@@ -398,7 +385,6 @@ function Navigation({
       opacity: 0,
     },
   }
-  const exNum = Number(params.exerciseNumber).toString().padStart(2, '0')
 
   return (
     <nav className="hidden border-r sm:flex">
@@ -407,13 +393,13 @@ function Navigation({
         variants={menuVariants}
         animate={menuControls}
       >
+        <NavToggle
+          menuControls={menuControls}
+          isMenuOpened={isMenuOpened}
+          setMenuOpened={setMenuOpened}
+        />
+        <SearchBar status={'idle'} isMenuOpened={isMenuOpened} />
         <div className="flex h-full flex-col items-center justify-between">
-          <NavToggle
-            title={data.workshopTitle}
-            menuControls={menuControls}
-            isMenuOpened={isMenuOpened}
-            setMenuOpened={setMenuOpened}
-          />
           {isMenuOpened && (
             <motion.div
               style={{ width: OPENED_MENU_WIDTH }}
@@ -425,60 +411,66 @@ function Navigation({
                 variants={listVariants}
                 initial="hidden"
                 animate="visible"
-                className="flex flex-col"
+                className="flex flex-col gap-3"
               >
                 {data.studyMaterials.map(
-                  ({ id: studyMaterialId, title, essays }) => {
+                  ({ id: studyMaterialId, title, author, essays }) => {
                     const isActive = params.studyMaterialId === studyMaterialId
                     return (
-                      <NavigationExerciseListItem
+                      <Accordion
                         key={studyMaterialId}
-                        exerciseNumber={1}
+                        type="single"
+                        value={isActive ? studyMaterialId : undefined}
+                        collapsible
+                        className="w-full rounded-xl border bg-card px-4"
                       >
-                        <Link
-                          prefetch="intent"
-                          to={`${studyMaterialId}`}
-                          className={cn(
-                            'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
-                            'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                            { 'bg-foreground text-background': isActive },
-                          )}
+                        <AccordionItem
+                          value={studyMaterialId}
+                          className="border-b-0"
                         >
-                          {title}
-                        </Link>
-                        {isActive ? (
-                          <motion.ul
-                            variants={listVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="ml-4 mt-4 flex flex-col"
-                          >
-                            {essays
-                              .filter(Boolean)
-                              .map(({ id: essayId, title }) => {
-                                const isActive = essayId === params.essayId
-                                return (
-                                  <NavigationExerciseStepListItem key={essayId}>
-                                    <Link
-                                      prefetch="intent"
-                                      to={`${studyMaterialId}/${essayId}`}
-                                      className={cn(
-                                        'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
-                                        'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
-                                        {
-                                          'bg-foreground text-background':
-                                            isActive,
-                                        },
-                                      )}
-                                    >
-                                      {title}
-                                    </Link>
-                                  </NavigationExerciseStepListItem>
-                                )
-                              })}
-                          </motion.ul>
-                        ) : null}
-                      </NavigationExerciseListItem>
+                          <AccordionTrigger className="font-medium group-hover:no-underline">
+                            <NavLink
+                              to={`/subjects/humanities/${subject.slug}/${studyMaterialId}`}
+                              className={({ isActive }) =>
+                                cn('flex flex-col', {
+                                  'text-primary': isActive,
+                                })
+                              }
+                            >
+                              <span className="group-hover:underline">
+                                {title}
+                              </span>
+                              {author?.name ? (
+                                <p
+                                  className={cn(
+                                    'text-start text-sm text-card-foreground/50 group-hover:no-underline',
+                                    { 'text-primary': isActive },
+                                  )}
+                                >
+                                  de {author.name}
+                                </p>
+                              ) : null}
+                            </NavLink>
+                          </AccordionTrigger>
+                          <AccordionContent className="flex flex-col gap-2">
+                            {essays.map((essay) => {
+                              return (
+                                <NavLink
+                                  className={({ isActive }) =>
+                                    cn('text-md hover:underline', {
+                                      'text-primary': isActive,
+                                    })
+                                  }
+                                  key={essay.id}
+                                  to={`/subjects/humanities/${subject.slug}/${studyMaterialId}/${essay.id}`}
+                                >
+                                  {essay.title}
+                                </NavLink>
+                              )
+                            })}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     )
                   },
                 )}
@@ -489,75 +481,15 @@ function Navigation({
             <div className="flex flex-grow flex-col justify-center">
               <div className="orientation-sideways w-full font-coHeadline text-sm font-medium">
                 {studyMaterial?.title ? (
-                  <Link to={`/${exNum}`}>{studyMaterial.title}</Link>
+                  <Link
+                    to={`/subjects/humanities/${subject.slug}/${studyMaterial.id}`}
+                  >
+                    {studyMaterial.title}
+                  </Link>
                 ) : null}
               </div>
             </div>
           )}
-
-          {user ? (
-            <SimpleTooltip content={isMenuOpened ? null : 'Acasă'}>
-              <Link
-                to={'/home'}
-                prefetch="intent"
-                className={cn(
-                  'flex h-14 w-full items-center space-x-3 border-t px-4 py-4 pl-[18px] no-underline hover:underline',
-                )}
-              >
-                <Icon name="house" className="flex-shrink-0" size="md" />
-                {isMenuOpened ? (
-                  <motion.div
-                    className="flex items-center whitespace-nowrap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    Acasă
-                  </motion.div>
-                ) : (
-                  <span className="sr-only">Acasă</span>
-                )}
-              </Link>
-            </SimpleTooltip>
-          ) : null}
-          {user ? (
-            <SimpleTooltip content={isMenuOpened ? null : 'Contul tău'}>
-              <Link
-                className="flex h-14 w-full items-center justify-start space-x-3 border-t px-4 py-4 text-center no-underline hover:underline"
-                to="/account"
-              >
-                {user?.image?.id ? (
-                  <img
-                    alt={user.name ?? user.username}
-                    src={getUserImgSrc(user.image.id)}
-                    className="h-full rounded-full"
-                  />
-                ) : (
-                  <Icon
-                    name="mindle-head"
-                    className="flex-shrink-0"
-                    size="lg"
-                  />
-                )}
-                {isMenuOpened ? (
-                  <motion.div
-                    className="flex items-center whitespace-nowrap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    Contul tău
-                  </motion.div>
-                ) : (
-                  <span className="sr-only">Contul tău</span>
-                )}
-              </Link>
-            </SimpleTooltip>
-          ) : null}
-
-          <div className="mb-4 w-full self-start border-t pl-3 pt-[15px]">
-            <ThemeSwitch
-              userPreference={rootData?.requestInfo.userPrefs.theme}
-            />
-          </div>
         </div>
       </motion.div>
     </nav>
@@ -565,66 +497,28 @@ function Navigation({
 }
 
 function NavToggle({
-  title,
   isMenuOpened,
   setMenuOpened,
   menuControls,
 }: {
-  title: string
   isMenuOpened: boolean
   setMenuOpened: (value: boolean) => void
   menuControls?: AnimationControls
 }) {
-  const path01Variants = {
-    open: { d: 'M3.06061 2.99999L21.0606 21' },
-    closed: { d: 'M0 9.5L24 9.5' },
-  }
-  const path02Variants = {
-    open: { d: 'M3.00006 21.0607L21 3.06064' },
-    moving: { d: 'M0 14.5L24 14.5' },
-    closed: { d: 'M0 14.5L15 14.5' },
-  }
-  const path01Controls = useAnimationControls()
-  const path02Controls = useAnimationControls()
-
-  async function toggleMenu() {
+  const toggleMenu = React.useCallback(() => {
     void menuControls?.start(isMenuOpened ? 'close' : 'open')
     setMenuOpened(!isMenuOpened)
-    if (isMenuOpened) {
-      void path01Controls.start(path01Variants.closed)
-      await path02Controls.start(path02Variants.moving)
-      void path02Controls.start(path02Variants.closed)
-    } else {
-      await path02Controls.start(path02Variants.moving)
-      void path01Controls.start(path01Variants.open)
-      void path02Controls.start(path02Variants.open)
-    }
-  }
+  }, [isMenuOpened, menuControls, setMenuOpened])
 
   const latestToggleMenu = React.useRef(toggleMenu)
   React.useEffect(() => {
     latestToggleMenu.current = toggleMenu
-  })
-
-  React.useEffect(() => {
-    if (!isMenuOpened) return
-
-    function handleKeyUp(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        void latestToggleMenu.current()
-      }
-    }
-    document.addEventListener('keyup', handleKeyUp)
-    return () => document.removeEventListener('keyup', handleKeyUp)
-  }, [isMenuOpened])
+  }, [toggleMenu])
 
   return (
     <div
       className={cn(
-        'relative inline-flex h-14 flex-shrink-0 items-center justify-between overflow-hidden border-r sm:w-full sm:border-b sm:border-r-0',
-        {
-          'w-full': isMenuOpened,
-        },
+        'relative inline-flex h-14 flex-shrink-0 items-center justify-between overflow-hidden border-r sm:w-full sm:border-r-0',
       )}
     >
       <button
@@ -632,33 +526,8 @@ function NavToggle({
         aria-label="Open Navigation menu"
         onClick={toggleMenu}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <motion.path
-            {...path01Variants.closed}
-            animate={path01Controls}
-            transition={{ duration: 0.2 }}
-            stroke="currentColor"
-            strokeWidth={1.5}
-          />
-          <motion.path
-            {...path02Variants.closed}
-            animate={path02Controls}
-            transition={{ duration: 0.2 }}
-            stroke="currentColor"
-            strokeWidth={1.5}
-          />
-        </svg>
+        <Icon name={isMenuOpened ? 'chevrons-left' : 'chevrons-right'} />
       </button>
-      {isMenuOpened && (
-        <motion.p
-          transition={{ delay: 0.2 }}
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute right-5 whitespace-nowrap font-mono text-sm uppercase"
-        >
-          <Link to="/">{title}</Link>
-        </motion.p>
-      )}
     </div>
   )
 }
