@@ -9,6 +9,7 @@ import {
   Form,
   useSearchParams,
   useSubmit,
+  useLocation,
 } from '@remix-run/react'
 import {
   motion,
@@ -17,6 +18,7 @@ import {
 } from 'framer-motion'
 import * as React from 'react'
 import { useId } from 'react'
+import { ExistingSearchParams } from 'remix-utils/existing-search-params'
 import { makeMediaQueryStore } from '#app/components/media-query.js'
 
 import {
@@ -85,6 +87,7 @@ export function SearchBar({
   const isSubmitting = useIsPending({
     formMethod: 'GET',
   })
+  const location = useLocation()
 
   const handleFormChange = useDebounce((form: HTMLFormElement) => {
     submit(form)
@@ -93,9 +96,11 @@ export function SearchBar({
   return (
     <Form
       method="GET"
+      action={location.pathname}
       className="mx-6 flex"
       onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
     >
+      <ExistingSearchParams exclude={['search']} />
       {isMenuOpened ? (
         <motion.div
           className="flex w-full flex-1 gap-2 rounded-xl border bg-card p-2"
