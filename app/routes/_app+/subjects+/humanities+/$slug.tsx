@@ -19,6 +19,7 @@ import {
 import * as React from 'react'
 import { useId } from 'react'
 import { ExistingSearchParams } from 'remix-utils/existing-search-params'
+import { z } from 'zod'
 import { makeMediaQueryStore } from '#app/components/media-query.js'
 
 import {
@@ -36,22 +37,59 @@ import { prisma } from '#app/utils/db.server.js'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
 import { type IconName } from '@/icon-name'
 
+const RawIdsResultSchema = z.array(z.object({ id: z.string() }))
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const searchParams = new URL(request.url).searchParams
   await requireUserId(request)
-  const search = searchParams.get('search')
+  const searchTerm = searchParams.get('search')
   const subject = await prisma.subject.findUnique({
     where: { slug: params.slug },
   })
   invariantResponse(subject, 'Subject not found', { status: 404 })
 
-  if (search) {
+  let studyMaterialSearchIds: string[] | undefined
+  let essaySearchIds: string[] | undefined
+  if (searchTerm) {
+    const like = `%${searchTerm ?? ''}%`
+    const studyMaterialSearchQuery = prisma.$queryRaw`
+      SELECT s."id"
+      FROM study_material s
+      WHERE s."title" LIKE ${like} AND s."subjectId" = ${subject.id}`
+
+    const essaySearchQuery = prisma.$queryRaw`
+      SELECT e."id"
+      FROM essay e
+      LEFT JOIN study_material s ON e."studyMaterialId" = s.id
+      WHERE e."title" LIKE ${like} AND s."subjectId" = ${subject.id}`
+
+    const [rawStudyMaterialIds, rawEssayIds] = await Promise.all([
+      studyMaterialSearchQuery,
+      essaySearchQuery,
+    ])
+    const smResult = RawIdsResultSchema.safeParse(rawStudyMaterialIds)
+    const eResult = RawIdsResultSchema.safeParse(rawEssayIds)
+    if (smResult.success)
+      studyMaterialSearchIds = smResult.data.map((s) => s.id)
+    if (eResult.success) essaySearchIds = eResult.data.map((e) => e.id)
   }
 
-  const studyMaterials = await prisma.studyMaterial.findMany({
-    where: { subjectId: subject.id },
-    include: { essays: true, author: true },
-  })
+  const studyMaterials = (
+    await prisma.studyMaterial.findMany({
+      where: {
+        subjectId: subject.id,
+        ...(studyMaterialSearchIds?.length
+          ? { id: { in: studyMaterialSearchIds } }
+          : {}),
+      },
+      include: {
+        essays: essaySearchIds
+          ? { where: { id: { in: essaySearchIds } } }
+          : true,
+        author: true,
+      },
+    })
+  ).filter((s) => s.essays.length)
 
   return json({ studyMaterials, workshopTitle: 'Mindle', subject })
 }
@@ -323,7 +361,12 @@ function Navigation({
                       <Accordion
                         key={studyMaterialId}
                         type="single"
-                        value={isActive ? studyMaterialId : undefined}
+                        value={
+                          // Auto expand all accordions if user is searching to show all resulting essays
+                          isActive || !!searchParams.get('search')
+                            ? studyMaterialId
+                            : undefined
+                        }
                         collapsible
                         className="w-full rounded-xl border bg-card px-4"
                       >
