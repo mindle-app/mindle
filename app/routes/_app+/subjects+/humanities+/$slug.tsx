@@ -247,6 +247,7 @@ function Navigation({
   const data = useLoaderData<typeof loader>()
   const { subject } = data
   const params = useParams()
+  const [searchParams] = useSearchParams()
 
   const studyMaterial = data.studyMaterials.find(
     (e) => e.id === params.studyMaterialId,
@@ -332,7 +333,7 @@ function Navigation({
                         >
                           <AccordionTrigger className="font-medium group-hover:no-underline">
                             <NavLink
-                              to={`/subjects/humanities/${subject.slug}/${studyMaterialId}`}
+                              to={`/subjects/humanities/${subject.slug}/${studyMaterialId}?${searchParams.toString()}`}
                               className={({ isActive }) =>
                                 cn('flex flex-col', {
                                   'text-primary': isActive,
@@ -364,7 +365,7 @@ function Navigation({
                                     })
                                   }
                                   key={essay.id}
-                                  to={`/subjects/humanities/${subject.slug}/${studyMaterialId}/${essay.id}`}
+                                  to={`/subjects/humanities/${subject.slug}/${studyMaterialId}/${essay.id}?${searchParams.toString()}`}
                                 >
                                   {essay.title}
                                 </NavLink>
