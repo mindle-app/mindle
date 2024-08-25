@@ -25,6 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '#app/components/ui/accordion.js'
+import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { Input } from '#app/components/ui/input.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
@@ -32,7 +33,26 @@ import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
 import { type IconName } from '@/icon-name'
-import { Button } from '#app/components/ui/button.js'
+
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const searchParams = new URL(request.url).searchParams
+  await requireUserId(request)
+  const search = searchParams.get('search')
+  const subject = await prisma.subject.findUnique({
+    where: { slug: params.slug },
+  })
+  invariantResponse(subject, 'Subject not found', { status: 404 })
+
+  if (search) {
+  }
+
+  const studyMaterials = await prisma.studyMaterial.findMany({
+    where: { subjectId: subject.id },
+    include: { essays: true, author: true },
+  })
+
+  return json({ studyMaterials, workshopTitle: 'Mindle', subject })
+}
 
 const inputVariants = {
   visible: {
@@ -57,7 +77,6 @@ export function SearchBar({
   status: 'idle' | 'pending' | 'success' | 'error'
   autoFocus?: boolean
   autoSubmit?: boolean
-  action?: string
   isMenuOpened: boolean
 }) {
   const id = useId()
@@ -74,12 +93,12 @@ export function SearchBar({
   return (
     <Form
       method="GET"
-      className="mx-6 flex gap-2"
+      className="mx-6 flex"
       onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
     >
       {isMenuOpened ? (
         <motion.div
-          className="flex flex-1 gap-2 rounded-xl border bg-card p-2"
+          className="flex w-full flex-1 gap-2 rounded-xl border bg-card p-2"
           variants={inputVariants}
           initial={'hidden'}
           animate={'visible'}
@@ -104,7 +123,6 @@ export function SearchBar({
           </StatusButton>
         </motion.div>
       ) : null}
-      <div></div>
     </Form>
   )
 }
@@ -152,20 +170,6 @@ function NavToggle({
       </button>
     </div>
   )
-}
-
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  await requireUserId(request)
-  const subject = await prisma.subject.findUnique({
-    where: { slug: params.slug },
-  })
-  invariantResponse(subject, 'Subject not found', { status: 404 })
-  const studyMaterials = await prisma.studyMaterial.findMany({
-    where: { subjectId: subject.id },
-    include: { essays: true, author: true },
-  })
-
-  return json({ studyMaterials, workshopTitle: 'Mindle', subject })
 }
 
 const useIsWide = makeMediaQueryStore('(min-width: 640px)', true)
@@ -275,11 +279,10 @@ function Navigation({
       >
         {isMenuOpened ? (
           <SearchBar
-            setMenuOpened={setMenuOpened}
             status={'idle'}
             autoFocus
+            autoSubmit={true}
             isMenuOpened={isMenuOpened}
-            menuControls={menuControls}
           />
         ) : (
           <Button
