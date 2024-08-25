@@ -1,6 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { ElementScrollRestoration } from '@epic-web/restore-scroll'
-import { TabsList, Tabs, TabsContent, TabsTrigger } from '@radix-ui/react-tabs'
+import { Tabs, TabsContent } from '@radix-ui/react-tabs'
 import { type LinksFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { json, Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
@@ -8,6 +8,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/index.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
+import { Card, CardDescription, CardTitle } from '#app/components/ui/card.js'
+import { Icon } from '#app/components/ui/icon.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
@@ -111,6 +113,7 @@ export default function StudyMaterial() {
               <Link
                 id={`${p.id}-paragraph`}
                 preventScrollReset
+                className="relative"
                 prefetch="intent"
                 to={`?${withParam(searchParams, 'selectedParagraph', p.id)}`}
                 key={p.id}
@@ -119,12 +122,23 @@ export default function StudyMaterial() {
                   dangerouslySetInnerHTML={{ __html: p.content }}
                   key={p.id}
                   className={cn(
-                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-muted',
+                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-primary/20 dark:hover:bg-primary/30',
                     {
-                      'bg-muted/50': selectedParagraphId === p.id,
+                      'bg-primary/10 dark:bg-primary/20':
+                        selectedParagraphId === p.id,
                     },
                   )}
                 />
+                <div
+                  className={cn(
+                    'absolute -right-2 -top-2 z-50 hidden items-center justify-center rounded-full border border-primary bg-card p-2',
+                    {
+                      flex: selectedParagraphId === p.id,
+                    },
+                  )}
+                >
+                  <Icon name={'mindle-head'} size={'md'} />
+                </div>
               </Link>
             ))}
           </article>
@@ -152,7 +166,22 @@ export default function StudyMaterial() {
                   content={explanation}
                 />
               ) : (
-                'Selecteaza un paragraf'
+                <Card className="flex flex-col items-center justify-center gap-5 border-primary/20 p-9">
+                  <CardTitle className="">
+                    <Icon
+                      name={'highlighter'}
+                      className="h-16 w-16 text-primary"
+                    />
+                  </CardTitle>
+
+                  <CardDescription>
+                    <CardTitle className="mb-2 text-center font-coHeadline text-xl text-card-foreground">
+                      Selecteaza un paragraf
+                    </CardTitle>
+                    Fiecare paragraf are o explicație legată de mesaj, barem sau
+                    context.
+                  </CardDescription>
+                </Card>
               )}
             </TabsContent>
             <TabsContent
