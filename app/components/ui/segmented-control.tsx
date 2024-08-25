@@ -54,7 +54,7 @@ export const SegmentedControlRoot = React.forwardRef<
     <ToggleGroupPrimitive.Root
       ref={forwardedRef}
       className={cn(
-        'align-center group relative isolate inline-grid min-w-max auto-cols-fr grid-flow-col items-stretch rounded-full border border-active-border p-0 text-center text-foreground',
+        'align-center group relative isolate inline-grid min-w-max auto-cols-fr grid-flow-col items-stretch rounded-full border border-primary/30 p-0 text-center text-foreground',
         className,
       )}
       onValueChange={(value) => {
@@ -106,7 +106,7 @@ export const SegmentedControlItem = React.forwardRef<
   <ToggleGroupPrimitive.Item
     ref={forwardedRef}
     className={cn(
-      'group/item flex select-none items-stretch rounded-2xl p-2',
+      'group/item flex select-none items-stretch rounded-2xl px-6 py-4',
       'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-primary',
       className,
     )}

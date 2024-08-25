@@ -197,7 +197,7 @@ function App() {
     >
       <div className="relative flex h-screen flex-col justify-between">
         <Outlet />
-        <div className="fixed bottom-2 right-2">
+        <div className="fixed bottom-2 right-2 z-50">
           <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
         </div>
       </div>

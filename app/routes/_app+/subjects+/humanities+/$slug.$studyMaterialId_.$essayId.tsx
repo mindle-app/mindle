@@ -79,7 +79,7 @@ function useTimeLeft(
 }
 
 export default function StudyMaterial() {
-  const { essay, titleBits } = useLoaderData<typeof loader>()
+  const { essay } = useLoaderData<typeof loader>()
   const [timerEnd, setTimerEnd] = useState<dayjs.Dayjs | null>(null)
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('preview') ?? tabs[0]
@@ -95,22 +95,6 @@ export default function StudyMaterial() {
     <div className="flex h-full max-w-full flex-grow flex-col">
       <main className="flex flex-grow flex-col sm:grid sm:h-full sm:min-h-[800px] sm:grid-cols-1 sm:grid-rows-2 md:min-h-[unset] lg:grid-cols-2 lg:grid-rows-1">
         <div className="relative flex h-full flex-col sm:col-span-1 sm:row-span-1 sm:h-full lg:border-r">
-          <h1 className="h-14 border-b pl-10 pr-5 text-sm font-medium leading-tight">
-            <div className="flex h-14 flex-wrap items-center justify-between gap-x-2 py-2">
-              <div className="flex items-center justify-start gap-x-2 uppercase">
-                <Link
-                  to={`/study/${titleBits.studyMaterialId}`}
-                  className="hover:underline"
-                >
-                  {titleBits.studyMaterialTitle}
-                </Link>
-                {'/'}
-                <Link to="." className="hover:underline">
-                  {titleBits.essayTitle}
-                </Link>
-              </div>
-            </div>
-          </h1>
           <article
             id={essay.id}
             key={essay.id}
@@ -148,38 +132,11 @@ export default function StudyMaterial() {
             elementQuery={`#${essay.id}`}
             key={`scroll-${essay.id}`}
           />
-
-          <div className="flex h-16 justify-between border-b-4 border-t lg:border-b-0">
-            <div>
-              <div className="h-full"></div>
-            </div>
-          </div>
         </div>
         <Tabs
           className="relative flex h-full flex-col overflow-y-auto sm:col-span-1 sm:row-span-1"
           value={activeTab}
-          // intentionally no onValueChange here because the Link will trigger the
-          // change.
         >
-          <TabsList className="scrollbar-thin scrollbar-thumb-scrollbar h-14 min-h-14 overflow-x-hidden border-b">
-            {tabs.map((tab) => {
-              return (
-                <TabsTrigger className="h-14" key={tab} value={tab} asChild>
-                  <Link
-                    className={cn(
-                      'relative inline-block h-14 px-6 py-4 font-coHeadline text-sm outline-none focus:bg-foreground/80 focus:text-background/80 radix-state-active:z-10 radix-state-active:bg-primary radix-state-active:text-background radix-state-active:hover:bg-primary/80 radix-state-active:hover:text-background/80 radix-state-inactive:hover:bg-foreground/20 radix-state-inactive:hover:text-foreground/80',
-                    )}
-                    id={`${tab}-tab`}
-                    preventScrollReset
-                    prefetch="intent"
-                    to={`?${withParam(searchParams, 'preview', tab)}`}
-                  >
-                    {tab}
-                  </Link>
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
           <div className="relative z-10 flex min-h-96 flex-grow flex-col overflow-y-auto">
             <TabsContent
               value="explicatie"

@@ -1,4 +1,4 @@
-import { Link, Outlet, useSearchParams } from '@remix-run/react'
+import { Link, Outlet, useParams, useSearchParams } from '@remix-run/react'
 import { Logo } from '#app/components/logo'
 import { Button } from '#app/components/ui/button'
 
@@ -10,9 +10,34 @@ import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc'
 import { useOptionalUser } from '#app/utils/user'
 
+// This control is shown only on a humanities subject essay page. E.g
+// /subjects/humanities/$slug/$studyMaterialId/$essayId
+function HumanitiesEssayTabs() {
+  const params = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  if (!params.essayId) return null
+
+  return (
+    <SegmentedControlRoot
+      defaultValue={searchParams.get('preview') ?? 'explicatie'}
+      onValueChange={(value) => {
+        searchParams.set('preview', value)
+        setSearchParams(searchParams)
+      }}
+    >
+      <SegmentedControlItem value={'explicatie'}>
+        Explicatie
+      </SegmentedControlItem>
+      <SegmentedControlItem value={'recall'}>Recall</SegmentedControlItem>
+      <SegmentedControlItem value={'mindmap'}>Mindmap</SegmentedControlItem>
+      <SegmentedControlItem value={'chat'}>Chat</SegmentedControlItem>
+    </SegmentedControlRoot>
+  )
+}
+
 export function NavHeader() {
   const user = useOptionalUser()
-  const [searchParams, setSearchParams] = useSearchParams()
   return (
     <header className={cn('w-full border-b px-8 py-6 text-primary-foreground')}>
       <nav
@@ -23,19 +48,7 @@ export function NavHeader() {
         <Link to={'/'} prefetch="intent">
           <Logo className={'w-25 h-25 fill-foreground'} />
         </Link>
-        <SegmentedControlRoot
-          defaultValue={searchParams.get('preview') ?? 'explicatie'}
-          onValueChange={(value) => {
-            searchParams.set('preview', value)
-            setSearchParams(searchParams)
-          }}
-        >
-          <SegmentedControlItem value={'explicatie'}>
-            Explicatie
-          </SegmentedControlItem>
-          <SegmentedControlItem value={'recall'}>Recall</SegmentedControlItem>
-          <SegmentedControlItem value={'mindmap'}>Mindmap</SegmentedControlItem>
-        </SegmentedControlRoot>
+        <HumanitiesEssayTabs />
         <div className="flex items-center gap-10">
           {user ? (
             <UserDropdown
