@@ -167,17 +167,10 @@ export default function StudyMaterial() {
                     )}
                     content={explanation}
                   />
-                  <div className="flex w-full justify-center gap-2 px-16">
+                  <div className="flex w-full justify-start gap-2 px-16">
                     <Button
                       size={'lg'}
-                      className="w-full max-w-md justify-between"
-                    >
-                      <span>Salvează în notițe</span>
-                      <Icon name={'bookmark-filled'} />
-                    </Button>
-                    <Button
-                      size={'lg'}
-                      className="w-full max-w-md justify-between border border-primary bg-primary/10 text-primary"
+                      className="w-full max-w-[16rem] justify-between border border-primary bg-primary/10 text-primary"
                       variant={'ghost'}
                       onClick={() =>
                         copyRichText(explanation).then(() =>
