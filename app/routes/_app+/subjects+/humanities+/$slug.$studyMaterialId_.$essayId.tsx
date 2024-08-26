@@ -220,9 +220,29 @@ export default function StudyMaterial() {
                   />
                 </div>
               ) : (
-                <Button onClick={() => setTimerEnd(dayjs().add(5, 'minute'))}>
-                  Incepe recall
-                </Button>
+                <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
+                  <CardTitle className="">
+                    <Icon
+                      name={'pen-tool'}
+                      className="h-16 w-16 text-primary"
+                    />
+                  </CardTitle>
+
+                  <CardDescription className="text-center">
+                    <CardTitle className="mb-2 font-coHeadline text-xl text-card-foreground">
+                      Începe o sesiune de recall
+                    </CardTitle>
+                    Scrie tot ce îți amintești din text în 5 minute pentru a
+                    consolida informațiile în memorie - cea mai eficientă
+                    tehnică de învățare dovedită științific.
+                  </CardDescription>
+                  <Button
+                    className="w-full"
+                    onClick={() => setTimerEnd(dayjs().add(5, 'minute'))}
+                  >
+                    Start recall
+                  </Button>
+                </Card>
               )}
             </TabsContent>
             <TabsContent
