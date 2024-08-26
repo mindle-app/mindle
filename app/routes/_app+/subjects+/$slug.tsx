@@ -6,12 +6,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
   invariantResponse(params.slug, 'No subject id presented', {
     status: 404,
   })
-  // TODO: Change to findUnique when unique constraint will be applied on slug
-  const subject = await prisma.subject.findFirst({
+  const subject = await prisma.subject.findUnique({
     where: { slug: params.slug },
   })
 
-  return redirect(
-    `/subjects/${subject?.type ?? 'sciences'}/${params.subjectId}`,
-  )
+  invariantResponse(subject, 'Subject not found')
+
+  return redirect(`/subjects/${subject.type ?? 'sciences'}/${params.slug}`)
 }

@@ -96,7 +96,7 @@ export default function StudyMaterial() {
   return (
     <div className="flex h-full max-w-full flex-grow flex-col">
       <main className="flex flex-grow flex-col sm:grid sm:h-full sm:min-h-[800px] sm:grid-cols-1 sm:grid-rows-2 md:min-h-[unset] lg:grid-cols-2 lg:grid-rows-1">
-        <div className="relative flex h-full flex-col sm:col-span-1 sm:row-span-1 sm:h-full lg:border-r">
+        <div className="relative flex h-full flex-col border-b sm:col-span-1 sm:row-span-1 sm:h-full lg:border-b-0 lg:border-r">
           <article
             id={essay.id}
             key={essay.id}
@@ -166,7 +166,7 @@ export default function StudyMaterial() {
                   content={explanation}
                 />
               ) : (
-                <Card className="flex flex-col items-center justify-center gap-5 border-primary/20 p-9">
+                <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
                   <CardTitle className="">
                     <Icon
                       name={'highlighter'}
@@ -174,8 +174,8 @@ export default function StudyMaterial() {
                     />
                   </CardTitle>
 
-                  <CardDescription>
-                    <CardTitle className="mb-2 text-center font-coHeadline text-xl text-card-foreground">
+                  <CardDescription className="text-center">
+                    <CardTitle className="mb-2 font-coHeadline text-xl text-card-foreground">
                       Selecteaza un paragraf
                     </CardTitle>
                     Fiecare paragraf are o explicație legată de mesaj, barem sau
