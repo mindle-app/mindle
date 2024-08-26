@@ -14,7 +14,9 @@ FROM base as deps
 
 WORKDIR /myapp
 
+# Include patches https://www.npmjs.com/package/patch-package
 COPY patches ./patches
+
 COPY package.json package-lock.json .npmrc ./
 
 # Mount the secret and set it as an environment variable and run the build
