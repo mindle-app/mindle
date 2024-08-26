@@ -345,3 +345,34 @@ export function normalizeRomanianName(name: string) {
     .map((char) => diacriticMap[char] ?? char)
     .join('')
 }
+
+export function stripHtmlTags(html: string) {
+  return html.replace(/<[^>]*>/g, '')
+}
+
+/** Copy richly formatted text.
+ *
+ * @param rich - the text formatted as HTML
+ * @param plain - a plain text fallback
+ */
+export async function copyRichText(rich: string, plain = stripHtmlTags(rich)) {
+  if (typeof ClipboardItem !== 'undefined') {
+    // Shiny new Clipboard API, not fully supported in Firefox.
+    // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API#browser_compatibility
+    const html = new Blob([rich], { type: 'text/html' })
+    const text = new Blob([plain], { type: 'text/plain' })
+    const data = new ClipboardItem({ 'text/html': html, 'text/plain': text })
+    await navigator.clipboard.write([data])
+  } else {
+    const listener = (e: ClipboardEvent) => {
+      e.clipboardData?.setData('text/html', rich)
+      e.clipboardData?.setData('text/plain', plain)
+      e.preventDefault()
+    }
+    // Fallback using the deprecated `document.execCommand`.
+    // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#browser_compatibility
+    document.addEventListener('copy', listener)
+    document.execCommand('copy')
+    document.removeEventListener('copy', listener)
+  }
+}

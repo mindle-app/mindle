@@ -21,10 +21,7 @@ import { Label } from '#app/components/ui/label.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 
 import { prisma } from '#app/utils/db.server.js'
-
-function stripHtmlTags(html: string) {
-  return html.replace(/<[^>]*>/g, '')
-}
+import { stripHtmlTags } from '#app/utils/misc.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)

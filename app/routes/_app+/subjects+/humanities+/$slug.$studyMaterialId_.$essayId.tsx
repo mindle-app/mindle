@@ -12,8 +12,9 @@ import { Card, CardDescription, CardTitle } from '#app/components/ui/card.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
-import { cn } from '#app/utils/misc.js'
+import { cn, copyRichText } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
+import { toast as showToast } from 'sonner'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -154,17 +155,41 @@ export default function StudyMaterial() {
           <div className="relative z-10 flex min-h-96 flex-grow flex-col overflow-y-auto">
             <TabsContent
               value="explicatie"
-              className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
+              className="flex w-full flex-grow justify-center self-start pt-9 radix-state-inactive:hidden"
             >
               {explanation ? (
-                <div
-                  dangerouslySetInnerHTML={{ __html: explanation }}
-                  key={explanation}
-                  className={cn(
-                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors',
-                  )}
-                  content={explanation}
-                />
+                <div className="flex w-full flex-col items-center gap-9">
+                  <div
+                    dangerouslySetInnerHTML={{ __html: explanation }}
+                    key={explanation}
+                    className={cn(
+                      'default-transition ProseMirror rounded border-none bg-background p-2 px-0 text-foreground transition-colors',
+                    )}
+                    content={explanation}
+                  />
+                  <div className="flex w-full justify-center gap-2 px-16">
+                    <Button
+                      size={'lg'}
+                      className="w-full max-w-md justify-between"
+                    >
+                      <span>Salvează în notițe</span>
+                      <Icon name={'bookmark-filled'} />
+                    </Button>
+                    <Button
+                      size={'lg'}
+                      className="w-full max-w-md justify-between border border-primary bg-primary/10 text-primary"
+                      variant={'ghost'}
+                      onClick={() =>
+                        copyRichText(explanation).then(() =>
+                          showToast('Textul a fost copiat cu success'),
+                        )
+                      }
+                    >
+                      Copiază in clipboard
+                      <Icon name={'clipboard'} />
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
                   <CardTitle className="">
