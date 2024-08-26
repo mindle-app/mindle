@@ -14,7 +14,8 @@ FROM base as deps
 
 WORKDIR /myapp
 
-ADD patches package.json package-lock.json .npmrc ./
+COPY patches ./patches
+COPY package.json package-lock.json .npmrc ./
 
 # Mount the secret and set it as an environment variable and run the build
 RUN --mount=type=secret,id=TIPTAP_PRO_TOKEN \
