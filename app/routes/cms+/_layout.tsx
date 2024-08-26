@@ -8,6 +8,8 @@ import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc.tsx'
 import { requireUserWithRole } from '#app/utils/permissions.server.js'
 import { useOptionalUser } from '#app/utils/user.js'
+import { useState } from 'react'
+import { Icon } from '#app/components/ui/icon.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserWithRole(request, 'admin')
@@ -66,12 +68,39 @@ const items = [
   { name: 'Authors', to: '/cms/authors' },
 ]
 
+export function MobileSidepanel() {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <aside className="flex w-full flex-col items-center justify-center border-b p-2 lg:hidden">
+      <Button onClick={() => setIsOpen(!isOpen)}>
+        <Icon name={isOpen ? 'chevrons-up' : 'chevrons-down'} />
+      </Button>
+
+      {isOpen ? (
+        <nav className="flex flex-col items-start gap-4">
+          {items.map((i) => (
+            <NavLink
+              onClick={() => setIsOpen(false)}
+              key={i.name}
+              className={linkClasses}
+              to={i.to}
+            >
+              {i.name}
+            </NavLink>
+          ))}
+        </nav>
+      ) : null}
+    </aside>
+  )
+}
+
 export default function CmsLayout() {
   return (
     <div className="relative flex min-h-screen flex-col items-center">
       <NavHeader />
+      <MobileSidepanel />
       <div className="flex w-full flex-grow pt-5">
-        <aside className="border-r p-2">
+        <aside className="hidden border-r p-2 lg:block">
           <nav className="flex flex-col items-start gap-4">
             {items.map((i) => (
               <NavLink key={i.name} className={linkClasses} to={i.to}>
@@ -80,6 +109,7 @@ export default function CmsLayout() {
             ))}
           </nav>
         </aside>
+
         <div className="flex w-full flex-grow pl-4 pt-2">
           <Outlet />
         </div>

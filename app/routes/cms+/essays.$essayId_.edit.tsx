@@ -179,7 +179,7 @@ export default function EssayCMS() {
         <FormProvider context={form.context}>
           <Form
             method={'POST'}
-            className="flex h-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-4"
+            className="flex h-full w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden pb-4 pr-2 pt-4 lg:px-4"
             {...getFormProps(form)}
             encType="multipart/form-data"
           >
@@ -226,10 +226,10 @@ export default function EssayCMS() {
                 selectValueProps={{ placeholder: 'Select study material' }}
               />
             </div>
-            <div>
+            <div className="w-full">
               <Label>Paragraphs</Label>
 
-              <ul className="flex flex-col gap-4 pt-4">
+              <ul className="flex w-full flex-col gap-4 pt-4">
                 {paragraphs.map((p, index) => {
                   const paragraph = p.getFieldset()
                   return (
@@ -252,7 +252,7 @@ export default function EssayCMS() {
                         {...getInputProps(paragraph.id, { type: 'hidden' })}
                       />
 
-                      <div className="flex w-full flex-col gap-1 rounded border pl-10">
+                      <div className="flex w-full flex-col gap-1 rounded border pl-2 lg:pl-10">
                         <Field
                           className="max-w-[100px]"
                           labelProps={{ children: 'Order' }}
@@ -264,7 +264,9 @@ export default function EssayCMS() {
                           errors={paragraph.order.errors}
                         />
                         <RichTextField
-                          editorProps={{ className: 'w-full min-w-[800px] ' }}
+                          editorProps={{
+                            className: 'w-full  lg:min-w-[800px] ',
+                          }}
                           labelProps={{ children: 'Content' }}
                           meta={paragraph.content}
                           errors={paragraph.content.errors}
