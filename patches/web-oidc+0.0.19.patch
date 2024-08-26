@@ -1,0 +1,972 @@
+diff --git a/node_modules/web-oidc/build/client.js b/node_modules/web-oidc/build/client.js
+index b178e04..79a6704 100644
+--- a/node_modules/web-oidc/build/client.js
++++ b/node_modules/web-oidc/build/client.js
+@@ -1,305 +1,306 @@
+-import { z } from "zod";
+-import { Issuer } from "./issuer.js";
+-import { TokenSet, TokenSetValueSchema } from "./token-set.js";
+-import { OIDCError } from "./error.js";
++import { z } from 'zod'
++import { Issuer } from './issuer.js'
++import { TokenSet, TokenSetValueSchema } from './token-set.js'
++import { OIDCError } from './error.js'
+ export class Client {
+-    #issuer;
+-    #options;
+-    constructor(issuer, options) {
+-        this.#issuer = issuer;
+-        this.#options = options;
++  #issuer
++  #options
++  constructor(issuer, options) {
++    this.#issuer = issuer
++    this.#options = options
++  }
++  get issuer() {
++    return this.#issuer
++  }
++  authorizationUrl({
++    redirect_uri = this.#options.redirect_uri,
++    response_type = this.#options.response_type,
++    scope = 'openid',
++    client_id = this.#options.client_id,
++    state,
++    ...options
++  }) {
++    let result = AuthenticationRequestParamsSchema.safeParse({
++      redirect_uri,
++      response_type,
++      scope,
++      state,
++      ...options,
++    })
++    if (!result.success) {
++      console.log(result.error)
++      throw new Error('Invalid arguments for Client#authorizationUrl', {
++        cause: result.error,
++      })
+     }
+-    get issuer() {
+-        return this.#issuer;
++    let endpoint = assert(this.#issuer, 'authorization_endpoint')
++    let url = new URL(endpoint)
++    // required
++    url.searchParams.set('response_type', response_type)
++    url.searchParams.set('client_id', client_id)
++    url.searchParams.set('scope', result.data.scope)
++    url.searchParams.set('redirect_uri', redirect_uri)
++    url.searchParams.set('state', state)
++    // optionals
++    for (let option in options) {
++      let value = options[option]
++      if (!value) continue
++      else if (typeof value === 'string') {
++        url.searchParams.set(option, value)
++      } else if (typeof value === 'number') {
++        url.searchParams.set(option, value.toString())
++      }
++      continue
+     }
+-    authorizationUrl({ redirect_uri = this.#options.redirect_uri, response_type = this.#options.response_type, scope = "openid", client_id = this.#options.client_id, state, ...options }) {
+-        let result = AuthenticationRequestParamsSchema.safeParse({
+-            redirect_uri,
+-            response_type,
+-            scope,
+-            state,
+-            ...options,
+-        });
+-        if (!result.success) {
+-            throw new Error("Invalid arguments for Client#authorizationUrl", {
+-                cause: result.error,
+-            });
+-        }
+-        let endpoint = assert(this.#issuer, "authorization_endpoint");
+-        let url = new URL(endpoint);
+-        // required
+-        url.searchParams.set("response_type", response_type);
+-        url.searchParams.set("client_id", client_id);
+-        url.searchParams.set("scope", result.data.scope);
+-        url.searchParams.set("redirect_uri", redirect_uri);
+-        url.searchParams.set("state", state);
+-        // optionals
+-        for (let option in options) {
+-            let value = options[option];
+-            if (!value)
+-                continue;
+-            else if (typeof value === "string") {
+-                url.searchParams.set(option, value);
+-            }
+-            else if (typeof value === "number") {
+-                url.searchParams.set(option, value.toString());
+-            }
+-            continue;
+-        }
+-        return url;
++    return url
++  }
++  async userinfo(accessToken, options = { method: 'GET', via: 'header' }) {
++    let endpoint = assert(this.#issuer, 'userinfo_endpoint')
++    let method = (options.method ?? 'GET').toUpperCase()
++    if (options.method !== 'GET' && options.method !== 'POST') {
++      throw new TypeError('Client#userinfo method can only be POST or a GET.')
+     }
+-    async userinfo(accessToken, options = { method: "GET", via: "header" }) {
+-        let endpoint = assert(this.#issuer, "userinfo_endpoint");
+-        let method = (options.method ?? "GET").toUpperCase();
+-        if (options.method !== "GET" && options.method !== "POST") {
+-            throw new TypeError("Client#userinfo method can only be POST or a GET.");
+-        }
+-        if (options.via === "body" && options.method === "GET") {
+-            throw new Error("Cannot send access token in body with GET method.");
+-        }
+-        let url = new URL(endpoint);
+-        let headers = new Headers(options.headers);
+-        headers.set("accept", "application/json");
+-        let init = { method, headers };
+-        let token = accessToken instanceof TokenSet ? accessToken.access_token : accessToken;
+-        if (options.via === "header") {
+-            headers.set("authorization", `Bearer ${token}`);
+-        }
+-        if (options.via === "body") {
+-            headers.set("content-type", "application/x-www-form-urlencoded");
+-            let body = new URLSearchParams();
+-            body.append("access_token", token);
+-            init.body = body;
+-        }
+-        let response = await fetch(url.toString(), init);
+-        if (!response.ok) {
+-            let header = response.headers.get("WWW-Authenticate");
+-            if (!header) {
+-                throw new OIDCError("unknown_error", {
+-                    description: `The request was denied due to an unknown error (status: ${response.status}).`,
+-                    uri: null,
+-                });
+-            }
+-            let code;
+-            if (!header.startsWith("Bearer ")) {
+-                code = "invalid_www_authenticate_header";
+-            }
+-            let params = new URLSearchParams(header.slice(7));
+-            code = params.get("error") ?? "unknown_error";
+-            throw new OIDCError(code, {
+-                description: params.get("error_description"),
+-                uri: params.get("error_uri"),
+-            });
+-        }
+-        return await UserInfoSchema.promise().parse(response.json());
++    if (options.via === 'body' && options.method === 'GET') {
++      throw new Error('Cannot send access token in body with GET method.')
+     }
+-    async refresh(refreshToken, { scope, ...extra } = {}) {
+-        let body = new URLSearchParams();
+-        body.set("grant_type", "refresh_token");
+-        if (typeof refreshToken === "string") {
+-            body.set("refresh_token", refreshToken);
+-        }
+-        else if (refreshToken.refresh_token) {
+-            body.set("refresh_token", refreshToken.refresh_token);
+-        }
+-        else {
+-            throw new TypeError("Missing refresh_token on Client#refresh");
+-        }
+-        if (scope)
+-            body.set("scope", scope);
+-        for (let key in extra) {
+-            let value = extra[key];
+-            if (value)
+-                body.set(key, value);
+-        }
+-        return await this.grant(body);
++    let url = new URL(endpoint)
++    let headers = new Headers(options.headers)
++    headers.set('accept', 'application/json')
++    let init = { method, headers }
++    let token =
++      accessToken instanceof TokenSet ? accessToken.access_token : accessToken
++    if (options.via === 'header') {
++      headers.set('authorization', `Bearer ${token}`)
+     }
+-    async clientCredentials({ scope, ...extra } = {}) {
+-        let body = new URLSearchParams();
+-        body.set("grant_type", "client_credentials");
+-        if (scope)
+-            body.set("scope", scope);
+-        for (let key in extra) {
+-            let value = extra[key];
+-            if (value)
+-                body.set(key, value);
+-        }
+-        return await this.grant(body);
++    if (options.via === 'body') {
++      headers.set('content-type', 'application/x-www-form-urlencoded')
++      let body = new URLSearchParams()
++      body.append('access_token', token)
++      init.body = body
+     }
+-    async password(username, password, { scope, ...extra } = {}) {
+-        let body = new URLSearchParams();
+-        body.set("grant_type", "password");
+-        body.set("username", username);
+-        body.set("password", password);
+-        if (scope)
+-            body.set("scope", scope);
+-        for (let key in extra) {
+-            let value = extra[key];
+-            if (value)
+-                body.set(key, value);
+-        }
+-        return await this.grant(body);
++    let response = await fetch(url.toString(), init)
++    if (!response.ok) {
++      let header = response.headers.get('WWW-Authenticate')
++      if (!header) {
++        throw new OIDCError('unknown_error', {
++          description: `The request was denied due to an unknown error (status: ${response.status}).`,
++          uri: null,
++        })
++      }
++      let code
++      if (!header.startsWith('Bearer ')) {
++        code = 'invalid_www_authenticate_header'
++      }
++      let params = new URLSearchParams(header.slice(7))
++      code = params.get('error') ?? 'unknown_error'
++      throw new OIDCError(code, {
++        description: params.get('error_description'),
++        uri: params.get('error_uri'),
++      })
+     }
+-    async grant(body) {
+-        let endpoint = assert(this.#issuer, "token_endpoint");
+-        let headers = {
+-            accept: "application/json",
+-            "content-type": "application/x-www-form-urlencoded",
+-        };
+-        body.set("client_id", this.#options.client_id);
+-        if (this.#options.client_secret) {
+-            body.set("client_secret", this.#options.client_secret);
+-        }
+-        let response = await fetch(endpoint.toString(), {
+-            method: "POST",
+-            headers,
+-            body,
+-        });
+-        if (!response.ok) {
+-            let body = await GrantErrorSchema.promise().parse(response.json());
+-            throw new OIDCError(body.error, {
+-                description: body.error_description ?? null,
+-                uri: body.error_uri ?? null,
+-            });
+-        }
+-        let result = await TokenSetValueSchema.promise().parse(response.json());
+-        return new TokenSet(result);
++    return await UserInfoSchema.promise().parse(response.json())
++  }
++  async refresh(refreshToken, { scope, ...extra } = {}) {
++    let body = new URLSearchParams()
++    body.set('grant_type', 'refresh_token')
++    if (typeof refreshToken === 'string') {
++      body.set('refresh_token', refreshToken)
++    } else if (refreshToken.refresh_token) {
++      body.set('refresh_token', refreshToken.refresh_token)
++    } else {
++      throw new TypeError('Missing refresh_token on Client#refresh')
+     }
+-    async callbackParams(input) {
+-        let params;
+-        if (typeof input === "string")
+-            params = new URL(input).searchParams;
+-        else if (input instanceof URL)
+-            params = input.searchParams;
+-        else if (input instanceof Request) {
+-            let method = input.method.toUpperCase();
+-            if (method === "GET")
+-                params = new URL(input.url).searchParams;
+-            else if (input.body === undefined) {
+-                throw new TypeError("Input Request must have a body if it's not a GET");
+-            }
+-            else {
+-                let request = new Request(input.url, input);
+-                params = new URLSearchParams(await request.text());
+-            }
+-        }
+-        else
+-            throw new TypeError("Invalid input for Client#callbackParams");
+-        return params;
++    if (scope) body.set('scope', scope)
++    for (let key in extra) {
++      let value = extra[key]
++      if (value) body.set(key, value)
+     }
+-    /**
+-     * @param redirectURL Redirect URL to compare against the incoming URL.
+-     * @param incoming Incoming URLSearchParams from the callback.
+-     * @param checks Checks to perform on the incoming URL.
+-     * @throws {TypeError} Missing Client#oauthCallback checks.state
+-     * @throws {ReferenceError} Missing state on URL.
+-     * @throws {RangeError} State mismatch.
+-     * @throws {OIDCError} An error was returned from the authorization server.
+-     * @throws {RangeError} Unexpected parameters for response_type none.
+-     * @throws {ReferenceError} Missing code on URL for response_type code.
+-     * @throws {Error} No valid response_type found.
+-     * @returns The token set from the authorization server.
+-     */
+-    oauthCallback(redirectURL, incoming, checks) {
+-        let stateUrl = incoming.get("state");
+-        if (incoming.has("state") && !checks.state) {
+-            throw new TypeError("Missing Client#oauthCallback checks.state");
+-        }
+-        if (!incoming.has("state") && checks.state) {
+-            throw new ReferenceError("Missing state on URL.");
+-        }
+-        if (incoming.get("state") !== checks.state) {
+-            throw new RangeError("State mismatch.", {
+-                cause: { expected: checks.state, actual: stateUrl },
+-            });
+-        }
+-        if (incoming.has("error")) {
+-            throw new OIDCError(incoming.get("error"), {
+-                description: incoming.get("error_description"),
+-                uri: incoming.get("error_uri"),
+-            });
+-        }
+-        const RESPONSE_TYPE_REQUIRED_PARAMS = {
+-            code: ["code"],
+-            id_token: ["id_token"],
+-            token: ["access_token", "token_type"],
+-        };
+-        let responseType = (checks.response_type ?? "none").split(" ");
+-        for (let type of responseType) {
+-            if (checks.response_type === "none") {
+-                if (incoming.has("code") ||
+-                    incoming.has("id_token") ||
+-                    incoming.has("access_token")) {
+-                    throw new RangeError("Unexpected parameters for response_type none.", { cause: "Expected none, received code, id_token or access_token" });
+-                }
+-            }
+-            else if (type in RESPONSE_TYPE_REQUIRED_PARAMS) {
+-                let requiredParams = RESPONSE_TYPE_REQUIRED_PARAMS[type] ?? [];
+-                for (let param of requiredParams) {
+-                    if (!incoming.has(param)) {
+-                        throw new ReferenceError(`Missing ${param} on URL for response_type ${type}.`);
+-                    }
+-                }
+-            }
+-        }
+-        if (incoming.has("id_token")) {
+-            throw new Error("id_token flow not implemented");
+-        }
+-        if (incoming.has("access_token")) {
+-            throw new Error("token flow not implemented");
+-        }
+-        if (incoming.has("code")) {
+-            let params = new URLSearchParams({
+-                grant_type: "authorization_code",
+-                code: incoming.get("code"),
+-                redirect_uri: redirectURL.toString(),
+-            });
+-            if (checks.code_verifier) {
+-                params.set("code_verifier", checks.code_verifier);
+-            }
+-            return this.grant(params);
+-        }
+-        throw new Error("No valid response_type found.");
++    return await this.grant(body)
++  }
++  async clientCredentials({ scope, ...extra } = {}) {
++    let body = new URLSearchParams()
++    body.set('grant_type', 'client_credentials')
++    if (scope) body.set('scope', scope)
++    for (let key in extra) {
++      let value = extra[key]
++      if (value) body.set(key, value)
+     }
+-    static async register(issuer, options = {}) {
+-        if (!(issuer instanceof Issuer)) {
+-            issuer = await Issuer.discover(issuer);
+-        }
+-        let endpoint = assert(issuer, "registration_endpoint");
+-        let headers = new Headers({
+-            accept: "application/json",
+-            "content-type": "application/json",
+-        });
+-        if (options.initialAccessToken) {
+-            headers.set("authorization", `Bearer ${options.initialAccessToken}`);
++    return await this.grant(body)
++  }
++  async password(username, password, { scope, ...extra } = {}) {
++    let body = new URLSearchParams()
++    body.set('grant_type', 'password')
++    body.set('username', username)
++    body.set('password', password)
++    if (scope) body.set('scope', scope)
++    for (let key in extra) {
++      let value = extra[key]
++      if (value) body.set(key, value)
++    }
++    return await this.grant(body)
++  }
++  async grant(body) {
++    let endpoint = assert(this.#issuer, 'token_endpoint')
++    let headers = {
++      accept: 'application/json',
++      'content-type': 'application/x-www-form-urlencoded',
++    }
++    body.set('client_id', this.#options.client_id)
++    if (this.#options.client_secret) {
++      body.set('client_secret', this.#options.client_secret)
++    }
++    let response = await fetch(endpoint.toString(), {
++      method: 'POST',
++      headers,
++      body,
++    })
++    if (!response.ok) {
++      let body = await GrantErrorSchema.promise().parse(response.json())
++      throw new OIDCError(body.error, {
++        description: body.error_description ?? null,
++        uri: body.error_uri ?? null,
++      })
++    }
++    let result = await TokenSetValueSchema.promise().parse(response.json())
++    return new TokenSet(result)
++  }
++  async callbackParams(input) {
++    let params
++    if (typeof input === 'string') params = new URL(input).searchParams
++    else if (input instanceof URL) params = input.searchParams
++    else if (input instanceof Request) {
++      let method = input.method.toUpperCase()
++      if (method === 'GET') params = new URL(input.url).searchParams
++      else if (input.body === undefined) {
++        throw new TypeError("Input Request must have a body if it's not a GET")
++      } else {
++        let request = new Request(input.url, input)
++        params = new URLSearchParams(await request.text())
++      }
++    } else throw new TypeError('Invalid input for Client#callbackParams')
++    return params
++  }
++  /**
++   * @param redirectURL Redirect URL to compare against the incoming URL.
++   * @param incoming Incoming URLSearchParams from the callback.
++   * @param checks Checks to perform on the incoming URL.
++   * @throws {TypeError} Missing Client#oauthCallback checks.state
++   * @throws {ReferenceError} Missing state on URL.
++   * @throws {RangeError} State mismatch.
++   * @throws {OIDCError} An error was returned from the authorization server.
++   * @throws {RangeError} Unexpected parameters for response_type none.
++   * @throws {ReferenceError} Missing code on URL for response_type code.
++   * @throws {Error} No valid response_type found.
++   * @returns The token set from the authorization server.
++   */
++  oauthCallback(redirectURL, incoming, checks) {
++    let stateUrl = incoming.get('state')
++    if (incoming.has('state') && !checks.state) {
++      throw new TypeError('Missing Client#oauthCallback checks.state')
++    }
++    if (!incoming.has('state') && checks.state) {
++      throw new ReferenceError('Missing state on URL.')
++    }
++    if (incoming.get('state') !== checks.state) {
++      throw new RangeError('State mismatch.', {
++        cause: { expected: checks.state, actual: stateUrl },
++      })
++    }
++    if (incoming.has('error')) {
++      throw new OIDCError(incoming.get('error'), {
++        description: incoming.get('error_description'),
++        uri: incoming.get('error_uri'),
++      })
++    }
++    const RESPONSE_TYPE_REQUIRED_PARAMS = {
++      code: ['code'],
++      id_token: ['id_token'],
++      token: ['access_token', 'token_type'],
++    }
++    let responseType = (checks.response_type ?? 'none').split(' ')
++    for (let type of responseType) {
++      if (checks.response_type === 'none') {
++        if (
++          incoming.has('code') ||
++          incoming.has('id_token') ||
++          incoming.has('access_token')
++        ) {
++          throw new RangeError(
++            'Unexpected parameters for response_type none.',
++            { cause: 'Expected none, received code, id_token or access_token' },
++          )
+         }
+-        let response = await fetch(endpoint.toString(), {
+-            method: "POST",
+-            headers,
+-            body: JSON.stringify(issuer.metadata),
+-        });
+-        if (!response.ok) {
+-            throw new Error(`Failed to register client for issuer ${issuer.metadata.issuer}`);
++      } else if (type in RESPONSE_TYPE_REQUIRED_PARAMS) {
++        let requiredParams = RESPONSE_TYPE_REQUIRED_PARAMS[type] ?? []
++        for (let param of requiredParams) {
++          if (!incoming.has(param)) {
++            throw new ReferenceError(
++              `Missing ${param} on URL for response_type ${type}.`,
++            )
++          }
+         }
+-        let body = await z
+-            .object({
+-            client_id: z.string(),
+-            client_secret: z.string(),
+-            redirect_uri: z.string().url(),
+-            response_type: ResponseTypeSchema,
+-        })
+-            .promise()
+-            .parse(response.json());
+-        return new Client(issuer, {
+-            client_id: body.client_id,
+-            client_secret: body.client_secret,
+-            redirect_uri: body.redirect_uri,
+-            response_type: body.response_type,
+-        });
++      }
++    }
++    if (incoming.has('id_token')) {
++      throw new Error('id_token flow not implemented')
++    }
++    if (incoming.has('access_token')) {
++      throw new Error('token flow not implemented')
++    }
++    if (incoming.has('code')) {
++      let params = new URLSearchParams({
++        grant_type: 'authorization_code',
++        code: incoming.get('code'),
++        redirect_uri: redirectURL.toString(),
++      })
++      if (checks.code_verifier) {
++        params.set('code_verifier', checks.code_verifier)
++      }
++      return this.grant(params)
+     }
++    throw new Error('No valid response_type found.')
++  }
++  static async register(issuer, options = {}) {
++    if (!(issuer instanceof Issuer)) {
++      issuer = await Issuer.discover(issuer)
++    }
++    let endpoint = assert(issuer, 'registration_endpoint')
++    let headers = new Headers({
++      accept: 'application/json',
++      'content-type': 'application/json',
++    })
++    if (options.initialAccessToken) {
++      headers.set('authorization', `Bearer ${options.initialAccessToken}`)
++    }
++    let response = await fetch(endpoint.toString(), {
++      method: 'POST',
++      headers,
++      body: JSON.stringify(issuer.metadata),
++    })
++    if (!response.ok) {
++      throw new Error(
++        `Failed to register client for issuer ${issuer.metadata.issuer}`,
++      )
++    }
++    let body = await z
++      .object({
++        client_id: z.string(),
++        client_secret: z.string(),
++        redirect_uri: z.string().url(),
++        response_type: ResponseTypeSchema,
++      })
++      .promise()
++      .parse(response.json())
++    return new Client(issuer, {
++      client_id: body.client_id,
++      client_secret: body.client_secret,
++      redirect_uri: body.redirect_uri,
++      response_type: body.response_type,
++    })
++  }
+ }
+ const UserInfoSchema = z
+-    .object({
++  .object({
+     sub: z.string(),
+     name: z.string().optional(),
+     given_name: z.string().optional(),
+@@ -319,98 +320,98 @@ const UserInfoSchema = z
+     phone_number: z.string().optional(),
+     phone_number_verified: z.boolean().optional(),
+     updated_at: z
+-        .union([
++      .union([
+         z.string().datetime(),
+         z.number().transform((timestamp) => new Date(timestamp).toISOString()),
+-    ])
+-        .optional(),
++      ])
++      .optional(),
+     address: z
+-        .object({
++      .object({
+         formatted: z.string().optional(),
+         street_address: z.string().optional(),
+         locality: z.string().optional(),
+         region: z.string().optional(),
+         postal_code: z.string().optional(),
+         country: z.string().optional(),
+-    })
+-        .passthrough()
+-        .optional(),
+-})
+-    .passthrough();
++      })
++      .passthrough()
++      .optional(),
++  })
++  .passthrough()
+ const ResponseTypeSchema = z.enum([
+-    "code",
+-    "token",
+-    "id_token",
+-    "code token",
+-    "code id_token",
+-    "token id_token",
+-    "code token id_token",
+-    "none",
+-]);
++  'code',
++  'token',
++  'id_token',
++  'code token',
++  'code id_token',
++  'token id_token',
++  'code token id_token',
++  'none',
++])
+ const AuthenticationRequestParamsSchema = z
+-    .object({
++  .object({
+     scope: z
+-        .union([
++      .union([
+         z.string(),
+         z
+-            .string()
+-            .array()
+-            .transform((array) => array.join(" ")),
+-    ])
+-        .refine((scopes) => scopes.includes("openid"), {
+-        message: "openid scope is required",
+-    })
+-        .optional(),
++          .string()
++          .array()
++          .transform((array) => array.join(' ')),
++      ])
++      .refine((scopes) => scopes.includes('openid'), {
++        message: 'openid scope is required',
++      })
++      .optional(),
+     response_type: z
+-        .enum([
+-        "code",
+-        "token",
+-        "id_token",
+-        "code token",
+-        "code id_token",
+-        "token id_token",
+-        "code token id_token",
+-        "none",
+-    ])
+-        .optional(),
++      .enum([
++        'code',
++        'token',
++        'id_token',
++        'code token',
++        'code id_token',
++        'token id_token',
++        'code token id_token',
++        'none',
++      ])
++      .optional(),
+     client_id: z.string().optional(),
+     redirect_uri: z.string().url().optional(),
+     state: z.string(),
+     response_mode: z.string().optional(),
+     nonce: z.string().optional(),
+     code_challenge: z.string().optional(),
+-    code_challenge_method: z.enum(["plain", "S256"]).optional(),
+-    display: z.enum(["page", "popup", "touch", "wap"]).optional(),
++    code_challenge_method: z.enum(['plain', 'S256']).optional(),
++    display: z.enum(['page', 'popup', 'touch', 'wap']).optional(),
+     prompt: z
+-        .enum(["none", "login", "consent", "select_account", "create"])
+-        .optional(),
++      .enum(['none', 'login', 'consent', 'select_account', 'create'])
++      .optional(),
+     max_age: z.number().optional(),
+     ui_locales: z.string().optional(),
+     id_token_hint: z.string().optional(),
+     login_hint: z.string().optional(),
+     acr_values: z.string().optional(),
+-})
+-    .passthrough();
++  })
++  .passthrough()
+ function assert(issuer, endpoint) {
+-    let value = issuer.metadata[endpoint];
+-    if (!value) {
+-        throw new TypeError(`${endpoint} must be configured on the issuer`);
+-    }
+-    if (typeof value !== "string") {
+-        throw new TypeError(`${endpoint} must be a string`);
+-    }
+-    return new URL(value);
++  let value = issuer.metadata[endpoint]
++  if (!value) {
++    throw new TypeError(`${endpoint} must be configured on the issuer`)
++  }
++  if (typeof value !== 'string') {
++    throw new TypeError(`${endpoint} must be a string`)
++  }
++  return new URL(value)
+ }
+ const GrantErrorSchema = z.object({
+-    error_description: z.string().optional().nullable(),
+-    error_uri: z.string().optional().nullable(),
+-    error: z.enum([
+-        "invalid_request",
+-        "invalid_client",
+-        "invalid_grant",
+-        "unauthorized_client",
+-        "unsupported_grant_type",
+-        "invalid_scope",
+-        "invalid_dpop_proof",
+-    ]),
+-});
++  error_description: z.string().optional().nullable(),
++  error_uri: z.string().optional().nullable(),
++  error: z.enum([
++    'invalid_request',
++    'invalid_client',
++    'invalid_grant',
++    'unauthorized_client',
++    'unsupported_grant_type',
++    'invalid_scope',
++    'invalid_dpop_proof',
++  ]),
++})
+diff --git a/node_modules/web-oidc/build/remix.js b/node_modules/web-oidc/build/remix.js
+index a421984..6afa047 100644
+--- a/node_modules/web-oidc/build/remix.js
++++ b/node_modules/web-oidc/build/remix.js
+@@ -1,91 +1,120 @@
+-import { Strategy, } from "remix-auth";
+-import { Issuer } from "./issuer.js";
+-import { redirect, } from "@remix-run/server-runtime";
+-import { Generator } from "./generator.js";
++import { Strategy } from 'remix-auth'
++import { Issuer } from './issuer.js'
++import { redirect } from '@remix-run/server-runtime'
++import { Generator } from './generator.js'
+ export class OIDCStrategy extends Strategy {
+-    options;
+-    name = "oidc";
+-    issuerPromise;
+-    constructor(options, verify) {
+-        super(verify);
+-        this.options = options;
++  options
++  name = 'oidc'
++  issuerPromise
++  constructor(options, verify) {
++    super(verify)
++    this.options = options
++  }
++  async authenticate(request, sessionStorage, options) {
++    let url = new URL(request.url)
++    let redirectURL = new URL(
++      this.options.redirect_uri.startsWith('/')
++        ? `${url.origin}${this.options.redirect_uri}`
++        : this.options.redirect_uri,
++    )
++    if (url.pathname !== redirectURL.pathname) {
++      let state = Generator.state()
++      let verifier = Generator.codeVerifier()
++      let challenge = Generator.codeChallenge(verifier)
++      let session = await sessionStorage.getSession(
++        request.headers.get('cookie'),
++      )
++      session.set(this.options.sessionKeys?.state ?? 'oidc:state', state)
++      session.set(
++        this.options.sessionKeys?.verifier ?? 'oidc:verifier',
++        verifier,
++      )
++      let client = await this.client
++      let url = client.authorizationUrl({
++        state,
++        ...this.options.authorizationParams,
++        redirect_uri: redirectURL.toString(),
++        code_challenge: challenge,
++        code_challenge_method: 'S256',
++      })
++      throw redirect(url.toString(), {
++        headers: { 'set-cookie': await sessionStorage.commitSession(session) },
++      })
+     }
+-    async authenticate(request, sessionStorage, options) {
+-        let url = new URL(request.url);
+-        let redirectURL = new URL(this.options.redirect_uri);
+-        if (url.pathname !== redirectURL.pathname) {
+-            let state = Generator.state();
+-            let verifier = Generator.codeVerifier();
+-            let challenge = Generator.codeChallenge(verifier);
+-            let session = await sessionStorage.getSession(request.headers.get("cookie"));
+-            session.set(this.options.sessionKeys?.state ?? "oidc:state", state);
+-            session.set(this.options.sessionKeys?.verifier ?? "oidc:verifier", verifier);
+-            let client = await this.client;
+-            let url = client.authorizationUrl({
+-                state,
+-                ...this.options.authorizationParams,
+-                code_challenge: challenge,
+-                code_challenge_method: "S256",
+-            });
+-            throw redirect(url.toString(), {
+-                headers: { "set-cookie": await sessionStorage.commitSession(session) },
+-            });
+-        }
+-        try {
+-            let session = await sessionStorage.getSession(request.headers.get("cookie"));
+-            let stateSession = session.get(this.options.sessionKeys?.state ?? "oidc:state");
+-            let client = await this.client;
+-            let params = await client.callbackParams(request.url);
+-            let code_verifier = session.get(this.options.sessionKeys?.verifier ?? "oidc:verifier");
+-            if (typeof code_verifier !== "string")
+-                code_verifier = undefined;
+-            let tokens = await client.oauthCallback(redirectURL, params, {
+-                state: stateSession,
+-                code_verifier,
+-                response_type: "code",
+-            });
+-            let profile = await client.userinfo(tokens.access_token);
+-            let user = await this.verify({
+-                request,
+-                profile,
+-                tokens,
+-                context: options.context,
+-                issuer: await this.issuer,
+-                client,
+-            });
+-            return await this.success(user, request, sessionStorage, options);
+-        }
+-        catch (exception) {
+-            // Allow responses to pass-through
+-            if (exception instanceof Response)
+-                throw exception;
+-            if (exception instanceof Error) {
+-                return await this.failure(exception.message, request, sessionStorage, options, exception);
+-            }
+-            if (typeof exception === "string") {
+-                return await this.failure(exception, request, sessionStorage, options, new Error(exception));
+-            }
+-            return await this.failure("Unknown error", request, sessionStorage, options, new Error(JSON.stringify(exception, null, 2)));
+-        }
++    try {
++      let session = await sessionStorage.getSession(
++        request.headers.get('cookie'),
++      )
++      let stateSession = session.get(
++        this.options.sessionKeys?.state ?? 'oidc:state',
++      )
++      let client = await this.client
++      let params = await client.callbackParams(request.url)
++      let code_verifier = session.get(
++        this.options.sessionKeys?.verifier ?? 'oidc:verifier',
++      )
++      if (typeof code_verifier !== 'string') code_verifier = undefined
++      let tokens = await client.oauthCallback(redirectURL, params, {
++        state: stateSession,
++        code_verifier,
++        response_type: 'code',
++      })
++      let profile = await client.userinfo(tokens.access_token)
++      let user = await this.verify({
++        request,
++        profile,
++        tokens,
++        context: options.context,
++        issuer: await this.issuer,
++        client,
++      })
++      return await this.success(user, request, sessionStorage, options)
++    } catch (exception) {
++      // Allow responses to pass-through
++      if (exception instanceof Response) throw exception
++      if (exception instanceof Error) {
++        return await this.failure(
++          exception.message,
++          request,
++          sessionStorage,
++          options,
++          exception,
++        )
++      }
++      if (typeof exception === 'string') {
++        return await this.failure(
++          exception,
++          request,
++          sessionStorage,
++          options,
++          new Error(exception),
++        )
++      }
++      return await this.failure(
++        'Unknown error',
++        request,
++        sessionStorage,
++        options,
++        new Error(JSON.stringify(exception, null, 2)),
++      )
+     }
+-    get issuer() {
+-        if (this.issuerPromise)
+-            return this.issuerPromise;
+-        if (this.options.issuer instanceof Issuer) {
+-            this.issuerPromise = Promise.resolve(this.options.issuer);
+-        }
+-        else if (typeof this.options.issuer === "string") {
+-            this.issuerPromise = Issuer.discover(this.options.issuer);
+-        }
+-        else if (this.options.issuer instanceof URL) {
+-            this.issuerPromise = Issuer.discover(this.options.issuer);
+-        }
+-        else {
+-            this.issuerPromise = Promise.resolve(new Issuer(this.options.issuer));
+-        }
+-        return this.issuerPromise;
+-    }
+-    get client() {
+-        return this.issuer.then((issuer) => issuer.client({ ...this.options, response_type: "code" }));
++  }
++  get issuer() {
++    if (this.issuerPromise) return this.issuerPromise
++    if (this.options.issuer instanceof Issuer) {
++      this.issuerPromise = Promise.resolve(this.options.issuer)
++    } else if (typeof this.options.issuer === 'string') {
++      this.issuerPromise = Issuer.discover(this.options.issuer)
++    } else if (this.options.issuer instanceof URL) {
++      this.issuerPromise = Issuer.discover(this.options.issuer)
++    } else {
++      this.issuerPromise = Promise.resolve(new Issuer(this.options.issuer))
+     }
++    return this.issuerPromise
++  }
++  get client() {
++    return this.issuer.then((issuer) =>
++      issuer.client({ ...this.options, response_type: 'code' }),
++    )
++  }
+ }
