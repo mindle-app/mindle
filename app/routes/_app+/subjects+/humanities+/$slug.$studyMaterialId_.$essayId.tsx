@@ -5,6 +5,7 @@ import { type LinksFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { json, Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useState } from 'react'
+import { toast as showToast } from 'sonner'
 import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/index.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
@@ -14,7 +15,6 @@ import { LinkButton } from '#app/components/ui/link-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, copyRichText } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
-import { toast as showToast } from 'sonner'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
@@ -184,22 +184,24 @@ export default function StudyMaterial() {
                   </div>
                 </div>
               ) : (
-                <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
-                  <CardTitle className="">
-                    <Icon
-                      name={'highlighter'}
-                      className="h-16 w-16 text-primary"
-                    />
-                  </CardTitle>
-
-                  <CardDescription className="text-center">
-                    <CardTitle className="mb-2 font-coHeadline text-xl text-card-foreground">
-                      Selecteaza un paragraf
+                <div className="h-full">
+                  <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
+                    <CardTitle className="">
+                      <Icon
+                        name={'highlighter'}
+                        className="h-16 w-16 text-primary"
+                      />
                     </CardTitle>
-                    Fiecare paragraf are o explicație legată de mesaj, barem sau
-                    context.
-                  </CardDescription>
-                </Card>
+
+                    <CardDescription className="text-center">
+                      <CardTitle className="mb-2 font-coHeadline text-xl text-card-foreground">
+                        Selecteaza un paragraf
+                      </CardTitle>
+                      Fiecare paragraf are o explicație legată de mesaj, barem
+                      sau context.
+                    </CardDescription>
+                  </Card>
+                </div>
               )}
             </TabsContent>
             <TabsContent
