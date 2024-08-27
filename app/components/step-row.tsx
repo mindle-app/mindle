@@ -26,12 +26,12 @@ export function StepRow({
     <Link
       to={href}
       className={cn(
-        `group flex h-16 w-full cursor-pointer justify-between overflow-hidden border-2 border-solid border-disabled bg-card transition-all duration-300 ease-in-out md:rounded-lg 2xl:h-24`,
+        `group flex h-16 w-full cursor-pointer justify-between overflow-hidden border border-solid border-disabled bg-card transition-all duration-300 ease-in-out md:rounded-lg 2xl:h-24`,
         {
           'cursor-not-allowed': isLocked,
           'hover:border-foreground': !isLocked,
-          'border-active-border': isInProgress,
-          'border-complete-border': isCompleted,
+          'border-primary/40': isInProgress,
+          'border-emerald-500': isCompleted,
         },
       )}
     >
@@ -39,9 +39,9 @@ export function StepRow({
         className={cn(
           `lex-none items-center border-0 border-r-2 border-disabled bg-disabled p-4 transition-all duration-300 ease-in-out`,
           {
-            'border-active bg-active group-hover:bg-active-foreground':
+            'border-active bg-primary/20 group-hover:bg-active-foreground dark:bg-primary/20':
               isInProgress,
-            'border-complete bg-complete group-hover:bg-complete-foreground':
+            'border-complete bg-complete group-hover:bg-complete-foreground dark:bg-complete/40':
               isCompleted,
             'group-hover:border-foreground': !isLocked,
           },
@@ -49,7 +49,7 @@ export function StepRow({
       >
         <div
           className={cn(
-            `flex h-8 w-8 flex-1 items-center justify-center rounded-full border-2 border-disabled-border border-opacity-20 bg-disabled-foreground transition-all duration-300 ease-in-out md:h-8 md:w-8 2xl:h-16 2xl:w-16 2xl:gap-2.5`,
+            `flex h-8 w-8 flex-1 items-center justify-center rounded-full border border-disabled-border border-opacity-20 bg-disabled-foreground transition-all duration-300 ease-in-out md:h-8 md:w-8 2xl:h-16 2xl:w-16 2xl:gap-2.5`,
             {
               'group-hover:border-foreground group-hover:bg-card': !isLocked,
               'border-active-border bg-active-foreground dark:group-hover:bg-active':

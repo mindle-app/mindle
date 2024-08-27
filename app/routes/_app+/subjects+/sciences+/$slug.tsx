@@ -46,14 +46,14 @@ function ChapterCard({ name, state, image, href }: Chapter) {
   const isLocked = state === UserState.LOCKED
 
   return (
-    <Link prefetch="intent" to={href} aria-disabled={isLocked}>
-      <Card
+    <Link prefetch="intent" to={href}>
+      <div
         className={cn(
-          'group overflow-hidden border-2 border-disabled-border shadow-none transition-all duration-300 ease-in-out',
+          'group overflow-hidden rounded-xl border-2 bg-card transition-all duration-300 ease-in-out',
           {
             'hover:border-foreground': !isLocked,
-            'border-active-border': isInProgress,
-            'cursor-not-allowed': isLocked,
+            'border-primary/40': isInProgress,
+            'cursor-not-allowed border-muted-foreground/40': isLocked,
             'border-complete-border': isCompleted,
           },
         )}
@@ -63,10 +63,10 @@ function ChapterCard({ name, state, image, href }: Chapter) {
             `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out`,
             {
               'group-hover:border-foreground': !isLocked,
-              'border-disabled-border bg-disabled': isLocked,
-              'border-active-border bg-active group-hover:bg-active-foreground':
+              'border-muted bg-disabled': isLocked,
+              'border-primary/20 bg-primary/30 group-hover:bg-active-foreground dark:bg-primary/20':
                 isInProgress,
-              'border-complete-border bg-complete group-hover:bg-complete-foreground':
+              'border-complete-border bg-complete group-hover:bg-complete-foreground dark:bg-complete/60':
                 isCompleted,
             },
           )}
@@ -86,7 +86,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
         <CardFooter className="w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
           <span className="w-full text-xs 2xl:text-base">{name}</span>
         </CardFooter>
-      </Card>
+      </div>
     </Link>
   )
 }
