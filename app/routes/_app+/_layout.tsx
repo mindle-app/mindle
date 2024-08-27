@@ -39,7 +39,11 @@ function HumanitiesEssayTabs() {
 export function NavHeader() {
   const user = useOptionalUser()
   return (
-    <header className={cn('w-full border-b px-4 py-1 text-primary-foreground')}>
+    <header
+      className={cn(
+        'w-full border-b-2 border-primary/20 px-4 py-1 text-primary-foreground',
+      )}
+    >
       <nav
         className={cn(
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
