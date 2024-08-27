@@ -28,14 +28,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '#app/components/ui/accordion.js'
-import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { Input } from '#app/components/ui/input.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
-import { type IconName } from '@/icon-name'
 
 const RawIdsResultSchema = z.array(z.object({ id: z.string() }))
 
@@ -171,34 +169,67 @@ export function SearchBar({
 }
 
 function NavToggle({
+  title,
   isMenuOpened,
   setMenuOpened,
   menuControls,
 }: {
+  title?: string
   isMenuOpened: boolean
   setMenuOpened: (value: boolean) => void
   menuControls?: AnimationControls
 }) {
-  const toggleMenu = React.useCallback(() => {
-    void menuControls?.start(isMenuOpened ? 'close' : 'open')
+  const path01Variants = {
+    open: { d: 'M3.06061 2.99999L21.0606 21' },
+    closed: { d: 'M0 9.5L24 9.5' },
+  }
+  const path02Variants = {
+    open: { d: 'M3.00006 21.0607L21 3.06064' },
+    moving: { d: 'M0 14.5L24 14.5' },
+    closed: { d: 'M0 14.5L15 14.5' },
+  }
+  const path01Controls = useAnimationControls()
+  const path02Controls = useAnimationControls()
+
+  async function toggleMenu() {
+    await menuControls?.start(isMenuOpened ? 'close' : 'open')
     setMenuOpened(!isMenuOpened)
-  }, [isMenuOpened, menuControls, setMenuOpened])
+
+    if (isMenuOpened) {
+      void path01Controls.start(path01Variants.closed)
+      await path02Controls.start(path02Variants.moving)
+      void path02Controls.start(path02Variants.closed)
+    } else {
+      await path02Controls.start(path02Variants.moving)
+      void path01Controls.start(path01Variants.open)
+      void path02Controls.start(path02Variants.open)
+    }
+  }
 
   const latestToggleMenu = React.useRef(toggleMenu)
   React.useEffect(() => {
     latestToggleMenu.current = toggleMenu
-  }, [toggleMenu])
+  })
 
-  const isWide = useIsWide()
+  React.useEffect(() => {
+    if (!isMenuOpened) return
 
-  const iconOpenMenu: IconName = isWide ? 'chevrons-left' : 'chevrons-up'
-  const iconClosedMenu: IconName = isWide ? 'chevrons-right' : 'chevrons-down'
+    function handleKeyUp(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        void latestToggleMenu.current()
+      }
+    }
+    document.addEventListener('keyup', handleKeyUp)
+    return () => document.removeEventListener('keyup', handleKeyUp)
+  }, [isMenuOpened])
 
   return (
     <div
       className={cn(
-        'relative inline-flex h-14 flex-shrink-0 items-center overflow-hidden border-r sm:w-full sm:border-r-0',
-        { 'justify-center': !isMenuOpened, 'w-full': !isWide },
+        'relative inline-flex flex-shrink-0 items-center justify-between overflow-hidden border-r sm:w-full sm:border-r-0',
+        {
+          'w-full': isMenuOpened,
+        },
       )}
     >
       <button
@@ -206,11 +237,33 @@ function NavToggle({
         aria-label="Open Navigation menu"
         onClick={toggleMenu}
       >
-        <Icon
-          className="h-6 w-6"
-          name={isMenuOpened ? iconOpenMenu : iconClosedMenu}
-        />
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <motion.path
+            {...path01Variants.closed}
+            animate={path01Controls}
+            transition={{ duration: 0.05 }}
+            stroke="currentColor"
+            strokeWidth={1.5}
+          />
+          <motion.path
+            {...path02Variants.closed}
+            animate={path02Controls}
+            transition={{ duration: 0.05 }}
+            stroke="currentColor"
+            strokeWidth={1.5}
+          />
+        </svg>
       </button>
+      {isMenuOpened && (
+        <motion.p
+          transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute right-5 whitespace-nowrap font-mono text-sm uppercase"
+        >
+          <Link to="/">{title ?? 'Mindle'}</Link>
+        </motion.p>
+      )}
     </div>
   )
 }
@@ -294,7 +347,7 @@ function Navigation({
   // container
   const menuControls = useAnimationControls()
   const menuVariants = {
-    close: { width: 104 },
+    close: { width: 64 },
     open: { width: OPENED_MENU_WIDTH },
   }
 
@@ -316,30 +369,22 @@ function Navigation({
   return (
     <nav className="hidden border-r sm:flex">
       <motion.div
-        className="flex h-full flex-col justify-between py-9"
+        className="flex h-full flex-col justify-between"
         initial={isMenuOpened ? 'open' : 'close'}
         variants={menuVariants}
         animate={menuControls}
       >
-        {isMenuOpened ? (
-          <SearchBar
-            status={'idle'}
-            autoFocus
-            autoSubmit={true}
-            isMenuOpened={isMenuOpened}
-          />
-        ) : (
-          <Button
-            variant={'secondary'}
-            className="mx-6 border"
-            onClick={() => {
-              void menuControls.start('open')
-              setMenuOpened(true)
-            }}
-          >
-            <Icon name={'magnifying-glass-full'} size={'md'} />
-          </Button>
-        )}
+        <NavToggle
+          menuControls={menuControls}
+          isMenuOpened={isMenuOpened}
+          setMenuOpened={setMenuOpened}
+        />
+        <SearchBar
+          status={'idle'}
+          autoFocus
+          autoSubmit={true}
+          isMenuOpened={isMenuOpened}
+        />
         <div className="flex flex-grow flex-col items-center">
           {isMenuOpened && (
             <motion.div
@@ -437,11 +482,6 @@ function Navigation({
             </div>
           )}
         </div>
-        <NavToggle
-          menuControls={menuControls}
-          isMenuOpened={isMenuOpened}
-          setMenuOpened={setMenuOpened}
-        />
       </motion.div>
     </nav>
   )
@@ -453,7 +493,7 @@ export default function App() {
   const [isMenuOpened, setMenuOpened] = React.useState(false)
 
   return (
-    <div className="flex max-h-[calc(100vh-56px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
+    <div className="flex max-h-[calc(100vh-58px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
       {/*
 				this isn't placed in a conditional with isWide because the server render
 				doesn't know whether it should be around or not so we just use CSS to hide it
@@ -470,7 +510,7 @@ export default function App() {
         // this nonsense is here because we want the panels to be scrollable rather
         // than having the entire page be scrollable (at least on wider screens)
         className={cn(
-          'flex h-[calc(100vh-56.5px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
+          'flex h-[calc(100vh-58px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
           {
             'h-[unset]': !isWide && isMenuOpened,
           },
@@ -484,7 +524,7 @@ export default function App() {
         ) : null}
         <div
           className={cn(
-            'h-full w-full max-w-full sm:max-w-[calc(100%-56.5px)]',
+            'h-full w-full max-w-full sm:max-w-[calc(100%-58px)]',
             isMenuOpened ? 'hidden md:block' : '',
           )}
         >

@@ -112,7 +112,7 @@ export default function SciencesSubjectLayout() {
         {/* Sidebar */}
         <aside className="col-span-14 scrollbar-thin scrollbar-thumb-scrollbar row-span-1 border-r-2 border-primary/20">
           <div
-            className={`scrollbar-thin scrollbar-thumb-scrollbar px-auto flex h-[calc(100vh-56.5px)] w-full flex-col items-stretch gap-4 overflow-y-scroll p-base-padding pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
+            className={`scrollbar-thin scrollbar-thumb-scrollbar px-auto flex h-[calc(100vh-58px)] w-full flex-col items-stretch gap-4 overflow-y-scroll p-base-padding pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
           >
             {chapters.map((c) => (
               <ChapterCard
