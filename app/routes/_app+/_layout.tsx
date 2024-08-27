@@ -39,23 +39,23 @@ function HumanitiesEssayTabs() {
 export function NavHeader() {
   const user = useOptionalUser()
   return (
-    <header className={cn('w-full border-b px-8 py-6 text-primary-foreground')}>
+    <header className={cn('w-full border-b px-4 py-1 text-primary-foreground')}>
       <nav
         className={cn(
           'flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8',
         )}
       >
         <Link to={'/'} prefetch="intent">
-          <Logo className={'w-25 h-25 fill-foreground'} />
+          <Logo className={'h-12 w-[100px] fill-foreground'} />
         </Link>
         <HumanitiesEssayTabs />
         <div className="flex items-center gap-10">
           {user ? (
             <UserDropdown
-              buttonProps={{ variant: 'outline', className: 'h-16 w-16' }}
+              buttonProps={{ variant: 'outline', className: 'h-8 w-8' }}
             />
           ) : (
-            <Button asChild variant={'secondary'} size="lg">
+            <Button asChild variant={'secondary'} size="sm">
               <Link to="/login">Log In</Link>
             </Button>
           )}

@@ -49,7 +49,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
     <Link prefetch="intent" to={href}>
       <div
         className={cn(
-          'group overflow-hidden rounded-xl border-2 bg-card transition-all duration-300 ease-in-out',
+          'group max-w-[150px] overflow-hidden rounded-xl border-2 bg-card transition-all duration-300 ease-in-out',
           {
             'hover:border-foreground': !isLocked,
             'border-primary/40': isInProgress,
@@ -58,9 +58,9 @@ function ChapterCard({ name, state, image, href }: Chapter) {
           },
         )}
       >
-        <CardContent
+        <div
           className={cn(
-            `flex items-center justify-center border-b-2 px-12 pt-7 transition-all duration-300 ease-in-out`,
+            `p-x-6 flex items-center justify-center border-b-2 py-4 transition-all duration-300 ease-in-out`,
             {
               'group-hover:border-foreground': !isLocked,
               'border-muted bg-disabled': isLocked,
@@ -82,7 +82,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
             )}
             src={getChapterImgSrc(image?.id ?? name)}
           />
-        </CardContent>
+        </div>
         <CardFooter className="w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
           <span className="w-full text-xs 2xl:text-base">{name}</span>
         </CardFooter>
@@ -96,11 +96,11 @@ export default function SciencesSubjectLayout() {
 
   return (
     <>
-      <div className="grid grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
+      <div className="grid grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[170px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[180px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
         {/* Sidebar */}
         <aside className="col-span-14 scrollbar-thin scrollbar-thumb-scrollbar row-span-1 border-r-2 border-border">
           <div
-            className={`scrollbar-thin scrollbar-thumb-scrollbar flex h-[calc(100vh-113px)] flex-col gap-4 overflow-y-scroll p-8 pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
+            className={`scrollbar-thin scrollbar-thumb-scrollbar px-auto flex h-[calc(100vh-57px)] w-full flex-col items-stretch gap-4 overflow-y-scroll p-base-padding pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
           >
             {chapters.map((c) => (
               <ChapterCard
