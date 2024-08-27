@@ -110,6 +110,7 @@ export default function StudyMaterial() {
               <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
               <LinkButton to={`/cms/essays/${essay.id}/edit`}>Edit</LinkButton>
             </div>
+
             {essay.paragraphs.map((p) => (
               <Link
                 id={`${p.id}-paragraph`}
