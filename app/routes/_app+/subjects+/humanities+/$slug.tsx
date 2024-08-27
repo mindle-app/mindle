@@ -369,7 +369,7 @@ function Navigation({
   return (
     <nav className="hidden border-r border-primary/20 sm:flex">
       <motion.div
-        className="flex h-full flex-col justify-between"
+        className="h-[calc(100vh - 68px)] flex h-full flex-col justify-between overflow-scroll"
         initial={isMenuOpened ? 'open' : 'close'}
         variants={menuVariants}
         animate={menuControls}
