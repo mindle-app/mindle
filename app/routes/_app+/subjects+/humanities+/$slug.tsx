@@ -367,7 +367,7 @@ function Navigation({
   }
 
   return (
-    <nav className="hidden border-r sm:flex">
+    <nav className="hidden border-r border-primary/20 sm:flex">
       <motion.div
         className="flex h-full flex-col justify-between"
         initial={isMenuOpened ? 'open' : 'close'}
@@ -493,7 +493,7 @@ export default function App() {
   const [isMenuOpened, setMenuOpened] = React.useState(false)
 
   return (
-    <div className="flex max-h-[calc(100vh-58px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
+    <div className="flex max-h-[calc(100vh-68px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col">
       {/*
 				this isn't placed in a conditional with isWide because the server render
 				doesn't know whether it should be around or not so we just use CSS to hide it
@@ -510,7 +510,7 @@ export default function App() {
         // this nonsense is here because we want the panels to be scrollable rather
         // than having the entire page be scrollable (at least on wider screens)
         className={cn(
-          'flex h-[calc(100vh-58px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
+          'flex h-[calc(100vh-68px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-grow flex-col sm:flex-row',
           {
             'h-[unset]': !isWide && isMenuOpened,
           },
@@ -524,7 +524,7 @@ export default function App() {
         ) : null}
         <div
           className={cn(
-            'h-full w-full max-w-full sm:max-w-[calc(100%-58px)]',
+            'h-full w-full max-w-full sm:max-w-[calc(100%-68px)]',
             isMenuOpened ? 'hidden md:block' : '',
           )}
         >

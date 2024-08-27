@@ -97,7 +97,7 @@ export default function StudyMaterial() {
   return (
     <div className="flex h-full max-w-full flex-grow flex-col">
       <main className="flex flex-grow flex-col sm:grid sm:h-full sm:min-h-[800px] sm:grid-cols-1 sm:grid-rows-2 md:min-h-[unset] lg:grid-cols-2 lg:grid-rows-1">
-        <div className="relative flex h-full flex-col border-b sm:col-span-1 sm:row-span-1 sm:h-full lg:border-b-0 lg:border-r">
+        <div className="relative flex h-full flex-col border-b border-primary/20 sm:col-span-1 sm:row-span-1 sm:h-full lg:border-b-0 lg:border-r">
           <article
             id={essay.id}
             key={essay.id}
@@ -209,10 +209,16 @@ export default function StudyMaterial() {
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
             >
               {timerEnd ? (
-                <div className="flex h-full w-full flex-col items-center">
-                  <p>
-                    {minutes}:{seconds}
-                  </p>
+                <div className="flex h-full w-full flex-col items-center gap-2 px-6 py-9 [&_.ProseMirror]:px-0">
+                  <div className="mx-9 flex w-full justify-between rounded-xl border border-dashed border-primary px-6 py-5 text-primary">
+                    <p>
+                      Timp rămas:{' '}
+                      <span className="font-bold">
+                        {minutes}:{seconds}
+                      </span>
+                    </p>
+                    <Icon name={'timer'} size={'md'} />
+                  </div>
                   <BlockEditor
                     content={recallContent}
                     onBlur={({ editor }) => {
@@ -220,6 +226,21 @@ export default function StudyMaterial() {
                     }}
                     className="border-none bg-background text-foreground"
                   />
+                  <div>
+                    <Button
+                      variant={'secondary'}
+                      className="border border-primary bg-primary/10 text-primary"
+                      size={'wide'}
+                      onClick={onTimerEnd}
+                    >
+                      Încheie sesiune de recall{' '}
+                      <Icon
+                        className="ml-6 justify-between rounded-full border border-primary"
+                        name={'x'}
+                        size="lg"
+                      />
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <Card className="flex max-w-sm flex-col items-center justify-center gap-5 border-primary/20 p-9">
