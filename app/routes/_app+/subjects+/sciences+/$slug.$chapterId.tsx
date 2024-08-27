@@ -69,7 +69,7 @@ export default function ChapterPage() {
                 {subChapters.map((subChapter, i) => {
                   return (
                     <StepRow
-                      href={`/mindmap/chapter/${chapter.id}`}
+                      href={`/subjects/sciences/mindmap/chapter/${chapter.id}`}
                       number={subChapter.order ?? i}
                       title={subChapter.name}
                       key={`subchapter-row-${subChapter.id}`}
@@ -83,7 +83,7 @@ export default function ChapterPage() {
         </div>
         <div className="flex flex-col">
           <div className="flex h-[56px] flex-col justify-end lg:h-[84px] 2xl:h-[112px]">
-            <Link to={`/mindmap/chapter/${chapter?.id}`}>
+            <Link to={`/subjects/sciences/mindmap/chapter/${chapter.id}`}>
               <Button className="w-full" variant="outline">
                 Vezi mindmap-ul capitolului
               </Button>

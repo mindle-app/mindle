@@ -107,7 +107,7 @@ export default function SciencesSubjectIndex() {
         </div>
         <div className="flex flex-col gap-base-padding">
           <div className="flex h-[56px] flex-col justify-end lg:h-[84px] 2xl:h-[112px]">
-            <Link to={`mindmap/${chapter?.id}`}>
+            <Link to={`/subjects/sciences/mindmap/chapter/${chapter.id}`}>
               <Button className="w-full" variant="outline">
                 Vezi mindmap-ul capitolului
               </Button>

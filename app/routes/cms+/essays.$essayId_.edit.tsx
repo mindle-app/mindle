@@ -290,7 +290,7 @@ export default function EssayCMS() {
                 })}
               >
                 <span aria-hidden>
-                  <Icon name="plus">Paragraph</Icon>
+                  <Icon name="plus">Paragraph</Icon> 
                 </span>{' '}
                 <span className="sr-only">Add paragraph</span>
               </Button>
