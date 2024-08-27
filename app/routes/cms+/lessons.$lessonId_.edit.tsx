@@ -18,7 +18,7 @@ import {
 import { Form, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { z } from 'zod'
-import { Field } from '#app/components/forms.js'
+import { Field, RichTextField } from '#app/components/forms.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
@@ -248,8 +248,16 @@ export default function LessonCMS() {
                 ref={descControl.register}
                 {...getInputProps(fields.description, { type: 'text' })}
               />
+              <RichTextField
+                editorProps={{
+                  className: 'w-full  lg:min-w-[800px] ',
+                }}
+                labelProps={{ children: 'Description' }}
+                meta={fields.description}
+                errors={fields.description.errors}
+              />
             </div>
-            <div>
+            <div className="mt-4">
               <ImageChooser
                 meta={fields.image}
                 getImgSrc={(imageId) => getLessonImgSrc(imageId, true)}

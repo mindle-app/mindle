@@ -400,7 +400,7 @@ export function ComboboxField<V>({
 }
 
 type RichTextFieldProps = {
-  meta: FieldMetadata<string>
+  meta: FieldMetadata<string | null>
   labelProps?: React.LabelHTMLAttributes<HTMLLabelElement>
   errors?: ListOfErrors
   editorProps?: UseEditorOptions & { className?: string }

@@ -32,7 +32,6 @@ export const BubbleTextMenu = ({ editor }: TextMenuProps) => {
 
   return (
     <BubbleMenu
-      tippyOptions={{ popperOptions: { placement: 'top-start' } }}
       editor={editor}
       pluginKey="textMenu"
       shouldShow={states.shouldShow}
