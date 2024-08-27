@@ -1,3 +1,4 @@
+import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, Outlet, useParams, useSearchParams } from '@remix-run/react'
 import { Logo } from '#app/components/logo'
 import { Button } from '#app/components/ui/button'
@@ -7,8 +8,13 @@ import {
   SegmentedControlRoot,
 } from '#app/components/ui/segmented-control.tsx'
 import { UserDropdown } from '#app/components/user-dropdown.js'
+import { requireUserId } from '#app/utils/auth.server.js'
 import { cn } from '#app/utils/misc'
 import { useOptionalUser } from '#app/utils/user'
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  await requireUserId(request)
+}
 
 // This control is shown only on a humanities subject essay page. E.g
 // /subjects/humanities/$slug/$studyMaterialId/$essayId

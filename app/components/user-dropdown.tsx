@@ -24,9 +24,15 @@ export function UserDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button asChild variant="secondary" size={'icon'} {...buttonProps}>
-          <div className="cursor-pointer p-2">
-            <Icon name="user" size="lg" />
-          </div>
+          <Link
+            data-testid={'user-dropdown'}
+            to={`/users/${user.username}`}
+            // this is for progressive enhancement
+            onClick={(e) => e.preventDefault()}
+            className="flex items-center"
+          >
+            <Icon name="user" size={'md'} />
+          </Link>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
