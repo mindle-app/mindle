@@ -37,11 +37,11 @@ export function StepRow({
     >
       <div
         className={cn(
-          `lex-none items-center border-0 border-r-2 border-disabled bg-disabled p-4 transition-all duration-300 ease-in-out`,
+          `lex-none items-center border-0 border-r border-disabled bg-disabled p-4 transition-all duration-300 ease-in-out`,
           {
-            'border-active bg-primary/20 group-hover:bg-active-foreground dark:bg-primary/20':
+            'border-primary/40 bg-primary/20 group-hover:bg-active-foreground dark:bg-primary/20':
               isInProgress,
-            'border-complete bg-complete group-hover:bg-complete-foreground dark:bg-complete/40':
+            'border-emerald-500 bg-complete group-hover:bg-complete-foreground dark:bg-complete/40':
               isCompleted,
             'group-hover:border-foreground': !isLocked,
           },
