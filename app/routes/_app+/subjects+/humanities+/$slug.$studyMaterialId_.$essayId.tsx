@@ -218,7 +218,13 @@ export default function StudyMaterial() {
                         {minutes}:{seconds}
                       </span>
                     </p>
-                    <Icon name={'timer'} size={'md'} />
+                    <div className="flex items-center justify-center rounded-full bg-primary p-1">
+                      <Icon
+                        className="bg-primary text-primary-foreground"
+                        name={'timer'}
+                        size={'md'}
+                      />
+                    </div>
                   </div>
                   <BlockEditor
                     content={recallContent}
@@ -236,7 +242,7 @@ export default function StudyMaterial() {
                     >
                       Încheie sesiune de recall{' '}
                       <Icon
-                        className="ml-6 justify-between rounded-full border border-primary"
+                        className="ml-6 rounded-full bg-primary text-primary-foreground"
                         name={'x'}
                         size="lg"
                       />
