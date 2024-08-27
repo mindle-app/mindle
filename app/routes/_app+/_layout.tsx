@@ -14,6 +14,7 @@ import { useOptionalUser } from '#app/utils/user'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request)
+  return null
 }
 
 // This control is shown only on a humanities subject essay page. E.g
