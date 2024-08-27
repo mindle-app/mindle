@@ -428,7 +428,7 @@ function Navigation({
                                 })
                               }
                             >
-                              <span className="group-hover:underline">
+                              <span className="text-start group-hover:underline">
                                 {title}
                               </span>
                               {author?.name ? (
