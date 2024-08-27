@@ -28,6 +28,9 @@ import {
   DialogTrigger,
 } from '#app/components/ui/dialog.js'
 
+import { Icon } from '#app/components/ui/icon.js'
+import { LinkButton } from '#app/components/ui/link-button.js'
+import { ProgressWithPercent } from '#app/components/ui/progress.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import {
@@ -41,9 +44,6 @@ import {
   getMindmapProgress,
 } from '#app/utils/mindmap.js'
 import { toUserState, UserState, useUser } from '#app/utils/user.js'
-import { LinkButton } from '#app/components/ui/link-button.js'
-import { Icon } from '#app/components/ui/icon.js'
-import { ProgressWithPercent } from '#app/components/ui/progress.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)

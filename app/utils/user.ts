@@ -25,6 +25,11 @@ export function useUser() {
   return maybeUser
 }
 
+export function useIsAdmin() {
+  const user = useUser()
+  return !!user.roles.find((role) => role.name === 'admin')
+}
+
 type Action = 'create' | 'read' | 'update' | 'delete'
 type Entity = 'user' | 'note'
 type Access = 'own' | 'any' | 'own,any' | 'any,own'

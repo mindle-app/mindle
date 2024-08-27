@@ -5,23 +5,47 @@ import { type LinksFunction, type LoaderFunctionArgs } from '@remix-run/node'
 import { json, Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useState } from 'react'
+import { type RenderCustomNodeElementFn } from 'react-d3-tree'
 import { toast as showToast } from 'sonner'
-import { BlockEditor } from '#app/components/richtext-editor/components/block-editor/index.js'
+import { ClickableElement } from '#app/components/mindmap/clickable-element.js'
+import { Mindmap } from '#app/components/mindmap/mindmap.js'
+import { NonClickableElement } from '#app/components/mindmap/non-clickable-element.js'
+import {
+  BlockEditor,
+  PreviewHTML,
+} from '#app/components/richtext-editor/components/block-editor/index.js'
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
 import { Card, CardDescription, CardTitle } from '#app/components/ui/card.js'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '#app/components/ui/dialog.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
+import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
+import {
+  assembleMindmapFromLessons,
+  type MindmapTree,
+} from '#app/utils/mindmap.js'
 import { cn, copyRichText } from '#app/utils/misc.js'
 import { withParam } from '#app/utils/search-params.js'
+import { useIsAdmin, UserState } from '#app/utils/user.js'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
 }
 const tabs = ['explicatie', 'recall', 'mindmap', 'chat'] as const
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const userId = await requireUserId(request)
+  const searchParams = new URL(request.url).searchParams
   const essay = await prisma.essay.findUnique({
     where: { id: params.essayId },
     include: { paragraphs: { orderBy: { order: 'asc' } } },
@@ -34,6 +58,21 @@ export async function loader({ params }: LoaderFunctionArgs) {
   invariantResponse(essay, 'Essay not found', { status: 404 })
   invariantResponse(studyMaterial, 'Study material not found', { status: 404 })
 
+  const paragraph = await prisma.essayParagraph.findUnique({
+    where: { id: searchParams.get('selectedParagraph') ?? '__no_selected' },
+    include: {
+      lessons: {
+        include: {
+          parentLesson: true,
+          image: true,
+          userLessons: { where: { userId } },
+        },
+
+        orderBy: { order: 'asc' },
+      },
+    },
+  })
+
   const titleBits = {
     studyMaterialTitle: studyMaterial?.title,
     studyMaterialId: studyMaterial.id,
@@ -41,7 +80,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     essayId: essay.id,
   }
 
-  return json({ essay, titleBits })
+  return json({
+    essay,
+    titleBits,
+    paragraphMindmap: paragraph?.lessons.length
+      ? assembleMindmapFromLessons(paragraph?.lessons)
+      : null,
+  })
 }
 
 function useTimeLeft(
@@ -82,7 +127,7 @@ function useTimeLeft(
 }
 
 export default function StudyMaterial() {
-  const { essay } = useLoaderData<typeof loader>()
+  const { essay, paragraphMindmap } = useLoaderData<typeof loader>()
   const [timerEnd, setTimerEnd] = useState<dayjs.Dayjs | null>(null)
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('preview') ?? tabs[0]
@@ -92,6 +137,85 @@ export default function StudyMaterial() {
     : null
   const [recallContent, setRecallContent] = useState('')
   const onTimerEnd = useCallback(() => setTimerEnd(null), [])
+
+  const isAdmin = useIsAdmin()
+
+  const renderNode = useCallback<RenderCustomNodeElementFn>(
+    ({ nodeDatum }) => {
+      // TODO Parse with Zod
+      const treeDatum = nodeDatum as unknown as MindmapTree
+      const buttonText =
+        treeDatum.attributes?.displayId ?? treeDatum.attributes?.id
+      const text = treeDatum.name
+      const noPopup = treeDatum?.attributes?.noPopup
+      const x = 0
+      const y = -50
+
+      const element = (
+        <g overflow="visible">
+          <foreignObject
+            overflow="visible"
+            width={`${nodeDatum.attributes?.width ?? 200}px`}
+            height={`${nodeDatum.attributes?.height ?? 200}px`}
+            x={x}
+            y={y}
+          >
+            {noPopup ? (
+              <NonClickableElement text={text} />
+            ) : (
+              <ClickableElement
+                text={text}
+                buttonText={buttonText?.toString() ?? ''}
+                state={UserState.IN_PROGRESS}
+                // next lesson is leaf that is in progress
+                isNextLesson={false}
+              />
+            )}
+          </foreignObject>
+        </g>
+      )
+      const description = treeDatum.attributes?.description
+      const imageUrl = treeDatum.attributes.imageUrl
+
+      if (description || imageUrl) {
+        return (
+          <Dialog>
+            <DialogTrigger asChild>{element}</DialogTrigger>
+            <DialogContent className="my-4 max-h-[90vh] overflow-scroll p-12 pb-6">
+              <DialogHeader className="gap-8">
+                <DialogTitle className="flex items-center text-2xl">
+                  {text}
+                  {isAdmin ? (
+                    <Link to={`/cms/lessons/${treeDatum.attributes?.id}/edit`}>
+                      <Button variant={'link'}>Edit</Button>
+                    </Link>
+                  ) : null}
+                </DialogTitle>
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt="Lesson image"
+                    className="h-auto w-full"
+                  />
+                )}
+                <DialogDescription className="text-xl text-foreground">
+                  <PreviewHTML
+                    content={description ?? ''}
+                    className="border-none bg-background"
+                  />
+                </DialogDescription>
+              </DialogHeader>
+              <DialogClose>
+                <Button className="mt-8 w-full">Am înțeles</Button>
+              </DialogClose>
+            </DialogContent>
+          </Dialog>
+        )
+      }
+      return <Button asChild>{element}</Button>
+    },
+    [isAdmin],
+  )
 
   const { seconds, minutes } = useTimeLeft(timerEnd, { onTimerEnd })
   return (
@@ -105,7 +229,7 @@ export default function StudyMaterial() {
           >
             <div className="flex items-center gap-1">
               <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
-              <LinkButton to={`/cms/essays/${essay.id}/edit`}>Edit</LinkButton>
+              <LinkButton to={`/cms/essays/${essay.id}`}>Edit</LinkButton>
             </div>
 
             {essay.paragraphs.map((p) => (
@@ -279,7 +403,14 @@ export default function StudyMaterial() {
             <TabsContent
               value="mindmap"
               className="flex w-full flex-grow items-center justify-center self-start radix-state-inactive:hidden"
-            ></TabsContent>
+            >
+              {paragraphMindmap ? (
+                <Mindmap
+                  mindmap={paragraphMindmap}
+                  renderCustomNodeElement={renderNode}
+                />
+              ) : null}
+            </TabsContent>
             <TabsContent
               value="chat"
               className="flex w-full flex-grow items-start justify-center self-start overflow-hidden radix-state-inactive:hidden"

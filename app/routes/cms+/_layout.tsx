@@ -120,14 +120,14 @@ export default function CmsLayout() {
           </nav>
         </aside>
 
-        <div className="flex w-full flex-grow pl-4 pt-2">
+        <div className="flex w-full flex-grow pb-5 pl-4 pt-2">
           <Outlet />
         </div>
       </div>
       <SimpleTooltip content={'Scroll to top'}>
         <Button
           size={'icon'}
-          className="fixed bottom-2 right-12"
+          className="fixed bottom-2 right-12 rounded-full"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           <Icon name={'chevron-up'} />

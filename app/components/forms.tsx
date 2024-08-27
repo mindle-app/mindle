@@ -424,6 +424,7 @@ export function RichTextField({
     <div>
       <Label htmlFor={meta.name} {...labelProps} />
       <Editor
+        immediatelyRender={false} // fix for possible SSR hydration errors
         onFocus={control.focus}
         onBlur={control.blur}
         content={control.value}

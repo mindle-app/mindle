@@ -1,4 +1,4 @@
-import { type Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import {
   type DefaultArgs,
   type GetFindResult,
@@ -60,21 +60,13 @@ export type MindmapLesson = GetFindResult<
   }
 >
 
-export async function generateSubchapterMindmap(
-  subchapterId: number,
-  userId: string,
-) {
-  const lessons = await prisma.lesson.findMany({
-    where: { subchapterId },
-    include: {
-      parentLesson: true,
-      userLessons: { where: { userId } },
-      image: true,
-    },
+const lessonForMindmap = Prisma.validator<Prisma.LessonDefaultArgs>()({
+  include: { parentLesson: true, userLessons: true, image: true },
+})
 
-    orderBy: { order: 'asc' },
-  })
+type LessonForMindmap = Prisma.LessonGetPayload<typeof lessonForMindmap>
 
+export function assembleMindmapFromLessons(lessons: LessonForMindmap[]) {
   let root: MindmapTree | null = null
 
   // Convert each lesson to Mindmap format and store in a map
@@ -128,6 +120,24 @@ export async function generateSubchapterMindmap(
     throw new Error('Root node not found')
   }
   return root
+}
+
+export async function generateSubchapterMindmap(
+  subchapterId: number,
+  userId: string,
+) {
+  const lessons = await prisma.lesson.findMany({
+    where: { subchapterId },
+    include: {
+      parentLesson: true,
+      userLessons: { where: { userId } },
+      image: true,
+    },
+
+    orderBy: { order: 'asc' },
+  })
+
+  return assembleMindmapFromLessons(lessons)
 }
 
 export function getMindmapProgress(m: MindmapTree) {
