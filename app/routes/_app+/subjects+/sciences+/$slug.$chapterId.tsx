@@ -1,13 +1,17 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
+import { useMemo } from 'react'
 import { z } from 'zod'
 import { StepRow } from '#app/components/step-row.js'
 import { Button } from '#app/components/ui/button.js'
+import { Card, CardContent } from '#app/components/ui/card.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { Progress } from '#app/components/ui/progress.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
+import { cn } from '#app/utils/misc.js'
 import { UserState } from '#app/utils/user.js'
-import { Card } from '#app/components/ui/card.js'
 
 const ParamsSchema = z.object({
   chapterId: z.string().transform((v) => parseInt(v, 10)),
@@ -48,6 +52,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function ChapterPage() {
   const { chapter, subject, subChapters } = useLoaderData<typeof loader>()
+  const learnedSubChapters = useMemo(
+    () =>
+      subChapters.reduce((acc, subChapter) => {
+        if (subChapter.state === UserState.DONE) {
+          return acc + 1
+        }
+        return acc
+      }, 0),
+    [subChapters],
+  )
+  const percentDone = (learnedSubChapters / subChapters.length) * 100
 
   return (
     <>
@@ -81,7 +96,7 @@ export default function ChapterPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-base-padding">
           <div className="flex h-[56px] flex-col justify-end lg:h-[84px] 2xl:h-[112px]">
             <Link to={`/subjects/sciences/mindmap/chapter/${chapter.id}`}>
               <Button className="w-full" variant="outline">
@@ -89,6 +104,25 @@ export default function ChapterPage() {
               </Button>
             </Link>
           </div>
+          <Card className="relative overflow-hidden">
+            <Progress
+              value={percentDone}
+              className="h-16 w-full rounded-none"
+            />
+            <div
+              className={cn(`absolute top-5 w-full text-primary-foreground`)}
+              style={{ left: `${percentDone / 2}%` }}
+            >
+              {percentDone}%
+            </div>
+            <CardContent className="flex flex-col items-center justify-center">
+              <Icon name={'checkmark-gear'} className="h-30 w-28" />
+              <h2 className="font-coHeadlineBold text-2xl">
+                {learnedSubChapters} / {subChapters.length} Subcapitole complete
+              </h2>
+              <p>{chapter.name}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>
