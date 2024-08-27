@@ -103,9 +103,6 @@ export default function StudyMaterial() {
             key={essay.id}
             className="shadow-on-scrollbox scrollbar-thin scrollbar-thumb-scrollbar relative h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto p-2 sm:p-10 sm:pt-8"
           >
-            {timerEnd ? (
-              <div className="absolute bottom-0 left-0 right-0 top-0 z-50 backdrop-blur-md" />
-            ) : null}
             <div className="flex items-center gap-1">
               <h1 className="font-coHeadlineBold text-2xl">{essay.title}</h1>
               <LinkButton to={`/cms/essays/${essay.id}/edit`}>Edit</LinkButton>
@@ -124,13 +121,16 @@ export default function StudyMaterial() {
                   dangerouslySetInnerHTML={{ __html: p.content }}
                   key={p.id}
                   className={cn(
-                    'default-transition ProseMirror rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-primary/20 dark:hover:bg-primary/30',
+                    'default-transition ProseMirror relative rounded border-none bg-background p-2 text-foreground transition-colors hover:bg-primary/20 dark:hover:bg-primary/30',
                     {
                       'bg-primary/10 dark:bg-primary/20':
                         selectedParagraphId === p.id,
                     },
                   )}
                 />
+                {timerEnd ? (
+                  <div className="absolute bottom-0 left-0 right-0 top-0 z-50 backdrop-blur-md" />
+                ) : null}
                 <div
                   className={cn(
                     'absolute -right-2 -top-2 z-50 hidden items-center justify-center rounded-full border border-primary bg-card p-2',
@@ -215,7 +215,8 @@ export default function StudyMaterial() {
                     <p>
                       Timp rămas:{' '}
                       <span className="font-bold">
-                        {minutes}:{seconds}
+                        {minutes}:{seconds < 10 ? '0' : ''}
+                        {seconds}
                       </span>
                     </p>
                     <div className="flex items-center justify-center rounded-full bg-primary p-1">
