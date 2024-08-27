@@ -98,9 +98,9 @@ export default function SciencesSubjectLayout() {
     <>
       <div className="grid grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
         {/* Sidebar */}
-        <aside className="col-span-1 row-span-1 border-r-2 border-border">
+        <aside className="col-span-14 scrollbar-thin scrollbar-thumb-scrollbar row-span-1 border-r-2 border-border">
           <div
-            className={`flex h-[calc(100vh-113px)] flex-col gap-4 overflow-y-scroll p-8 pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
+            className={`scrollbar-thin scrollbar-thumb-scrollbar flex h-[calc(100vh-113px)] flex-col gap-4 overflow-y-scroll p-8 pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
           >
             {chapters.map((c) => (
               <ChapterCard
