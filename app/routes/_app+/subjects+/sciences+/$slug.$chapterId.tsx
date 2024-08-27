@@ -78,7 +78,7 @@ export default function ChapterPage() {
             {chapter.name}
           </h1>
           <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
-            <div className="flex h-full max-h-full w-full flex-col gap-3 rounded-sm border-2 border-solid border-border bg-card p-base-padding shadow-sm xl:rounded-md 2xl:flex-col 2xl:rounded-lg">
+            <div className="flex h-full max-h-full w-full flex-col gap-3 rounded-xl border-2 border-solid border-primary/20 bg-card p-base-padding shadow-sm xl:rounded-md 2xl:flex-col">
               <div className="flex items-center justify-between"></div>
               <div className="flex w-full flex-col gap-1 overflow-y-scroll py-1 transition-all duration-300 ease-in-out md:gap-3 2xl:gap-6 2xl:py-2">
                 {subChapters.map((subChapter, i) => {
@@ -104,7 +104,7 @@ export default function ChapterPage() {
               </Button>
             </Link>
           </div>
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden border-primary/20">
             <Progress
               value={percentDone}
               className="h-16 w-full rounded-none"

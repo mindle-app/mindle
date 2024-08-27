@@ -56,7 +56,10 @@ export function NavHeader() {
         <div className="flex items-center gap-10">
           {user ? (
             <UserDropdown
-              buttonProps={{ variant: 'outline', className: 'h-8 w-8' }}
+              buttonProps={{
+                variant: 'outline',
+                className: 'h-10 w-10 border-primary/40',
+              }}
             />
           ) : (
             <Button asChild variant={'secondary'} size="sm">

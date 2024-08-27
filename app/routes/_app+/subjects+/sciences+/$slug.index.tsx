@@ -80,7 +80,7 @@ export default function SciencesSubjectIndex() {
             {chapter.name}
           </h1>
           <div className="flex h-full max-h-[1080px] w-full flex-row gap-base-padding">
-            <div className="flex h-full max-h-full w-full flex-col gap-3 rounded-sm border-2 border-solid border-border bg-card p-base-padding shadow-sm xl:rounded-md 2xl:flex-col 2xl:rounded-lg">
+            <div className="flex h-full max-h-full w-full flex-col gap-3 rounded-xl border-2 border-solid border-primary/20 bg-card p-base-padding shadow-sm 2xl:flex-col 2xl:rounded-lg">
               <div className="flex items-center justify-between">
                 <h2 className="font-coHeadlineBold text-2xl text-foreground">
                   Ce urmează pe azi
