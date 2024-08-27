@@ -17,6 +17,7 @@ import { z } from 'zod'
 import { Field, RichTextField, SelectField } from '#app/components/forms.js'
 
 import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
+import { Icon } from '#app/components/ui/icon.js'
 import { Label } from '#app/components/ui/label.js'
 import { LinkButton } from '#app/components/ui/link-button.js'
 
@@ -174,17 +175,25 @@ export default function EssayCMS() {
                       />
 
                       <div className="flex w-full flex-col gap-1 rounded border pl-10">
-                        <Field
-                          className="max-w-[100px]"
-                          labelProps={{ children: 'Order' }}
-                          inputProps={{
-                            disabled: true,
-                            ...getInputProps(paragraph.order, {
-                              type: 'number',
-                            }),
-                          }}
-                          errors={paragraph.order.errors}
-                        />
+                        <div className="flex w-full items-center justify-between">
+                          <Field
+                            className="max-w-[100px]"
+                            labelProps={{ children: 'Order' }}
+                            inputProps={{
+                              disabled: true,
+                              ...getInputProps(paragraph.order, {
+                                type: 'number',
+                              }),
+                            }}
+                            errors={paragraph.order.errors}
+                          />
+                          <LinkButton
+                            to={`paragraph/${paragraph.id.value}/mindmap/edit`}
+                          >
+                            Mindmap
+                            <Icon name={'arrow-right'} />
+                          </LinkButton>
+                        </div>
                         <RichTextField
                           disabled={true}
                           editorProps={{

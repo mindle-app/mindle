@@ -21,22 +21,13 @@ import { Icon } from '#app/components/ui/icon.js'
 import { StatusButton } from '#app/components/ui/status-button.js'
 import { prisma } from '#app/utils/db.server.js'
 import { MAX_UPLOAD_SIZE } from '#app/utils/image.js'
+import { flattenLessons, type Lesson } from '#app/utils/lesson.js'
 import { getLessonImgSrc, useIsPending } from '#app/utils/misc.js'
 import { redirectWithToast } from '#app/utils/toast.server.js'
 import {
-  type Lesson,
   loader as subChapterLoader,
   SubchapterEditorSchema,
 } from './subchapters.$subchapterId'
-
-function flattenLessons(lessons: Lesson[]): Lesson[] {
-  return lessons.flatMap((l) => [
-    l,
-    ...(l.childLessons && l.childLessons.length
-      ? flattenLessons(l.childLessons)
-      : []),
-  ])
-}
 
 export const loader = subChapterLoader
 
@@ -261,7 +252,7 @@ export default function SubchapterCMS() {
                   <Icon name={'plus'} className="ml-2" />
                 </Button>
               </div>
-              <LessonList lessons={lessons} />
+              <LessonListEdit lessons={lessons} />
             </div>
             <ErrorList id={form.id} errors={form.errors} />
           </Form>
@@ -271,7 +262,11 @@ export default function SubchapterCMS() {
   )
 }
 
-function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
+export function LessonListEdit({
+  lessons,
+}: {
+  lessons: FieldMetadata<Lesson>[]
+}) {
   return lessons.map((s) => {
     const lesson = s.getFieldset()
     const image = lesson.image.getFieldset()
@@ -342,7 +337,7 @@ function LessonList({ lessons }: { lessons: FieldMetadata<Lesson>[] }) {
           {lesson.childLessons.getFieldList().length ? (
             <div className="pl-8">
               <p>Children</p>
-              <LessonList lessons={childLessons.getFieldList()} />
+              <LessonListEdit lessons={childLessons.getFieldList()} />
             </div>
           ) : null}
         </div>

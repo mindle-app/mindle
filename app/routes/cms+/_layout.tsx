@@ -1,15 +1,25 @@
-import { type HeadersFunction, type LoaderFunctionArgs } from '@remix-run/node'
+import {
+  type LinksFunction,
+  type HeadersFunction,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
 import { Link, NavLink, Outlet } from '@remix-run/react'
+import { useState } from 'react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.js'
 import { Logo } from '#app/components/logo'
 
+import editorStyleSheetUrl from '#app/components/richtext-editor/styles/index.css?url'
 import { Button } from '#app/components/ui/button.js'
+import { Icon } from '#app/components/ui/icon.js'
+import { SimpleTooltip } from '#app/components/ui/tooltip.js'
 import { UserDropdown } from '#app/components/user-dropdown.js'
 import { cn } from '#app/utils/misc.tsx'
 import { requireUserWithRole } from '#app/utils/permissions.server.js'
 import { useOptionalUser } from '#app/utils/user.js'
-import { useState } from 'react'
-import { Icon } from '#app/components/ui/icon.js'
+
+export const links: LinksFunction = () => {
+  return [{ rel: 'stylesheet', href: editorStyleSheetUrl }].filter(Boolean)
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserWithRole(request, 'admin')
@@ -114,6 +124,15 @@ export default function CmsLayout() {
           <Outlet />
         </div>
       </div>
+      <SimpleTooltip content={'Scroll to top'}>
+        <Button
+          size={'icon'}
+          className="fixed bottom-2 right-12"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <Icon name={'chevron-up'} />
+        </Button>
+      </SimpleTooltip>
     </div>
   )
 }
