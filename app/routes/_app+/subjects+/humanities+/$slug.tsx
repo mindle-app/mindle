@@ -168,6 +168,16 @@ export function SearchBar({
   )
 }
 
+const path01Variants = {
+  open: { d: 'M3.06061 2.99999L21.0606 21' },
+  closed: { d: 'M0 9.5L24 9.5' },
+}
+
+const path02Variants = {
+  open: { d: 'M3.00006 21.0607L21 3.06064' },
+  moving: { d: 'M0 14.5L24 14.5' },
+  closed: { d: 'M0 14.5L15 14.5' },
+}
 function NavToggle({
   title,
   isMenuOpened,
@@ -179,19 +189,10 @@ function NavToggle({
   setMenuOpened: (value: boolean) => void
   menuControls?: AnimationControls
 }) {
-  const path01Variants = {
-    open: { d: 'M3.06061 2.99999L21.0606 21' },
-    closed: { d: 'M0 9.5L24 9.5' },
-  }
-  const path02Variants = {
-    open: { d: 'M3.00006 21.0607L21 3.06064' },
-    moving: { d: 'M0 14.5L24 14.5' },
-    closed: { d: 'M0 14.5L15 14.5' },
-  }
   const path01Controls = useAnimationControls()
   const path02Controls = useAnimationControls()
 
-  async function toggleMenu() {
+  const toggleMenu = React.useCallback(async () => {
     await menuControls?.start(isMenuOpened ? 'close' : 'open')
     setMenuOpened(!isMenuOpened)
 
@@ -204,24 +205,25 @@ function NavToggle({
       void path01Controls.start(path01Variants.open)
       void path02Controls.start(path02Variants.open)
     }
-  }
-
-  const latestToggleMenu = React.useRef(toggleMenu)
-  React.useEffect(() => {
-    latestToggleMenu.current = toggleMenu
-  })
+  }, [
+    isMenuOpened,
+    menuControls,
+    path01Controls,
+    path02Controls,
+    setMenuOpened,
+  ])
 
   React.useEffect(() => {
     if (!isMenuOpened) return
 
     function handleKeyUp(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        void latestToggleMenu.current()
+        toggleMenu()
       }
     }
     document.addEventListener('keyup', handleKeyUp)
     return () => document.removeEventListener('keyup', handleKeyUp)
-  }, [isMenuOpened])
+  }, [isMenuOpened, toggleMenu])
 
   return (
     <div

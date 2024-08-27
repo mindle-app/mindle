@@ -61,19 +61,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     select: { id: true, name: true },
   })
   const sm = prisma.studyMaterial.findMany({
-    select: { id: true, title: true },
+    select: { id: true, title: true, subjectId: true },
   })
   const response = await promiseHash({
     authors: a,
     essay,
     studyMaterials: sm,
   })
+  const studyMaterial = response.studyMaterials.find(
+    (s) => s.id === response.essay?.studyMaterialId,
+  )
+  const subject = await prisma.subject.findFirst({
+    where: { id: studyMaterial?.subjectId },
+  })
+
   if (params.essayId !== 'create')
     invariantResponse(response.essay, 'Essay not found', {
       status: 404,
     })
   return json({
     ...response,
+    studyMaterial,
+    subject,
     essay: {
       ...response.essay,
       ...(studyMaterialId ? { studyMaterialId } : {}),
@@ -82,7 +91,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function EssayCMS() {
-  const { essay, authors, studyMaterials } = useLoaderData<typeof loader>()
+  const { essay, authors, studyMaterials, studyMaterial, subject } =
+    useLoaderData<typeof loader>()
   const [form, fields] = useForm({
     id: 'essay-editor',
     constraint: getZodConstraint(EssaySchema),
@@ -108,6 +118,11 @@ export default function EssayCMS() {
             <div className="flex items-center gap-2">
               <p className="text-2xl">Essay</p>
               <LinkButton to={'edit'}>Edit</LinkButton>
+              <LinkButton
+                to={`/subjects/${subject?.type.toLowerCase()}/${subject?.slug}/${studyMaterial?.id}/${essay.id}`}
+              >
+                Preview
+              </LinkButton>
             </div>
 
             <div className="flex gap-4">
