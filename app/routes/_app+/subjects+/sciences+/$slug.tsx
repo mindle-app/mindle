@@ -33,17 +33,24 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...c,
       state: userChapters[0]?.state ?? UserState.LOCKED,
     })),
+    studyProgramActive: false,
   })
 }
 
 type Chapter = ReturnType<
   typeof useLoaderData<typeof loader>
->['chapters'][0] & { href: string }
+>['chapters'][0] & { href: string; studyProgramActive: boolean }
 
-function ChapterCard({ name, state, image, href }: Chapter) {
-  const isInProgress = state === UserState.IN_PROGRESS
-  const isCompleted = state === UserState.DONE
-  const isLocked = state === UserState.LOCKED
+function ChapterCard({
+  name,
+  state,
+  image,
+  href,
+  studyProgramActive,
+}: Chapter) {
+  const isInProgress = !studyProgramActive || state === UserState.IN_PROGRESS
+  const isCompleted = state === UserState.DONE && studyProgramActive
+  const isLocked = state === UserState.LOCKED && studyProgramActive
   const icon: IconName = isCompleted
     ? 'check'
     : isInProgress
@@ -54,7 +61,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
     <Link className="relative" prefetch="intent" to={href}>
       <div
         className={cn(
-          'group flex aspect-square max-w-[150px] flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 ease-in-out',
+          'group flex max-w-[150px] flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 ease-in-out',
           {
             'hover:border-foreground': !isLocked,
             'border-primary/40': isInProgress,
@@ -69,7 +76,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
         />
         <div
           className={cn(
-            `p-x-6 flex h-[70%] items-center justify-center border-b py-4 transition-all duration-300 ease-in-out`,
+            `flex h-[100px] w-full items-center justify-center border-b px-6 py-4 transition-all duration-300 ease-in-out 2xl:h-[120px]`,
             {
               'group-hover:border-foreground': !isLocked,
               'border-muted bg-disabled': isLocked,
@@ -81,7 +88,7 @@ function ChapterCard({ name, state, image, href }: Chapter) {
           )}
         >
           <SvgImage
-            className={cn('flex h-full w-full items-center justify-center', {
+            className={cn('h-full w-full', {
               'fill-active-svg border-active-border': isInProgress,
               'fill-disabled-svg border-disabled-border': isLocked,
               'fill-complete-svg border-complete-border': isCompleted,
@@ -89,14 +96,14 @@ function ChapterCard({ name, state, image, href }: Chapter) {
             src={getChapterImgSrc(image?.id ?? name)}
           />
         </div>
-        <div className="w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:p-4 2xl:text-base">
+        <div className="h-[50px] w-full p-2 text-center font-sans font-bold leading-none md:text-xs 2xl:h-[70px] 2xl:p-4 2xl:text-base">
           <span className="w-full text-xs 2xl:text-base">{name}</span>
         </div>
       </div>
       {/* Dashing line from one card to the next*/}
       <div
         className={cn(
-          'absolute -bottom-2 left-0 right-0 -z-10 mx-auto h-5 w-[0.1px] border-r border-dashed border-foreground',
+          'absolute -bottom-5 left-0 right-0 -z-10 mx-auto h-20 w-[0.1px] border-r border-dashed border-foreground',
         )}
       />
     </Link>
@@ -104,7 +111,8 @@ function ChapterCard({ name, state, image, href }: Chapter) {
 }
 
 export default function SciencesSubjectLayout() {
-  const { chapters, subject } = useLoaderData<typeof loader>()
+  const { chapters, subject, studyProgramActive } =
+    useLoaderData<typeof loader>()
 
   return (
     <>
@@ -116,6 +124,7 @@ export default function SciencesSubjectLayout() {
           >
             {chapters.map((c) => (
               <ChapterCard
+                studyProgramActive={studyProgramActive}
                 key={c.name}
                 {...c}
                 href={`/subjects/sciences/${subject.slug}/${c.id}`}

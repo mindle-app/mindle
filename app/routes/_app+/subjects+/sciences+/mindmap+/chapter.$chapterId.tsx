@@ -133,11 +133,11 @@ export default function ChapterMindmap() {
 
   return (
     <>
-      <div className="grid min-h-screen grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[240px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[224px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
+      <div className="grid grid-rows-[auto_1fr] border-border md:grid-cols-[140px_auto] lg:grid-cols-[170px_auto] lg:grid-rows-[auto_1fr] 2xl:grid-cols-[180px_auto] 2xl:grid-rows-[auto_1fr] min-[2400px]:border-2">
         {/* Sidebar */}
-        <aside className="col-span-1 row-span-1 border-r-2 border-border">
+        <aside className="col-span-14 scrollbar-thin scrollbar-thumb-scrollbar row-span-1 border-r-2 border-primary/20">
           <div
-            className={`flex max-h-screen flex-col gap-4 overflow-y-scroll p-8 transition-all duration-300 ease-in-out md:h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] xl:h-[calc(100vh-100px)] 2xl:h-[calc(100vh-100px)] 2xl:gap-7`}
+            className={`scrollbar-thin scrollbar-thumb-scrollbar px-auto flex h-[calc(100vh-58px)] w-full flex-col items-stretch gap-4 overflow-y-scroll p-base-padding pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
           >
             {quizzes.map((q) => (
               <QuizCard key={q.id} {...q} state={toUserState(q.state)} />

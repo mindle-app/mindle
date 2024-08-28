@@ -46,7 +46,11 @@ export const Mindmap = ({ mindmap, ...rest }: MindmapProps) => {
   const zoom = attr ? Number(attr.zoom) : 0.5
 
   return (
-    <div id="treeWrapper" ref={containerRef} className="h-full w-full">
+    <div
+      id="treeWrapper"
+      ref={containerRef}
+      className="h-full max-h-[85vh] w-full"
+    >
       <Tree
         translate={translate}
         orientation="horizontal"

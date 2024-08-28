@@ -9,6 +9,7 @@ interface StepRowProps {
   subtitle?: string
   state: UserState
   href: string
+  studyProgramActive: boolean
 }
 
 export function StepRow({
@@ -17,10 +18,11 @@ export function StepRow({
   subtitle,
   state = UserState.LOCKED,
   href,
+  studyProgramActive,
 }: StepRowProps) {
-  const isInProgress = state === UserState.IN_PROGRESS
-  const isCompleted = state === UserState.DONE
-  const isLocked = state === UserState.LOCKED
+  const isInProgress = !studyProgramActive || state === UserState.IN_PROGRESS
+  const isCompleted = state === UserState.DONE && studyProgramActive
+  const isLocked = state === UserState.LOCKED && studyProgramActive
 
   return (
     <Link

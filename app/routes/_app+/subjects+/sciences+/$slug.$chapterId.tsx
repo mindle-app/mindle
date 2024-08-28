@@ -47,11 +47,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...s,
       state: (userSubchapters[0]?.state as UserState) ?? UserState.LOCKED,
     })),
+    studyProgramActive: false,
   })
 }
 
 export default function ChapterPage() {
-  const { chapter, subject, subChapters } = useLoaderData<typeof loader>()
+  const { chapter, subject, subChapters, studyProgramActive } =
+    useLoaderData<typeof loader>()
   const learnedSubChapters = useMemo(
     () =>
       subChapters.reduce((acc, subChapter) => {
@@ -84,6 +86,7 @@ export default function ChapterPage() {
                 {subChapters.map((subChapter, i) => {
                   return (
                     <StepRow
+                      studyProgramActive={studyProgramActive}
                       href={`/subjects/sciences/mindmap/chapter/${chapter.id}`}
                       number={subChapter.order ?? i}
                       title={subChapter.name}
