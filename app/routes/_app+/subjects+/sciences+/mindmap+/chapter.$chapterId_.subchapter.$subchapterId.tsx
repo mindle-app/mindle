@@ -80,6 +80,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
     subchapterMindmap,
     subchapterProgress: getMindmapProgress(subchapterMindmap),
+    studyProgramActive: false,
   })
 }
 
@@ -192,9 +193,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function SubchapterMindmap() {
-  const { quizzes, subchapterMindmap, subchapterProgress } =
+  const { quizzes, subchapterMindmap, subchapterProgress, studyProgramActive } =
     useLoaderData<typeof loader>()
-  const studyProgramActive = true
   const completeLesson = useFetcher<typeof action>()
   const user = useUser()
   const isAdmin = user.roles.find((role) => role.name === 'admin')
@@ -337,7 +337,15 @@ export default function SubchapterMindmap() {
             className={`flex max-h-screen flex-col gap-4 overflow-y-scroll p-8 transition-all duration-300 ease-in-out md:h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] xl:h-[calc(100vh-100px)] 2xl:h-[calc(100vh-100px)] 2xl:gap-7`}
           >
             {quizzes.map((q) => (
-              <QuizCard key={q.id} {...q} state={toUserState(q.state)} />
+              <QuizCard
+                key={q.id}
+                {...q}
+                state={
+                  studyProgramActive
+                    ? toUserState(q.state)
+                    : UserState.IN_PROGRESS
+                }
+              />
             ))}
           </div>
         </aside>

@@ -54,13 +54,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
     chapterMindmap,
     chapterProgress: getMindmapProgress(chapterMindmap),
+    studyProgramActive: false,
   })
 }
 
 export default function ChapterMindmap() {
-  const { quizzes, chapterMindmap, chapterProgress } =
+  const { quizzes, chapterMindmap, chapterProgress, studyProgramActive } =
     useLoaderData<typeof loader>()
-  const studyProgramActive = true // todo correct study program
   const renderNode = useCallback<RenderCustomNodeElementFn>(
     ({ nodeDatum }) => {
       const treeDatum = nodeDatum as unknown as MindmapTree
@@ -140,7 +140,15 @@ export default function ChapterMindmap() {
             className={`scrollbar-thin scrollbar-thumb-scrollbar px-auto flex h-[calc(100vh-58px)] w-full flex-col items-stretch gap-4 overflow-y-scroll p-base-padding pt-8 transition-all duration-300 ease-in-out 2xl:gap-7`}
           >
             {quizzes.map((q) => (
-              <QuizCard key={q.id} {...q} state={toUserState(q.state)} />
+              <QuizCard
+                key={q.id}
+                {...q}
+                state={
+                  studyProgramActive
+                    ? toUserState(q.state)
+                    : UserState.IN_PROGRESS
+                }
+              />
             ))}
           </div>
         </aside>
