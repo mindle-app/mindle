@@ -4,12 +4,13 @@ import {
   type SerializeFrom,
   type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { useLoaderData, useNavigate } from '@remix-run/react'
 import { useMemo, useState } from 'react'
 import { z } from 'zod'
 import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { Input } from '#app/components/ui/input.js'
+import { LinkButton } from '#app/components/ui/link-button.js'
 import { requireUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 import { cn } from '#app/utils/misc.js'
@@ -277,12 +278,26 @@ export default function Quiz() {
       Verifică răspunsul
     </Button>
   )
+  const navigate = useNavigate()
 
   return (
     <div className="container flex h-screen flex-col">
       <div className="flex flex-grow overflow-hidden">
         <main className="flex-grow overflow-scroll p-5 2xl:p-9">
-          <section className="flex flex-row justify-between backdrop-blur-sm">
+          <section className="flex flex-row items-center justify-between backdrop-blur-sm">
+            <LinkButton
+              to={'#'}
+              buttonProps={{
+                variant: 'secondary',
+                onClick: () => navigate(-1),
+                className:
+                  'flex-1 w-full rounded-xl px-16 border text-semibold h-16 text-xl border-active-border',
+                size: 'lg',
+              }}
+            >
+              <Icon name={'arrow-left'} className="mr-4" />
+              Mergi înapoi
+            </LinkButton>
             <div
               className="flex h-16 w-16 flex-col items-center justify-center rounded-2xl border-2 border-solid border-primary bg-card px-3"
               role="img"
@@ -301,7 +316,7 @@ export default function Quiz() {
             <p className="mt-8 text-3xl font-bold">
               {currentQuestionIdx + 1}. {question?.name}
             </p>
-            <div className="flex h-full w-full flex-col">
+            <div className="flex w-full flex-col">
               <section id="quiz-choice" className="flex flex-col gap-6">
                 {(question?.answers ?? []).map((answer) => {
                   const isSelected = userChoice === answer.id
